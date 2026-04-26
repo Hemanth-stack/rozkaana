@@ -1,13 +1,13 @@
 import json
 import logging
 
-from openai import AsyncOpenAI
+import anthropic
 
 from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+_client = anthropic.Anthropic(api_key=settings.CLAUDE_API_KEY)
 
 SYSTEM_PROMPT = """You are a certified Indian nutritionist and chef.
 Generate authentic Indian recipes in strict JSON format.
@@ -69,8 +69,6 @@ def _validate_recipe(recipe: dict) -> bool:
         return False
     if not (recipe.get("calories", 0) > 0):
         return False
-    if not (recipe.get("protein_g", 0) >= 0):
-        return False
     return True
 
 
@@ -80,6 +78,7 @@ async def generate_recipe_batch(
     eating_mode: str,
     health_tags: list[str] | None = None,
     count: int = 5,
+    model: str = "claude-sonnet-4-6",
 ) -> list[dict]:
     health_tags = health_tags or []
     prompt = USER_PROMPT_TEMPLATE.format(
@@ -91,39 +90,36 @@ async def generate_recipe_batch(
     )
 
     try:
-        response = await _client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": prompt},
-            ],
-            temperature=0.7,
-            max_tokens=4000,
-            response_format={"type": "json_object"},
+        response = _client.messages.create(
+            model=model,
+            max_tokens=4096,
+            system=SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": prompt}],
         )
-        raw = response.choices[0].message.content or ""
+        raw = response.content[0].text
         payload = json.loads(raw)
     except json.JSONDecodeError as exc:
-        logger.error("Failed to parse OpenAI response as JSON: %s", exc)
+        logger.error("Failed to parse Claude response as JSON: %s", exc)
         return []
     except Exception as exc:
-        logger.error("OpenAI API call failed: %s", exc)
+        logger.error("Claude API call failed: %s", exc)
         return []
 
     if isinstance(payload, list):
         recipes = payload
     elif isinstance(payload, dict):
-        recipes = (
-            payload.get("recipes")
-            or payload.get("data")
-            or list(payload.values())[0]
-            if payload else []
-        )
+        recipes = payload.get("recipes") or []
         if not isinstance(recipes, list):
-            recipes = []
+            for v in payload.values():
+                if isinstance(v, list):
+                    recipes = v
+                    break
     else:
         recipes = []
 
     valid = [r for r in recipes if isinstance(r, dict) and _validate_recipe(r)]
-    logger.info("Generated %d/%d valid recipes for %s/%s/%s", len(valid), len(recipes), meal_type, cuisine_region, eating_mode)
+    logger.info(
+        "Generated %d/%d valid recipes for %s/%s/%s",
+        len(valid), len(recipes), meal_type, cuisine_region, eating_mode,
+    )
     return valid

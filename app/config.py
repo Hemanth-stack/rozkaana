@@ -25,9 +25,9 @@ class Settings(BaseSettings):
     RAZORPAY_WEBHOOK_SECRET: str = "rzp-webhook-secret"
     MSG91_AUTH_KEY: str = "msg91-auth-key"
     MSG91_TEMPLATE_ID: str = "template-id"
-    MSG91_SENDER_ID: str = "NUTRSV"
-    OPENAI_API_KEY: str = "sk-placeholder"
-    APP_BASE_URL: str = "http://localhost:8000"
+    MSG91_SENDER_ID: str = "ROZKAN"
+    CLAUDE_API_KEY: str = "sk-ant-placeholder"
+    APP_BASE_URL: str = "http://localhost:7078"
     PDF_PRESIGNED_URL_EXPIRE_HOURS: int = 12
     MENU_GEN_HOUR_UTC: int = 18
     PDF_BUILD_HOUR_UTC: int = 22

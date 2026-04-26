@@ -25,6 +25,7 @@ class GenerateBatchRequest(BaseModel):
     eating_mode: str
     health_tags: list[str] = []
     count: int = 5
+    model: str = "claude-sonnet-4-6"
 
 
 class GenerateBatchResponse(BaseModel):

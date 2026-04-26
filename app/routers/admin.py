@@ -2,12 +2,14 @@ import uuid
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel
 from sqlalchemy import and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.database import get_db
 from app.dependencies import get_current_admin
+from app.utils.security import create_access_token, create_refresh_token
 from app.models.daily_menu import DailyMenu
 from app.models.recipe import Recipe
 from app.models.subscription import Subscription
@@ -21,6 +23,40 @@ from app.schemas.recipe import RecipeOut, RecipeUpdate
 from app.services.recipe_ai_generator import generate_recipe_batch
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+class AdminLoginRequest(BaseModel):
+    phone: str
+    password: str  # simple admin password for pilot
+
+
+class AdminTokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+
+
+@router.post("/login", response_model=AdminTokenResponse)
+async def admin_login(
+    request: AdminLoginRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    from app.config import settings
+    result = await db.execute(
+        select(User).where(User.phone == request.phone, User.is_admin == True)  # noqa
+    )
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    # Simple password check using phone-based secret (pilot mode)
+    expected = settings.JWT_SECRET_KEY[:8]
+    if request.password != expected:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    data = {"sub": str(user.id)}
+    return AdminTokenResponse(
+        access_token=create_access_token(data),
+        refresh_token=create_refresh_token(data),
+    )
 
 
 @router.get("/recipes", response_model=RecipeListResponse)
@@ -150,6 +186,7 @@ async def generate_batch(
         eating_mode=request.eating_mode,
         health_tags=request.health_tags,
         count=request.count,
+        model=request.model,
     )
     inserted = []
     for data in recipes_data:

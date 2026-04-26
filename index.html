@@ -535,7 +535,7 @@
     <li><a href="#pricing">Pricing</a></li>
     <li><a href="#faq">FAQ</a></li>
   </ul>
-  <a href="#pricing" class="btn">Start Your Plan &rarr;</a>
+  <a href="#pricing" class="btn" onclick="openSignup('solo_pro');return false">Start Free Trial <a href="#pricing" class="btn">Start Your Plan &rarr;</a>rarr;</a>
 </nav>
 
 <!-- ═══ HERO ══════════════════════════════════════════════════ -->
@@ -844,7 +844,7 @@
         <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Basic macro tracking</li>
         <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> 7-day guarantee</li>
       </ul>
-      <a href="#" class="btn btn-outline" style="width:100%;justify-content:center;">Get Started</a>
+      <a href="#" class="btn btn-outline" style="width:100%;justify-content:center;" onclick="openSignup('solo_basic');return false">Start Free Trial</a>
     </div>
     <div class="price-card featured fade-up d1">
       <div class="featured-badge">MOST POPULAR</div>
@@ -859,7 +859,7 @@
         <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Shopping list generation</li>
         <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Seasonal adjustments</li>
       </ul>
-      <a href="#" class="btn" style="width:100%;justify-content:center;">Start Pro Plan</a>
+      <a href="#" class="btn" style="width:100%;justify-content:center;" onclick="openSignup('solo_pro');return false">Start Free Trial</a>
     </div>
     <div class="price-card fade-up d2">
       <div class="plan-name">Family</div>
@@ -873,7 +873,7 @@
         <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Diabetic &amp; senior modes</li>
         <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Consolidated grocery list</li>
       </ul>
-      <a href="#" class="btn btn-outline" style="width:100%;justify-content:center;">Choose Family</a>
+      <a href="#" class="btn btn-outline" style="width:100%;justify-content:center;" onclick="openSignup('family');return false">Start Free Trial</a>
     </div>
   </div>
 </section>
@@ -1093,6 +1093,202 @@
   }, { threshold: 0.5 });
   const strip = document.querySelector('.stats-strip');
   if (strip) statsObs.observe(strip);
+
+  // ── SIGNUP MODAL ──────────────────────────────────────────────────────────
+  const API = '/api/v1';
+  let selectedPlan = 'solo_pro';
+  let sessionId = '';
+
+  function openSignup(plan) {
+    selectedPlan = plan || 'solo_pro';
+    document.getElementById('signupModal').style.display = 'flex';
+    showStep('stepPhone');
+    document.getElementById('modalPlanLabel').textContent =
+      {solo_basic:'Starter — ₹199/mo', solo_pro:'Pro — ₹399/mo', family:'Family — ₹699/mo'}[plan] || plan;
+    document.getElementById('phoneInput').focus();
+  }
+
+  function closeModal() {
+    document.getElementById('signupModal').style.display = 'none';
+    resetSignup();
+  }
+
+  function showStep(id) {
+    document.querySelectorAll('.signup-step').forEach(s => s.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
+  }
+
+  function resetSignup() {
+    document.getElementById('phoneInput').value = '';
+    document.getElementById('otpInput').value = '';
+    document.getElementById('phoneErr').textContent = '';
+    document.getElementById('otpErr').textContent = '';
+    sessionId = '';
+  }
+
+  async function sendOTP() {
+    const phone = document.getElementById('phoneInput').value.trim();
+    const err = document.getElementById('phoneErr');
+    err.textContent = '';
+    if (!/^\+91[6-9]\d{9}$/.test(phone)) {
+      err.textContent = 'Enter a valid Indian number: +91XXXXXXXXXX';
+      return;
+    }
+    const btn = document.getElementById('sendOtpBtn');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      const r = await fetch(`${API}/auth/send-otp`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({phone})
+      });
+      const d = await r.json();
+      if (!r.ok) { err.textContent = d.detail || 'Failed to send OTP'; btn.disabled = false; btn.textContent = 'Send OTP'; return; }
+      sessionId = d.session_id;
+      document.getElementById('otpPhoneLabel').textContent = phone;
+      showStep('stepOTP');
+      document.getElementById('otpInput').focus();
+    } catch(e) {
+      err.textContent = 'Network error — is the server running?';
+    }
+    btn.disabled = false; btn.textContent = 'Send OTP';
+  }
+
+  async function verifyOTP() {
+    const phone = document.getElementById('phoneInput').value.trim();
+    const otp = document.getElementById('otpInput').value.trim();
+    const err = document.getElementById('otpErr');
+    err.textContent = '';
+    if (!/^\d{6}$/.test(otp)) { err.textContent = 'Enter the 6-digit OTP'; return; }
+    const btn = document.getElementById('verifyOtpBtn');
+    btn.disabled = true; btn.textContent = 'Verifying…';
+    try {
+      const r = await fetch(`${API}/auth/verify-otp`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({phone, otp, session_id: sessionId})
+      });
+      const d = await r.json();
+      if (!r.ok) { err.textContent = d.detail || 'Invalid OTP'; btn.disabled = false; btn.textContent = 'Verify & Start Trial'; return; }
+      localStorage.setItem('rzk_token', d.access_token);
+      localStorage.setItem('rzk_refresh', d.refresh_token);
+      showStep('stepSuccess');
+    } catch(e) {
+      err.textContent = 'Network error';
+    }
+    btn.disabled = false; btn.textContent = 'Verify & Start Trial';
+  }
+
+  // Close on backdrop click
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 </script>
+
+<!-- ── SIGNUP MODAL ──────────────────────────────────────────────────── -->
+<style>
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6);
+    backdrop-filter: blur(6px); z-index: 999;
+    align-items: center; justify-content: center;
+  }
+  .modal-box {
+    background: #fff; border-radius: 20px; padding: 40px 36px;
+    width: 420px; max-width: 94vw; position: relative;
+    box-shadow: 0 32px 80px rgba(0,0,0,.22);
+  }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--cream-dark); border: none; cursor: pointer;
+    font-size: 1rem; display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); transition: background .2s;
+  }
+  .modal-close:hover { background: var(--border); }
+  .modal-badge {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: rgba(46,125,82,.1); color: var(--green);
+    border-radius: 20px; padding: .28rem .85rem;
+    font-size: .75rem; font-weight: 700; margin-bottom: 16px;
+  }
+  .modal-box h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--charcoal); margin-bottom: .4rem; }
+  .modal-box p { font-size: .88rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6; }
+  .modal-label { font-size: .78rem; font-weight: 700; color: var(--text); margin-bottom: 6px; display: block; }
+  .modal-input {
+    width: 100%; padding: 11px 14px; border: 1.5px solid var(--border);
+    border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: .93rem;
+    outline: none; transition: border-color .2s; background: var(--cream);
+  }
+  .modal-input:focus { border-color: var(--saffron); }
+  .modal-err { font-size: .78rem; color: #dc2626; margin-top: 6px; min-height: 18px; }
+  .modal-btn {
+    width: 100%; padding: 13px; background: var(--saffron); color: #fff;
+    border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif;
+    font-size: .95rem; font-weight: 700; cursor: pointer; margin-top: 14px;
+    transition: background .2s, transform .15s;
+  }
+  .modal-btn:hover { background: var(--saffron-dark); }
+  .modal-btn:active { transform: scale(.98); }
+  .modal-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+  .modal-trial-strip {
+    display: flex; align-items: center; gap: .5rem;
+    background: var(--cream-dark); border-radius: 10px;
+    padding: 10px 14px; margin-bottom: 18px; font-size: .82rem;
+  }
+  .modal-trial-strip strong { color: var(--green); }
+  .success-icon { font-size: 3rem; margin-bottom: 12px; }
+  .plan-label { font-size: .75rem; font-weight: 600; color: var(--saffron); margin-bottom: 4px; }
+</style>
+
+<div class="modal-overlay" id="signupModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+
+    <!-- Step 1: Phone -->
+    <div class="signup-step" id="stepPhone">
+      <div class="modal-badge">🎁 7-Day Free Trial</div>
+      <div class="plan-label" id="modalPlanLabel">Pro — ₹399/mo</div>
+      <h3>Start your free trial</h3>
+      <p>No card required. Get your personalised Indian diet plan on WhatsApp starting tomorrow.</p>
+      <div class="modal-trial-strip">
+        <span>✅</span>
+        <span><strong>7 days free</strong> · Then ₹199–699/mo · Cancel anytime</span>
+      </div>
+      <label class="modal-label">Your WhatsApp Number</label>
+      <input class="modal-input" id="phoneInput" type="tel" placeholder="+91 98765 43210" value="+91"
+        onkeydown="if(event.key==='Enter')sendOTP()">
+      <div class="modal-err" id="phoneErr"></div>
+      <button class="modal-btn" id="sendOtpBtn" onclick="sendOTP()">Send OTP →</button>
+      <p style="font-size:.73rem;color:var(--text-muted);text-align:center;margin-top:12px;margin-bottom:0">
+        We'll send a 6-digit OTP to verify your number
+      </p>
+    </div>
+
+    <!-- Step 2: OTP -->
+    <div class="signup-step" id="stepOTP" style="display:none">
+      <div class="modal-badge">📱 OTP Sent</div>
+      <h3>Enter your OTP</h3>
+      <p>We sent a 6-digit code to <strong id="otpPhoneLabel">—</strong></p>
+      <label class="modal-label">6-Digit OTP</label>
+      <input class="modal-input" id="otpInput" type="text" inputmode="numeric"
+        maxlength="6" placeholder="· · · · · ·" style="letter-spacing:.4em;font-size:1.2rem;text-align:center"
+        onkeydown="if(event.key==='Enter')verifyOTP()">
+      <div class="modal-err" id="otpErr"></div>
+      <button class="modal-btn" id="verifyOtpBtn" onclick="verifyOTP()">Verify &amp; Start Free Trial →</button>
+      <button onclick="showStep('stepPhone')" style="width:100%;background:none;border:none;color:var(--text-muted);font-size:.8rem;margin-top:10px;cursor:pointer;padding:4px;">
+        ← Change number
+      </button>
+    </div>
+
+    <!-- Step 3: Success -->
+    <div class="signup-step" id="stepSuccess" style="display:none;text-align:center">
+      <div class="success-icon">🎉</div>
+      <h3>You're in!</h3>
+      <p style="text-align:center">Your <strong>7-day free trial</strong> has started.<br>
+      Complete your profile to get your first personalised meal plan tomorrow at 6 AM on WhatsApp.</p>
+      <div class="modal-trial-strip" style="justify-content:center">
+        <span>📅</span><span>First plan arrives <strong>tomorrow at 6 AM</strong></span>
+      </div>
+      <button class="modal-btn" onclick="closeModal()">Got it — Let's go!</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
