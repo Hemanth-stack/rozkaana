@@ -1,30 +1,55 @@
-from fastapi import APIRouter, Depends, HTTPException
-from app.schemas.auth import SendOTPRequest, SendOTPResponse, VerifyOTPRequest, VerifyOTPResponse, RefreshRequest, RefreshResponse
-from app.services.otp import send_otp, verify_otp
-from app.utils.jwt import create_access_token
-from app.database import get_db
+from fastapi import APIRouter, Depends, HTTPException, status
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from app.models.user import User
-import uuid
 
-router = APIRouter()
+from app.database import get_db
+from app.schemas.auth import (
+    RefreshRequest, RefreshResponse,
+    SendOTPRequest, SendOTPResponse,
+    TokenResponse, VerifyOTPRequest,
+)
+from app.services.otp_service import send_otp, verify_otp
+from app.utils.redis_client import get_redis
+from app.utils.security import create_access_token, create_refresh_token, decode_token
+
+router = APIRouter(prefix="/auth", tags=["auth"])
+
 
 @router.post("/send-otp", response_model=SendOTPResponse)
-async def send_otp_endpoint(request: SendOTPRequest, db: AsyncSession = Depends(get_db)):
-    session_id = await send_otp(request.phone, db)
+async def send_otp_endpoint(
+    request: SendOTPRequest,
+    db: AsyncSession = Depends(get_db),
+    redis: Redis = Depends(get_redis),
+):
+    session_id = await send_otp(request.phone, db, redis)
     return SendOTPResponse(session_id=session_id)
 
-@router.post("/verify-otp", response_model=VerifyOTPResponse)
-async def verify_otp_endpoint(request: VerifyOTPRequest, db: AsyncSession = Depends(get_db)):
-    is_valid, user = await verify_otp(request.phone, request.otp, request.session_id, db)
-    if not is_valid:
-        raise HTTPException(status_code=400, detail="Invalid OTP")
-    access_token = create_access_token({"sub": str(user.id)})
-    is_new_user = user.created_at == user.updated_at  # rough check
-    return VerifyOTPResponse(access_token=access_token, is_new_user=is_new_user)
+
+@router.post("/verify-otp", response_model=TokenResponse)
+async def verify_otp_endpoint(
+    request: VerifyOTPRequest,
+    db: AsyncSession = Depends(get_db),
+    redis: Redis = Depends(get_redis),
+):
+    is_new, user = await verify_otp(request.phone, request.otp, request.session_id, db)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="OTP verification failed")
+
+    data = {"sub": str(user.id)}
+    access_token = create_access_token(data)
+    refresh_token = create_refresh_token(data)
+
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        is_new_user=is_new,
+    )
+
 
 @router.post("/refresh", response_model=RefreshResponse)
-async def refresh_token(request: RefreshRequest):
-    # Implement refresh logic
-    pass
+async def refresh_token_endpoint(request: RefreshRequest):
+    payload = decode_token(request.refresh_token)
+    if payload.get("type") != "refresh":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
+    new_access = create_access_token({"sub": payload["sub"]})
+    return RefreshResponse(access_token=new_access)

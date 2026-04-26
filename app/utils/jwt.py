@@ -1,17 +1,11 @@
-from datetime import datetime, timedelta
-from jose import JWTError, jwt
-from app.config import settings
+from app.utils.security import create_access_token, create_refresh_token, decode_token
 
-def create_access_token(data: dict):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=settings.jwt_expire_minutes)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.jwt_secret, algorithm="HS256")
-    return encoded_jwt
 
-def verify_token(token: str):
+def verify_token(token: str) -> dict | None:
     try:
-        payload = jwt.decode(token, settings.jwt_secret, algorithms=["HS256"])
-        return payload
-    except JWTError:
+        return decode_token(token)
+    except Exception:
         return None
+
+
+__all__ = ["create_access_token", "create_refresh_token", "decode_token", "verify_token"]

@@ -1,0 +1,56 @@
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+*.so
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+.python-version
+
+# Testing
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.log
+
+# Alembic generated files (keep versions tracked, exclude auto-generated locks)
+migrations/versions/__pycache__/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Docker volumes & data
+pgdata/
+redisdata/
+miniodata/
+
+# Generated PDFs and uploads (stored in MinIO, not git)
+*.pdf
+app/static/uploads/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Node (if any frontend tooling)
+node_modules/

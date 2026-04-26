@@ -1,21 +1,32 @@
+from typing import Optional
+from uuid import UUID
+
 from pydantic import BaseModel
-from typing import List
-from .user import UserProfile
+
+from app.schemas.user import UserProfile
+
 
 class HouseholdCreate(BaseModel):
     name: str
+    cuisine_prefs: Optional[list[str]] = []
+
 
 class HouseholdResponse(BaseModel):
-    id: str
+    id: UUID
     name: str
-    head_user_id: str
-    shared_eating_mode: str
+    head_user_id: Optional[UUID]
+    shared_eating_mode: Optional[str]
     member_count: int
-    cuisine_prefs: List[str]
-    members: List[UserProfile]
+    cuisine_prefs: Optional[list[str]] = []
+    members: list[UserProfile] = []
+
+    model_config = {"from_attributes": True}
+
 
 class InviteResponse(BaseModel):
-    invite_token: str
+    invite_url: str
+    token: str
+
 
 class UpdatePreferencesRequest(BaseModel):
-    cuisine_prefs: List[str]
+    cuisine_prefs: list[str]

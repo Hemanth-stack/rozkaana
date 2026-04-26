@@ -1,36 +1,82 @@
+from datetime import date, datetime
+from typing import Any, Optional
+from uuid import UUID
+
 from pydantic import BaseModel
-from typing import List
-from .recipe import Recipe
-from .user import UserProfile
+
+from app.schemas.recipe import RecipeOut, RecipeCreate
+from app.schemas.user import UserProfile
+
 
 class RecipeListResponse(BaseModel):
-    recipes: List[Recipe]
+    recipes: list[RecipeOut]
+    total: int
+    page: int = 1
+    limit: int = 20
 
-class CreateRecipeRequest(BaseModel):
-    name: str
-    name_local: Optional[str]
-    meal_type: str
-    cuisine_region: str
-    eating_mode_tags: List[str]
-    health_safe_tags: List[str]
-    allergy_free_tags: List[str]
-    calories: int
-    protein_g: float
-    carbs_g: float
-    fat_g: float
-    fibre_g: float
-    serving_unit: str
-    prep_time_mins: int
-    spice_level: str
-    main_ingredient: str
-    ingredients: dict
-    steps: List[str]
 
-class VerifyRecipeRequest(BaseModel):
+class CreateRecipeRequest(RecipeCreate):
     pass
 
+
+class GenerateBatchRequest(BaseModel):
+    meal_type: str
+    cuisine_region: str
+    eating_mode: str
+    health_tags: list[str] = []
+    count: int = 5
+
+
 class GenerateBatchResponse(BaseModel):
-    task_id: str
+    generated: int
+    recipes: list[RecipeOut]
+
 
 class UserListResponse(BaseModel):
-    users: List[UserProfile]
+    users: list[UserProfile]
+    total: int
+    page: int = 1
+    limit: int = 20
+
+
+class DashboardStats(BaseModel):
+    total_users: int
+    active_subscribers: int
+    menus_today: int
+    pdfs_built_today: int
+    wa_delivered_today: int
+    wa_failed_today: int
+    mrr: float
+    plan_distribution: dict[str, int]
+
+
+class PipelineStep(BaseModel):
+    name: str
+    count: int
+    completed: int
+    failed: int
+    status: str
+
+
+class PipelineStatus(BaseModel):
+    date: date
+    steps: list[PipelineStep]
+
+
+class MenuAdminItem(BaseModel):
+    id: UUID
+    owner_id: UUID
+    owner_type: str
+    menu_date: date
+    pdf_key: Optional[str]
+    wa_status: Optional[str]
+    wa_sent_at: Optional[datetime]
+    generated_at: Optional[datetime]
+    owner_name: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class MenuAdminListResponse(BaseModel):
+    menus: list[MenuAdminItem]
+    total: int

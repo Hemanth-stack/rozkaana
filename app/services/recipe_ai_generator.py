@@ -1,29 +1,34 @@
 import json
-import re
-import openai
+import logging
+
+from openai import AsyncOpenAI
+
 from app.config import settings
+
+logger = logging.getLogger(__name__)
+
+_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 
 SYSTEM_PROMPT = """You are a certified Indian nutritionist and chef.
 Generate authentic Indian recipes in strict JSON format.
 All macros must be accurate per the IFCT (Indian Food Composition Tables).
 Never invent macros. Use real Indian ingredient quantities.
-Output ONLY valid JSON — no markdown, no commentary."""
+Output ONLY valid JSON — no markdown, no commentary, no code fences."""
 
 USER_PROMPT_TEMPLATE = """Generate {count} unique Indian recipes for:
 - Meal type: {meal_type}
 - Cuisine region: {cuisine_region}
 - Dietary mode: {eating_mode}
 - Health condition safe for: {health_tags}
-- Spice level: {spice_level}
 
-Return a JSON array. Each recipe must have:
+Return a JSON object with key "recipes" containing an array. Each recipe must have:
 {{
   "name": "Recipe Name",
   "name_local": "Local language name if applicable",
   "meal_type": "{meal_type}",
   "cuisine_region": "{cuisine_region}",
-  "eating_mode_tags": ["pure_veg"],
-  "health_safe_tags": ["diabetes_t2", "hypertension"],
+  "eating_mode_tags": ["{eating_mode}"],
+  "health_safe_tags": ["general_healthy"],
   "allergy_free_tags": ["gluten_free"],
   "calories": 320,
   "protein_g": 18.5,
@@ -40,82 +45,85 @@ Return a JSON array. Each recipe must have:
   ],
   "steps": [
     "Wash and soak dal for 30 minutes.",
-    "Heat oil in a pressure cooker..."
+    "Heat oil in a pressure cooker and add cumin seeds.",
+    "Add onions and saute until golden.",
+    "Add spices and cook 2 minutes.",
+    "Add dal and 2 cups water, pressure cook 3 whistles.",
+    "Adjust seasoning and serve hot."
   ]
 }}"""
 
-openai.api_key = settings.openai_api_key
-
-
-def _find_json(text: str):
-    decoder = json.JSONDecoder()
-    idx = 0
-    while idx < len(text):
-        try:
-            obj, end = decoder.raw_decode(text[idx:])
-            return obj
-        except json.JSONDecodeError:
-            idx += 1
-    raise ValueError("No valid JSON found in model response")
-
 
 def _validate_recipe(recipe: dict) -> bool:
-    required_keys = [
-        "name", "name_local", "meal_type", "cuisine_region",
-        "eating_mode_tags", "health_safe_tags", "allergy_free_tags",
-        "calories", "protein_g", "carbs_g", "fat_g", "fibre_g",
-        "serving_unit", "prep_time_mins", "spice_level",
-        "main_ingredient", "ingredients", "steps"
+    required = [
+        "name", "meal_type", "cuisine_region", "eating_mode_tags",
+        "calories", "protein_g", "carbs_g", "fat_g",
+        "ingredients", "steps",
     ]
-    for key in required_keys:
+    for key in required:
         if key not in recipe:
             return False
-    if not isinstance(recipe.get("ingredients"), list):
+    if not isinstance(recipe.get("ingredients"), list) or len(recipe["ingredients"]) < 2:
         return False
-    if not isinstance(recipe.get("steps"), list):
+    if not isinstance(recipe.get("steps"), list) or len(recipe["steps"]) < 3:
+        return False
+    if not (recipe.get("calories", 0) > 0):
+        return False
+    if not (recipe.get("protein_g", 0) >= 0):
         return False
     return True
 
 
 async def generate_recipe_batch(
-    meal_type,
-    cuisine_region,
-    eating_mode,
-    health_tags=None,
-    count=5,
-    spice_level="medium"
-):
+    meal_type: str,
+    cuisine_region: str,
+    eating_mode: str,
+    health_tags: list[str] | None = None,
+    count: int = 5,
+) -> list[dict]:
     health_tags = health_tags or []
-    content = USER_PROMPT_TEMPLATE.format(
+    prompt = USER_PROMPT_TEMPLATE.format(
         count=count,
         meal_type=meal_type,
         cuisine_region=cuisine_region,
         eating_mode=eating_mode,
         health_tags=", ".join(health_tags) or "general healthy",
-        spice_level=spice_level,
     )
-    response = await openai.ChatCompletion.acreate(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": content},
-        ],
-        temperature=0.7,
-        max_tokens=1200,
-    )
-    raw = response.choices[0].message["content"]
-    payload = _find_json(raw)
+
+    try:
+        response = await _client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.7,
+            max_tokens=4000,
+            response_format={"type": "json_object"},
+        )
+        raw = response.choices[0].message.content or ""
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        logger.error("Failed to parse OpenAI response as JSON: %s", exc)
+        return []
+    except Exception as exc:
+        logger.error("OpenAI API call failed: %s", exc)
+        return []
+
     if isinstance(payload, list):
         recipes = payload
     elif isinstance(payload, dict):
-        recipes = payload.get("recipes") or payload.get("data") or []
+        recipes = (
+            payload.get("recipes")
+            or payload.get("data")
+            or list(payload.values())[0]
+            if payload else []
+        )
+        if not isinstance(recipes, list):
+            recipes = []
     else:
         recipes = []
 
-    valid_recipes = []
-    for recipe in recipes:
-        if not isinstance(recipe, dict):
-            continue
-        if _validate_recipe(recipe):
-            valid_recipes.append(recipe)
-    return valid_recipes
+    valid = [r for r in recipes if isinstance(r, dict) and _validate_recipe(r)]
+    logger.info("Generated %d/%d valid recipes for %s/%s/%s", len(valid), len(recipes), meal_type, cuisine_region, eating_mode)
+    return valid

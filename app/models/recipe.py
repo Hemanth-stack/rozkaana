@@ -1,37 +1,44 @@
-from sqlalchemy import Column, String, SmallInteger, Numeric, Boolean, DateTime, text, UUID, ARRAY, Index
-from sqlalchemy.dialects.postgresql import JSONB, TEXT
-from app.database import Base
 import uuid
+
+from sqlalchemy import (
+    ARRAY, Boolean, Column, DateTime, Index,
+    Numeric, SmallInteger, String, text, UUID,
+)
+from sqlalchemy.dialects.postgresql import JSONB, TEXT
+
+from app.database import Base
+
 
 class Recipe(Base):
     __tablename__ = "recipes"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()"))
-    name = Column(String(200))
-    name_local = Column(String(200))
-    meal_type = Column(String(20), index=True)
-    cuisine_region = Column(String(30), index=True)
-    eating_mode_tags = Column(ARRAY(String))
-    health_safe_tags = Column(ARRAY(String))
-    allergy_free_tags = Column(ARRAY(String))
-    calories = Column(SmallInteger)
-    protein_g = Column(Numeric(5,2))
-    carbs_g = Column(Numeric(5,2))
-    fat_g = Column(Numeric(5,2))
-    fibre_g = Column(Numeric(5,2))
-    serving_unit = Column(String(30))
-    prep_time_mins = Column(SmallInteger)
-    spice_level = Column(String(10))
-    main_ingredient = Column(String(50))
-    ingredients = Column(JSONB)
-    steps = Column(ARRAY(TEXT))
-    is_verified = Column(Boolean, index=True)
-    is_active = Column(Boolean)
-    source = Column(String(20))
+    name = Column(String(200), nullable=False)
+    name_local = Column(String(200), nullable=True)
+    meal_type = Column(String(20), nullable=False, index=True)
+    cuisine_region = Column(String(30), nullable=False, index=True)
+    eating_mode_tags = Column(ARRAY(String), nullable=False, server_default=text("'{}'::varchar[]"))
+    health_safe_tags = Column(ARRAY(String), nullable=True)
+    allergy_free_tags = Column(ARRAY(String), nullable=True)
+    calories = Column(SmallInteger, nullable=False)
+    protein_g = Column(Numeric(5, 2), nullable=False)
+    carbs_g = Column(Numeric(5, 2), nullable=False)
+    fat_g = Column(Numeric(5, 2), nullable=False)
+    fibre_g = Column(Numeric(5, 2), nullable=True)
+    serving_unit = Column(String(50), nullable=True)
+    prep_time_mins = Column(SmallInteger, nullable=True)
+    spice_level = Column(String(10), nullable=True)
+    main_ingredient = Column(String(50), nullable=True)
+    ingredients = Column(JSONB, nullable=True)
+    steps = Column(ARRAY(TEXT), nullable=True)
+    is_verified = Column(Boolean, default=False, server_default="false", index=True)
+    is_active = Column(Boolean, default=True, server_default="true")
+    source = Column(String(20), default="manual", server_default="manual")
     created_at = Column(DateTime(timezone=True), server_default=text("now()"))
+    updated_at = Column(DateTime(timezone=True), server_default=text("now()"), onupdate=text("now()"))
 
     __table_args__ = (
-        Index('ix_recipes_eating_mode_tags', 'eating_mode_tags', postgresql_using='gin'),
-        Index('ix_recipes_health_safe_tags', 'health_safe_tags', postgresql_using='gin'),
-        Index('ix_recipes_allergy_free_tags', 'allergy_free_tags', postgresql_using='gin'),
+        Index("ix_recipes_eating_mode_tags", "eating_mode_tags", postgresql_using="gin"),
+        Index("ix_recipes_health_safe_tags", "health_safe_tags", postgresql_using="gin"),
+        Index("ix_recipes_allergy_free_tags", "allergy_free_tags", postgresql_using="gin"),
     )
