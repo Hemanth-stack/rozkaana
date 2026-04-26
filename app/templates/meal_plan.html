@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Meal Plan</title>
+  <style>
+    @page { size: A4; margin: 1.5cm 1.5cm; }
+    body { font-family: 'Noto Sans', sans-serif; color: #1a1a1a; margin: 0; padding: 0; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .logo { max-height: 60px; }
+    .header-text { flex: 1; margin-left: 16px; }
+    .header-text h1 { margin: 0; font-size: 28px; }
+    .header-text p { margin: 4px 0 0; color: #555; }
+    .macro-summary { text-align: right; font-size: 14px; color: #333; }
+    .slot-card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin-bottom: 16px; page-break-inside: avoid; }
+    .slot-card h3 { margin: 0 0 8px; font-size: 14px; color: #666; }
+    .slot-card h2 { margin: 0 0 6px; font-size: 18px; }
+    .slot-card p { margin: 0 0 12px; color: #444; }
+    .macro-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .macro-pill { background: #f5f5f5; border-radius: 12px; padding: 4px 10px; font-size: 11px; }
+    .grocery-section { margin-top: 24px; border-top: 2px solid #ff6b35; padding-top: 16px; }
+    .grocery-section h2 { margin: 0 0 12px; }
+    .grocery-section table { width: 100%; border-collapse: collapse; }
+    .grocery-section td { padding: 6px 8px; vertical-align: top; border-bottom: 1px solid #eee; }
+    .member-note { background: #fff8e1; border-radius: 6px; padding: 10px; margin-top: 12px; }
+    ol { margin: 8px 0 0 18px; padding: 0; }
+    .slot-card ol li { margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    {% if logo_base64 %}
+    <img class="logo" src="data:image/png;base64,{{ logo_base64 }}" alt="Logo">
+    {% endif %}
+    <div class="header-text">
+      <h1>Your Meal Plan</h1>
+      <p>{{ date }}</p>
+    </div>
+    <div class="macro-summary">
+      <p>{{ daily_totals.calories }} kcal • P: {{ daily_totals.protein }}g</p>
+    </div>
+  </div>
+
+  {% for slot in slots %}
+  <div class="slot-card">
+    <h3>{{ slot.label }} — {{ slot.time }}</h3>
+    <h2>{{ slot.recipe.name }}</h2>
+    <p>{{ slot.recipe.serving_unit }}</p>
+    <div class="macro-bar">
+      <span class="macro-pill">{{ slot.recipe.calories }} kcal</span>
+      <span class="macro-pill">P: {{ slot.recipe.protein_g }}g</span>
+      <span class="macro-pill">C: {{ slot.recipe.carbs_g }}g</span>
+      <span class="macro-pill">F: {{ slot.recipe.fat_g }}g</span>
+    </div>
+    <ol>{% for step in slot.recipe.steps %}<li>{{ step }}</li>{% endfor %}</ol>
+    {% if is_household %}
+    <div class="member-note">Serves {{ members|length }} — scale ingredients accordingly</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  {% if is_household %}
+  <div class="grocery-section">
+    <h2>Grocery List for Today</h2>
+    <table>
+      {% for item in grocery_list %}
+      <tr><td>{{ item.name }}</td><td>{{ item.qty }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+</body>
+</html>

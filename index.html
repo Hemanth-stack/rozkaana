@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rozkaana — Personalised Indian Diet Plans</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --saffron: #E8593C; --saffron-light: #F07A61; --saffron-dark: #C9421F;
+    --saffron-faint: rgba(232,89,60,.07);
+    --cream: #FAF7F2; --cream-dark: #F2ECE3;
+    --charcoal: #1A1612; --text: #3A3028; --text-muted: #7A6E65;
+    --green: #2E7D52; --green-faint: rgba(46,125,82,.1);
+    --border: #E8DDD0; --shadow: rgba(26,22,18,.08);
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text); overflow-x: hidden; line-height: 1.5; }
+  h1, h2, h3, h4 { font-family: 'Playfair Display', serif; }
+
+  /* ── ICON SYSTEM ─────────────────────────────────────────── */
+  .ic { display: inline-block; flex-shrink: 0; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5; vertical-align: middle; }
+
+  /* ── NAV ──────────────────────────────────────────────────── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(250,247,242,.93); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 5%; display: flex; align-items: center; justify-content: space-between;
+    height: 68px; transition: box-shadow .3s;
+  }
+  nav.scrolled { box-shadow: 0 4px 24px var(--shadow); }
+  .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--charcoal); text-decoration: none; }
+  .nav-logo span { color: var(--saffron); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { text-decoration: none; color: var(--text-muted); font-weight: 500; font-size: .92rem; transition: color .2s; }
+  .nav-links a:hover { color: var(--saffron); }
+  .btn {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: var(--saffron); color: #fff; border: none; border-radius: 10px;
+    padding: .65rem 1.4rem; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: .9rem;
+    cursor: pointer; text-decoration: none; transition: background .2s, transform .15s, box-shadow .2s;
+  }
+  .btn:hover { background: var(--saffron-dark); transform: translateY(-1px); box-shadow: 0 8px 20px rgba(232,89,60,.28); }
+  .btn-outline { background: transparent; color: var(--saffron); border: 2px solid var(--saffron); }
+  .btn-outline:hover { background: var(--saffron); color: #fff; }
+
+  /* ── HERO ─────────────────────────────────────────────────── */
+  .hero {
+    min-height: calc(100vh - 68px); padding: 80px 5% 60px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: -80px; right: -80px;
+    width: 560px; height: 560px;
+    background: radial-gradient(circle, rgba(232,89,60,.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: rgba(232,89,60,.09); color: var(--saffron);
+    border: 1px solid rgba(232,89,60,.22); border-radius: 20px;
+    padding: .3rem .9rem; font-size: .78rem; font-weight: 600;
+    margin-bottom: 1.2rem; letter-spacing: .04em;
+  }
+  .hero-badge .dot { width: 6px; height: 6px; background: var(--saffron); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.4; transform:scale(1.4); } }
+  .hero h1 { font-size: clamp(2.6rem,5vw,3.8rem); line-height: 1.13; color: var(--charcoal); margin-bottom: 1.2rem; }
+  .hero h1 em { color: var(--saffron); font-style: italic; }
+  .hero-sub { font-size: 1.05rem; color: var(--text-muted); line-height: 1.72; max-width: 480px; margin-bottom: 2rem; }
+  .hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2.4rem; }
+  .hero-trust { display: flex; align-items: center; gap: 1rem; font-size: .85rem; color: var(--text-muted); }
+  .hero-trust .avatars { display: flex; }
+  .hero-trust .avatars span {
+    width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--cream);
+    background: linear-gradient(135deg, #f0a080, #e87050);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .7rem; margin-left: -8px; color: #fff; font-weight: 700;
+  }
+  .hero-trust .avatars span:first-child { margin-left: 0; }
+
+  /* ── MEAL CARD ────────────────────────────────────────────── */
+  .hero-card-wrap { position: relative; display: flex; justify-content: center; align-items: center; }
+  .meal-plan-card {
+    background: #fff; border-radius: 24px; padding: 28px; width: 360px;
+    box-shadow: 0 24px 64px rgba(26,22,18,.13), 0 8px 24px rgba(26,22,18,.07);
+    animation: floatCard 6s ease-in-out infinite; position: relative; z-index: 2;
+  }
+  @keyframes floatCard { 0%,100% { transform:translateY(0) rotate(0deg); } 33% { transform:translateY(-12px) rotate(.4deg); } 66% { transform:translateY(-5px) rotate(-.25deg); } }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+  .card-header-left h4 { font-size: 1rem; color: var(--charcoal); margin-bottom: .2rem; }
+  .card-header-left p { font-size: .78rem; color: var(--text-muted); }
+  .card-badge { background: var(--green-faint); color: var(--green); border-radius: 8px; padding: .25rem .65rem; font-size: .74rem; font-weight: 600; }
+  .macro-strip { display: flex; gap: .5rem; margin-bottom: 18px; }
+  .macro-pill { flex: 1; text-align: center; background: var(--cream-dark); border-radius: 10px; padding: .5rem .3rem; }
+  .macro-pill .val { font-weight: 700; font-size: .95rem; color: var(--charcoal); }
+  .macro-pill .lbl { font-size: .68rem; color: var(--text-muted); margin-top: 2px; }
+  .meals-list { display: flex; flex-direction: column; gap: 9px; }
+  .meal-item { display: flex; align-items: center; gap: 11px; padding: 9px 11px; background: var(--cream); border-radius: 11px; transition: background .2s; }
+  .meal-item:hover { background: var(--cream-dark); }
+  .meal-icon {
+    width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+    background: #fff; border-radius: 9px; box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    flex-shrink: 0;
+  }
+  .meal-icon svg { width: 18px; height: 18px; }
+  .mi-breakfast { color: var(--saffron); }
+  .mi-lunch     { color: var(--green); }
+  .mi-snack     { color: #B45309; }
+  .mi-dinner    { color: #4338CA; }
+  .meal-info { flex: 1; }
+  .meal-info .name { font-size: .84rem; font-weight: 600; color: var(--charcoal); margin-bottom: 1px; }
+  .meal-info .time { font-size: .72rem; color: var(--text-muted); }
+  .meal-kcal { font-size: .8rem; font-weight: 700; color: var(--saffron); }
+  .card-footer-strip {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border);
+    font-size: .77rem; color: var(--text-muted);
+  }
+  .card-footer-strip strong { color: var(--charcoal); }
+  .float-badge {
+    position: absolute; background: #fff; border-radius: 14px; padding: .6rem 1rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,.11);
+    font-size: .8rem; font-weight: 600; color: var(--charcoal);
+    display: flex; align-items: center; gap: .5rem; z-index: 3;
+  }
+  .float-badge.top-right { top: -10px; right: -30px; animation: fb1 5s ease-in-out infinite; }
+  .float-badge.bottom-left { bottom: 20px; left: -40px; animation: fb2 7s ease-in-out infinite; }
+  .float-badge .fbi { color: var(--saffron); }
+  @keyframes fb1 { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-8px); } }
+  @keyframes fb2 { 0%,100% { transform:translateY(0); } 50% { transform:translateY(6px); } }
+
+  /* ── PROBLEM & SOLUTION ───────────────────────────────────── */
+  .ps-bg { background: var(--cream-dark); }
+  .ps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+  .ps-card { background: #fff; border-radius: 18px; border: 1px solid var(--border); overflow: hidden; }
+  .ps-card.sol { border-color: rgba(232,89,60,.2); }
+  .ps-head {
+    padding: 1rem 1.4rem; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: .65rem;
+  }
+  .ps-head.prob { background: rgba(26,22,18,.025); }
+  .ps-head.sol  { background: rgba(232,89,60,.04); }
+  .ps-head-icon {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .ps-head.prob .ps-head-icon { background: rgba(26,22,18,.07); color: var(--text-muted); }
+  .ps-head.sol  .ps-head-icon { background: rgba(232,89,60,.12); color: var(--saffron); }
+  .ps-head h3 { font-size: .92rem; font-weight: 600; }
+  .ps-head.prob h3 { color: var(--text); }
+  .ps-head.sol  h3 { color: var(--saffron-dark); }
+  .ps-head svg { width: 16px; height: 16px; }
+  .ps-row { display: flex; gap: .85rem; padding: 1rem 1.4rem; border-bottom: 1px solid rgba(232,220,208,.45); }
+  .ps-row:last-child { border-bottom: none; }
+  .ps-row-icon {
+    width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ps-card.prob .ps-row-icon { background: var(--cream-dark); color: var(--text-muted); }
+  .ps-card.sol  .ps-row-icon { background: rgba(232,89,60,.08); color: var(--saffron); }
+  .ps-row-icon svg { width: 14px; height: 14px; }
+  .ps-row-text strong { font-size: .86rem; color: var(--charcoal); display: block; margin-bottom: .22rem; font-family: 'DM Sans', sans-serif; }
+  .ps-row-text p { font-size: .8rem; color: var(--text-muted); line-height: 1.6; }
+  .ps-north {
+    background: var(--charcoal); border-radius: 16px; padding: 1.4rem 1.8rem;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;
+  }
+  .ps-ns-lbl { font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.38); margin-bottom: .3rem; }
+  .ps-ns-val { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; color: #fff; }
+  .ps-ns-val span { color: var(--saffron); }
+  .ps-pills { display: flex; flex-wrap: wrap; gap: .55rem; }
+  .ps-pill {
+    display: flex; align-items: center; gap: .38rem;
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+    border-radius: 7px; padding: .3rem .75rem;
+    font-size: .73rem; color: rgba(255,255,255,.6);
+  }
+  .ps-pill-dot { width: 5px; height: 5px; background: var(--saffron); border-radius: 50%; flex-shrink: 0; }
+
+  /* ── STATS STRIP ──────────────────────────────────────────── */
+  .stats-strip { background: var(--charcoal); padding: 28px 5%; display: flex; justify-content: center; }
+  .stat-item { flex: 1; max-width: 240px; text-align: center; padding: 0 2rem; border-right: 1px solid rgba(255,255,255,.1); }
+  .stat-item:last-child { border-right: none; }
+  .stat-item .num { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--saffron); line-height: 1; margin-bottom: .3rem; }
+  .stat-item .label { font-size: .82rem; color: rgba(255,255,255,.55); }
+
+  /* ── SECTION COMMON ───────────────────────────────────────── */
+  section { padding: 90px 5%; }
+  .section-label { font-size: .78rem; font-weight: 600; color: var(--saffron); letter-spacing: .12em; text-transform: uppercase; margin-bottom: .8rem; }
+  .section-title { font-size: clamp(1.8rem,3.5vw,2.6rem); color: var(--charcoal); line-height: 1.2; margin-bottom: 1rem; }
+  .section-sub { font-size: 1rem; color: var(--text-muted); line-height: 1.72; max-width: 560px; }
+  .section-head { margin-bottom: 3.5rem; }
+  .section-head.center { text-align: center; }
+  .section-head.center .section-sub { margin: 0 auto; }
+
+  /* ── HOW IT WORKS ─────────────────────────────────────────── */
+  .how-bg { background: var(--cream-dark); }
+  .steps-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 2rem; position: relative; }
+  .steps-grid::before {
+    content: ''; position: absolute; top: 27px; left: calc(12.5% + 27px); right: calc(12.5% + 27px);
+    height: 2px; background: linear-gradient(90deg, var(--saffron), var(--saffron-light)); border-radius: 2px;
+  }
+  .step-card { text-align: center; padding: 2rem 1.2rem; background: #fff; border-radius: 18px; border: 1px solid var(--border); transition: transform .3s, box-shadow .3s; }
+  .step-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(232,89,60,.1); }
+  .step-num {
+    width: 54px; height: 54px; background: var(--saffron); color: #fff; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700;
+    margin: 0 auto 1rem; position: relative; z-index: 1;
+  }
+  .step-icon {
+    width: 42px; height: 42px; background: var(--cream-dark); border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto .9rem; color: var(--saffron);
+  }
+  .step-icon svg { width: 20px; height: 20px; }
+  .step-card h3 { font-size: 1rem; color: var(--charcoal); margin-bottom: .5rem; }
+  .step-card p { font-size: .84rem; color: var(--text-muted); line-height: 1.65; }
+
+  /* ── MEAL PREVIEW ─────────────────────────────────────────── */
+  .meals-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.5rem; }
+  .meal-card { background: #fff; border-radius: 18px; overflow: hidden; border: 1px solid var(--border); transition: transform .3s, box-shadow .3s; }
+  .meal-card:hover { transform: translateY(-6px); box-shadow: 0 20px 48px rgba(26,22,18,.1); }
+  .meal-thumb {
+    height: 160px; display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .meal-thumb::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.3)); }
+  .thumb-icon {
+    width: 60px; height: 60px; border-radius: 15px;
+    background: rgba(255,255,255,.18); backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,.28);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; z-index: 1;
+  }
+  .thumb-icon svg { width: 30px; height: 30px; }
+  .meal-tag { position: absolute; top: 10px; left: 10px; z-index: 2; background: rgba(255,255,255,.92); border-radius: 6px; padding: .2rem .55rem; font-size: .7rem; font-weight: 600; color: var(--charcoal); }
+  .meal-body { padding: 1rem; }
+  .meal-body h4 { font-size: .95rem; color: var(--charcoal); margin-bottom: .3rem; }
+  .meal-body .cuisine { font-size: .75rem; color: var(--text-muted); margin-bottom: .8rem; }
+  .macro-row { display: flex; justify-content: space-between; padding-top: .7rem; border-top: 1px solid var(--border); }
+  .macro-row span { font-size: .74rem; color: var(--text-muted); text-align: center; }
+  .macro-row span strong { display: block; font-size: .88rem; color: var(--charcoal); font-weight: 700; }
+  .thumb-1 { background: linear-gradient(135deg, #FFF3E0, #FFCC80); }
+  .thumb-1 .thumb-icon { color: #C45000; }
+  .thumb-2 { background: linear-gradient(135deg, #E8F5E9, #A5D6A7); }
+  .thumb-2 .thumb-icon { color: #1B5E20; }
+  .thumb-3 { background: linear-gradient(135deg, #FFF8E1, #FFE082); }
+  .thumb-3 .thumb-icon { color: #8B5E00; }
+  .thumb-4 { background: linear-gradient(135deg, #FCE4EC, #F48FB1); }
+  .thumb-4 .thumb-icon { color: #880E4F; }
+
+  /* ── PRICING ──────────────────────────────────────────────── */
+  .pricing-bg { background: var(--cream-dark); }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; max-width: 960px; margin: 0 auto; }
+  .price-card { background: #fff; border-radius: 20px; padding: 2rem 1.6rem; border: 1px solid var(--border); transition: transform .3s; position: relative; }
+  .price-card:hover { transform: translateY(-4px); }
+  .price-card.featured { background: var(--charcoal); border-color: var(--charcoal); transform: scale(1.04); box-shadow: 0 24px 64px rgba(26,22,18,.24); z-index: 2; }
+  .price-card.featured:hover { transform: scale(1.04) translateY(-4px); }
+  .featured-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--saffron); color: #fff; border-radius: 20px; padding: .3rem 1rem; font-size: .73rem; font-weight: 700; letter-spacing: .06em; white-space: nowrap; }
+  .plan-name { font-size: .78rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--saffron); margin-bottom: .8rem; }
+  .plan-price { font-family: 'Playfair Display', serif; font-size: 2.6rem; font-weight: 700; color: var(--charcoal); line-height: 1; margin-bottom: .3rem; }
+  .price-card.featured .plan-price { color: #fff; }
+  .plan-price sup { font-size: 1.2rem; vertical-align: super; }
+  .plan-cycle { font-size: .82rem; color: var(--text-muted); margin-bottom: 1.4rem; }
+  .price-card.featured .plan-cycle { color: rgba(255,255,255,.45); }
+  .plan-features { list-style: none; display: flex; flex-direction: column; gap: .7rem; margin-bottom: 1.8rem; }
+  .plan-features li { display: flex; align-items: center; gap: .55rem; font-size: .87rem; color: var(--text); }
+  .price-card.featured .plan-features li { color: rgba(255,255,255,.8); }
+  .plan-features li svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .chk { color: var(--green); }
+  .price-card.featured .chk { color: #4ade80; }
+
+  /* ── TESTIMONIALS ─────────────────────────────────────────── */
+  .testimonials-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+  .testi-card { background: #fff; border-radius: 18px; padding: 1.8rem; border: 1px solid var(--border); transition: transform .3s, box-shadow .3s; }
+  .testi-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px var(--shadow); }
+  .stars-row { display: flex; gap: 3px; margin-bottom: .9rem; }
+  .stars-row svg { width: 15px; height: 15px; fill: #F59E0B; stroke: none; }
+  .testi-text { font-size: .9rem; line-height: 1.72; color: var(--text); margin-bottom: 1.2rem; font-style: italic; }
+  .testi-author { display: flex; align-items: center; gap: .8rem; }
+  .author-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .av1 { background: linear-gradient(135deg, #FFD4B8, #E8593C); }
+  .av2 { background: linear-gradient(135deg, #B8E6D4, #1D9E75); }
+  .av3 { background: linear-gradient(135deg, #C8D5F8, #3B5CB8); }
+  .author-info .name { font-weight: 700; font-size: .87rem; color: var(--charcoal); }
+  .author-info .detail { font-size: .74rem; color: var(--text-muted); }
+
+  /* ── FAQ ──────────────────────────────────────────────────── */
+  .faq-bg { background: var(--cream-dark); }
+  .faq-list { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: .75rem; }
+  .faq-item { background: #fff; border-radius: 14px; border: 1px solid var(--border); overflow: hidden; }
+  .faq-q {
+    width: 100%; text-align: left; background: none; border: none; padding: 1.1rem 1.4rem;
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: .93rem; font-weight: 600;
+    color: var(--charcoal); gap: 1rem; transition: background .2s;
+  }
+  .faq-q:hover { background: var(--cream); }
+  .faq-q.open { color: var(--saffron); }
+  .faq-toggle {
+    width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    color: var(--saffron); transition: transform .3s, background .2s, border-color .2s;
+  }
+  .faq-q.open .faq-toggle { transform: rotate(45deg); background: rgba(232,89,60,.07); border-color: var(--saffron); }
+  .faq-toggle svg { width: 12px; height: 12px; }
+  .faq-a { max-height: 0; overflow: hidden; transition: max-height .4s ease, padding .3s; padding: 0 1.4rem; font-size: .87rem; color: var(--text-muted); line-height: 1.72; }
+  .faq-a.open { max-height: 300px; padding: .2rem 1.4rem 1.2rem; }
+
+  /* ── FOOTER ───────────────────────────────────────────────── */
+  footer { background: var(--charcoal); color: rgba(255,255,255,.6); padding: 64px 5% 32px; }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 3rem; }
+  .footer-brand h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: #fff; margin-bottom: .5rem; }
+  .footer-brand h3 span { color: var(--saffron); }
+  .footer-brand p { font-size: .85rem; line-height: 1.72; max-width: 300px; margin-bottom: 1.4rem; }
+  .social-links { display: flex; gap: .75rem; }
+  .social-link {
+    width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,.07);
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; transition: background .2s; color: rgba(255,255,255,.6);
+  }
+  .social-link:hover { background: var(--saffron); color: #fff; }
+  .social-link svg { width: 16px; height: 16px; }
+  .footer-col h4 { font-size: .78rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.35); margin-bottom: 1rem; }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: .6rem; }
+  .footer-col ul a { text-decoration: none; color: rgba(255,255,255,.58); font-size: .85rem; transition: color .2s; }
+  .footer-col ul a:hover { color: #fff; }
+  .footer-bottom { border-top: 1px solid rgba(255,255,255,.07); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-size: .8rem; }
+
+  /* ── ANIMATIONS ───────────────────────────────────────────── */
+  .fade-up { opacity: 0; transform: translateY(36px); transition: opacity .7s ease, transform .7s ease; }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
+  .fade-up.d1 { transition-delay: .1s; } .fade-up.d2 { transition-delay: .2s; }
+  .fade-up.d3 { transition-delay: .3s; } .fade-up.d4 { transition-delay: .4s; }
+
+  /* ── RESPONSIVE ───────────────────────────────────────────── */
+  @media (max-width: 1024px) {
+    .steps-grid::before { display: none; }
+    .steps-grid { grid-template-columns: repeat(2,1fr); }
+    .meals-grid { grid-template-columns: repeat(2,1fr); }
+    .ps-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 768px) {
+    .hero { grid-template-columns: 1fr; text-align: center; }
+    .hero-sub, .section-head .section-sub { max-width: 100%; }
+    .hero-ctas { justify-content: center; }
+    .hero-trust { justify-content: center; }
+    .hero-card-wrap { order: -1; }
+    .meal-plan-card { width: 100%; max-width: 340px; }
+    .float-badge { display: none; }
+    .stats-strip { flex-wrap: wrap; gap: 1rem; }
+    .stat-item { border-right: none; }
+    .pricing-grid { grid-template-columns: 1fr; max-width: 380px; }
+    .price-card.featured { transform: scale(1); }
+    .testimonials-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .footer-bottom { flex-direction: column; gap: .8rem; text-align: center; }
+    .ps-north { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ SVG ICON SPRITE ═══════════════════════════════════════ -->
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Meal time icons -->
+    <symbol id="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="4"/>
+      <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+    </symbol>
+    <symbol id="ic-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 20C6 11 12 6 21 4C21 13 16 20 6 20Z"/>
+      <path d="M6 20Q12 17 15 11"/>
+    </symbol>
+    <symbol id="ic-cup" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+      <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+      <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
+    </symbol>
+    <symbol id="ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </symbol>
+    <!-- Bowl (meal preview) -->
+    <symbol id="ic-bowl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 11c0 4.42 3.58 8 8 8s8-3.58 8-8H4z"/>
+      <line x1="2" y1="11" x2="22" y2="11"/>
+      <line x1="8" y1="19" x2="16" y2="19"/>
+      <path d="M9 5c0-1.1.9-2 2-2h2a2 2 0 0 1 0 4h-2"/>
+    </symbol>
+    <!-- Fork-knife (meal preview lunch) -->
+    <symbol id="ic-fork" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+      <path d="M7 2v20"/>
+      <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
+    </symbol>
+    <!-- Grain (snack) -->
+    <symbol id="ic-grain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2a10 10 0 0 0 0 20"/>
+      <path d="M12 2C6 8 6 16 12 22"/>
+      <path d="M12 2c6 6 6 14 0 20"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+    </symbol>
+    <!-- Pot (dinner) -->
+    <symbol id="ic-pot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 12h12v5a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4v-5z"/>
+      <path d="M4 12h16"/>
+      <path d="M9 12V8a3 3 0 0 1 6 0v4"/>
+      <path d="M2 12h2M20 12h2"/>
+    </symbol>
+    <!-- How It Works icons -->
+    <symbol id="ic-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+      <rect x="8" y="2" width="8" height="4" rx="1"/>
+      <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
+    </symbol>
+    <symbol id="ic-sparkle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3l2.27 6.73L21 12l-6.73 2.27L12 21l-2.27-6.73L3 12l6.73-2.27z"/>
+      <path d="M5 3v4M3 5h4M19 17v4M17 19h4"/>
+    </symbol>
+    <symbol id="ic-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="5" y="2" width="14" height="20" rx="2"/>
+      <line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2"/>
+    </symbol>
+    <symbol id="ic-trend-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+      <polyline points="17 6 23 6 23 12"/>
+    </symbol>
+    <!-- Problem section icons -->
+    <symbol id="ic-coin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="8"/>
+      <path d="M12 8v1M12 15v1M10 10h1.5a1.5 1.5 0 0 1 0 3H10m0 0h2a1.5 1.5 0 0 1 0 3h-2V10"/>
+    </symbol>
+    <symbol id="ic-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+    </symbol>
+    <symbol id="ic-repeat-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M17 2l4 4-4 4"/>
+      <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+      <path d="M7 22l-4-4 4-4"/>
+      <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+      <line x1="2" y1="2" x2="22" y2="22"/>
+    </symbol>
+    <symbol id="ic-family" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </symbol>
+    <!-- Solution icons -->
+    <symbol id="ic-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="22" y1="2" x2="11" y2="13"/>
+      <polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="ic-shuffle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="16 3 21 3 21 8"/>
+      <line x1="4" y1="20" x2="21" y2="3"/>
+      <polyline points="21 16 21 21 16 21"/>
+      <line x1="15" y1="15" x2="21" y2="21"/>
+      <line x1="4" y1="4" x2="9" y2="9"/>
+    </symbol>
+    <symbol id="ic-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+      <circle cx="12" cy="10" r="3"/>
+    </symbol>
+    <symbol id="ic-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </symbol>
+    <!-- Floating badge icons -->
+    <symbol id="ic-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3C8.93 6.86 9.75 4.95 12 3c.5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+    </symbol>
+    <symbol id="ic-shield-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      <polyline points="9 12 11 14 15 10"/>
+    </symbol>
+    <!-- Ratings star -->
+    <symbol id="ic-star" viewBox="0 0 24 24">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" stroke="none"/>
+    </symbol>
+    <!-- Pricing check -->
+    <symbol id="ic-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </symbol>
+    <!-- FAQ plus -->
+    <symbol id="ic-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </symbol>
+    <!-- Social icons -->
+    <symbol id="ic-instagram" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <rect x="2" y="2" width="20" height="20" rx="5"/>
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke-width="2"/>
+    </symbol>
+    <symbol id="ic-whatsapp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+    </symbol>
+    <symbol id="ic-twitter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>
+    </symbol>
+    <symbol id="ic-youtube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.94-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/>
+      <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="currentColor" stroke="none"/>
+    </symbol>
+    <!-- Problem section header icons -->
+    <symbol id="ic-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17" stroke-width="2"/>
+    </symbol>
+    <symbol id="ic-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+      <polyline points="22 4 12 14.01 9 11.01"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ═══ NAV ════════════════════════════════════════════════════ -->
+<nav id="navbar">
+  <a href="/" class="nav-logo">Roz<span>kaana</span></a>
+  <ul class="nav-links">
+    <li><a href="#why">Why Us</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#meals">Meals</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <a href="#pricing" class="btn">Start Your Plan &rarr;</a>
+</nav>
+
+<!-- ═══ HERO ══════════════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="hero-copy">
+    <div class="hero-badge"><span class="dot"></span> Trusted by 12,000+ Indians</div>
+    <h1>Eat <em>Desi</em>,<br>Live Healthy,<br>Feel Amazing.</h1>
+    <p class="hero-sub">Hyper-personalised Indian diet plans — built around your body, your region, and your taste. Delivered to WhatsApp at 6 AM every morning.</p>
+    <div class="hero-ctas">
+      <a href="#pricing" class="btn">Get Your Plan &mdash; &#8377;199/mo</a>
+      <a href="#how" class="btn btn-outline">See How It Works</a>
+    </div>
+    <div class="hero-trust">
+      <div class="avatars">
+        <span>P</span><span>R</span><span>S</span><span>A</span>
+      </div>
+      <span>4.9 from 3,200+ reviews &middot; 7-day free guarantee</span>
+    </div>
+  </div>
+
+  <div class="hero-card-wrap">
+    <div class="float-badge top-right">
+      <span class="fbi"><svg class="ic" style="width:16px;height:16px" viewBox="0 0 24 24"><use href="#ic-flame"/></svg></span>
+      1,847 kcal today
+    </div>
+    <div class="float-badge bottom-left">
+      <span class="fbi"><svg class="ic" style="width:16px;height:16px" viewBox="0 0 24 24"><use href="#ic-shield-check"/></svg></span>
+      Balanced &amp; Sattvic
+    </div>
+    <div class="meal-plan-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h4>Today's Meal Plan</h4>
+          <p>Saturday, 26 April &middot; North Indian</p>
+        </div>
+        <span class="card-badge">Veg</span>
+      </div>
+      <div class="macro-strip">
+        <div class="macro-pill"><div class="val">1847</div><div class="lbl">kcal</div></div>
+        <div class="macro-pill"><div class="val">82g</div><div class="lbl">Protein</div></div>
+        <div class="macro-pill"><div class="val">210g</div><div class="lbl">Carbs</div></div>
+        <div class="macro-pill"><div class="val">48g</div><div class="lbl">Fat</div></div>
+      </div>
+      <div class="meals-list">
+        <div class="meal-item">
+          <div class="meal-icon mi-breakfast"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-sun"/></svg></div>
+          <div class="meal-info"><div class="name">Poha with Sprouts</div><div class="time">Breakfast &middot; 7:30 AM</div></div>
+          <div class="meal-kcal">340 kcal</div>
+        </div>
+        <div class="meal-item">
+          <div class="meal-icon mi-lunch"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-leaf"/></svg></div>
+          <div class="meal-info"><div class="name">Dal Palak + 2 Rotis</div><div class="time">Lunch &middot; 1:00 PM</div></div>
+          <div class="meal-kcal">520 kcal</div>
+        </div>
+        <div class="meal-item">
+          <div class="meal-icon mi-snack"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-cup"/></svg></div>
+          <div class="meal-info"><div class="name">Makhana Raita</div><div class="time">Snack &middot; 4:30 PM</div></div>
+          <div class="meal-kcal">180 kcal</div>
+        </div>
+        <div class="meal-item">
+          <div class="meal-icon mi-dinner"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-moon"/></svg></div>
+          <div class="meal-info"><div class="name">Khichdi + Ghee</div><div class="time">Dinner &middot; 7:30 PM</div></div>
+          <div class="meal-kcal">410 kcal</div>
+        </div>
+      </div>
+      <div class="card-footer-strip">
+        <span>Remaining: <strong>397 kcal</strong></span>
+        <span>Water: <strong>2.8 L</strong></span>
+        <span>Steps: <strong>6,200</strong></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PROBLEM & SOLUTION ════════════════════════════════════ -->
+<section class="ps-bg" id="why">
+  <div class="section-head center">
+    <div class="section-label fade-up">Why We Exist</div>
+    <h2 class="section-title fade-up">The gap between knowing<br>and eating well</h2>
+    <p class="section-sub fade-up">Most diet platforms were designed for the West. We built Rozkaana to solve the specific problems Indian bodies, Indian kitchens, and Indian budgets actually face.</p>
+  </div>
+
+  <div class="ps-grid">
+    <!-- CHALLENGE -->
+    <div class="ps-card prob fade-up">
+      <div class="ps-head prob">
+        <div class="ps-head-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-alert"/></svg></div>
+        <h3>The Challenge</h3>
+      </div>
+      <div class="ps-row">
+        <div class="ps-row-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-coin"/></svg></div>
+        <div class="ps-row-text">
+          <strong>Nutritionists cost &#8377;2,000&ndash;&#8377;10,000 per month</strong>
+          <p>A service accessible to fewer than 3% of Indian households, leaving the rest without structured, personalised guidance.</p>
+        </div>
+      </div>
+      <div class="ps-row">
+        <div class="ps-row-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-globe"/></svg></div>
+        <div class="ps-row-text">
+          <strong>Western apps don&rsquo;t speak Indian food</strong>
+          <p>They recommend chicken breasts and kale. They have no concept of poha, dal fry, or a Gujarati thali&rsquo;s nutritional balance.</p>
+        </div>
+      </div>
+      <div class="ps-row">
+        <div class="ps-row-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-repeat-off"/></svg></div>
+        <div class="ps-row-text">
+          <strong>Repetition kills adherence</strong>
+          <p>Eating the same dal rice every day causes the majority of Indian dieters to abandon their plan within two weeks.</p>
+        </div>
+      </div>
+      <div class="ps-row">
+        <div class="ps-row-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-family"/></svg></div>
+        <div class="ps-row-text">
+          <strong>Households cook one meal for everyone</strong>
+          <p>Individual goals &mdash; weight loss, diabetes management, muscle gain &mdash; get lost when the whole family eats the same food.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOLUTION -->
+    <div class="ps-card sol fade-up d1">
+      <div class="ps-head sol">
+        <div class="ps-head-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-check-circle"/></svg></div>
+        <h3>Our Answer</h3>
+      </div>
+      <div class="ps-row">
+        <div class="ps-row-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-send"/></svg></div>
+        <div class="ps-row-text">
+          <strong>Full personalisation at &#8377;199/month</strong>
+          <p>95% cheaper than a human nutritionist. Every plan is built from scratch using your BMI, health conditions, and macro targets &mdash; not a template.</p>
+        </div>
+      </div>
+      <div class="ps-row">
+        <div class="ps-row-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-pin"/></svg></div>
+        <div class="ps-row-text">
+          <strong>5,000+ FSSAI-verified Indian recipes</strong>
+          <p>Built across 12 regional cuisines by certified Indian dieticians. North Indian, South Indian, Bengali, Gujarati, Odia &mdash; never translated from Western templates.</p>
+        </div>
+      </div>
+      <div class="ps-row">
+        <div class="ps-row-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-shuffle"/></svg></div>
+        <div class="ps-row-text">
+          <strong>7-day non-repeat variety engine</strong>
+          <p>No dish appears twice in a rolling week. A rotating pool of 5,000+ recipes ensures your plan always feels fresh and satisfying.</p>
+        </div>
+      </div>
+      <div class="ps-row">
+        <div class="ps-row-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-home"/></svg></div>
+        <div class="ps-row-text">
+          <strong>Household mode for up to 6 members</strong>
+          <p>Each member gets their own health profile, macro targets, and eating mode. One plan, every constraint respected, one consolidated grocery list.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NORTH STAR -->
+  <div class="ps-north fade-up d2">
+    <div>
+      <div class="ps-ns-lbl">Our North Star Metric</div>
+      <div class="ps-ns-val"><span>&ge;70%</span> weekly meal-plan adherence at 30 days &mdash; tracked via WhatsApp feedback</div>
+    </div>
+    <div class="ps-pills">
+      <div class="ps-pill"><span class="ps-pill-dot"></span> AES-256 Encrypted Health Data</div>
+      <div class="ps-pill"><span class="ps-pill-dot"></span> DPDP Act 2023 Compliant</div>
+      <div class="ps-pill"><span class="ps-pill-dot"></span> FSSAI Verified Recipes</div>
+      <div class="ps-pill"><span class="ps-pill-dot"></span> 99.5% Uptime SLA</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STATS STRIP ═══════════════════════════════════════════ -->
+<div class="stats-strip">
+  <div class="stat-item fade-up"><div class="num">5,000+</div><div class="label">Verified Indian Recipes</div></div>
+  <div class="stat-item fade-up d1"><div class="num">12</div><div class="label">Regional Cuisines</div></div>
+  <div class="stat-item fade-up d2"><div class="num">7-Day</div><div class="label">Money-Back Guarantee</div></div>
+  <div class="stat-item fade-up d3"><div class="num">6 AM</div><div class="label">Daily WhatsApp Delivery</div></div>
+</div>
+
+<!-- ═══ HOW IT WORKS ══════════════════════════════════════════ -->
+<section class="how-bg" id="how">
+  <div class="section-head center">
+    <div class="section-label fade-up">The Process</div>
+    <h2 class="section-title fade-up">Four steps to your<br>perfect diet</h2>
+    <p class="section-sub fade-up">No gym. No complicated macros. Just your phone and a commitment to eating well.</p>
+  </div>
+  <div class="steps-grid">
+    <div class="step-card fade-up">
+      <div class="step-num">1</div>
+      <div class="step-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-clipboard"/></svg></div>
+      <h3>Tell Us About You</h3>
+      <p>Share your age, weight, health goals, regional food preferences, and dietary restrictions via a quick WhatsApp quiz.</p>
+    </div>
+    <div class="step-card fade-up d1">
+      <div class="step-num">2</div>
+      <div class="step-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-sparkle"/></svg></div>
+      <h3>AI Builds Your Plan</h3>
+      <p>Our nutrition AI crafts a 7-day personalised meal plan from 5,000+ verified Indian recipes tuned to your macros.</p>
+    </div>
+    <div class="step-card fade-up d2">
+      <div class="step-num">3</div>
+      <div class="step-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-phone"/></svg></div>
+      <h3>Delivered at 6 AM</h3>
+      <p>Each morning, your PDF meal plan &mdash; with recipes, portion sizes, and a shopping list &mdash; lands on WhatsApp.</p>
+    </div>
+    <div class="step-card fade-up d3">
+      <div class="step-num">4</div>
+      <div class="step-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-trend-up"/></svg></div>
+      <h3>Track &amp; Improve</h3>
+      <p>Reply with feedback anytime. Your plan adapts weekly based on results, cravings, and seasonal produce.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MEAL PREVIEW ══════════════════════════════════════════ -->
+<section id="meals">
+  <div class="section-head center">
+    <div class="section-label fade-up">From Your Plan</div>
+    <h2 class="section-title fade-up">Real meals, real flavours</h2>
+    <p class="section-sub fade-up">Every dish is crafted for nutrition without sacrificing the comfort of home-cooked Indian food.</p>
+  </div>
+  <div class="meals-grid">
+    <div class="meal-card fade-up">
+      <div class="meal-thumb thumb-1">
+        <div class="thumb-icon"><svg class="ic" style="width:30px;height:30px" viewBox="0 0 24 24"><use href="#ic-bowl"/></svg></div>
+        <span class="meal-tag">Breakfast</span>
+      </div>
+      <div class="meal-body">
+        <h4>Masala Oats Upma</h4>
+        <p class="cuisine">Maharashtra &middot; High Fibre</p>
+        <div class="macro-row">
+          <span><strong>310</strong>kcal</span>
+          <span><strong>14g</strong>Protein</span>
+          <span><strong>48g</strong>Carbs</span>
+          <span><strong>6g</strong>Fat</span>
+        </div>
+      </div>
+    </div>
+    <div class="meal-card fade-up d1">
+      <div class="meal-thumb thumb-2">
+        <div class="thumb-icon"><svg class="ic" style="width:30px;height:30px" viewBox="0 0 24 24"><use href="#ic-fork"/></svg></div>
+        <span class="meal-tag">Lunch</span>
+      </div>
+      <div class="meal-body">
+        <h4>Rajma Chawal Bowl</h4>
+        <p class="cuisine">Punjab &middot; High Protein</p>
+        <div class="macro-row">
+          <span><strong>520</strong>kcal</span>
+          <span><strong>22g</strong>Protein</span>
+          <span><strong>78g</strong>Carbs</span>
+          <span><strong>10g</strong>Fat</span>
+        </div>
+      </div>
+    </div>
+    <div class="meal-card fade-up d2">
+      <div class="meal-thumb thumb-3">
+        <div class="thumb-icon"><svg class="ic" style="width:30px;height:30px" viewBox="0 0 24 24"><use href="#ic-cup"/></svg></div>
+        <span class="meal-tag">Snack</span>
+      </div>
+      <div class="meal-body">
+        <h4>Roasted Chana &amp; Lemon</h4>
+        <p class="cuisine">All India &middot; Low Cal</p>
+        <div class="macro-row">
+          <span><strong>160</strong>kcal</span>
+          <span><strong>9g</strong>Protein</span>
+          <span><strong>26g</strong>Carbs</span>
+          <span><strong>3g</strong>Fat</span>
+        </div>
+      </div>
+    </div>
+    <div class="meal-card fade-up d3">
+      <div class="meal-thumb thumb-4">
+        <div class="thumb-icon"><svg class="ic" style="width:30px;height:30px" viewBox="0 0 24 24"><use href="#ic-pot"/></svg></div>
+        <span class="meal-tag">Dinner</span>
+      </div>
+      <div class="meal-body">
+        <h4>Moong Dal Soup + Roti</h4>
+        <p class="cuisine">Gujarat &middot; Light &amp; Sattvic</p>
+        <div class="macro-row">
+          <span><strong>380</strong>kcal</span>
+          <span><strong>18g</strong>Protein</span>
+          <span><strong>55g</strong>Carbs</span>
+          <span><strong>8g</strong>Fat</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRICING ═══════════════════════════════════════════════ -->
+<section class="pricing-bg" id="pricing">
+  <div class="section-head center">
+    <div class="section-label fade-up">Pricing</div>
+    <h2 class="section-title fade-up">Simple, transparent plans</h2>
+    <p class="section-sub fade-up">No lock-ins. Cancel anytime. All plans include a 7-day money-back guarantee.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card fade-up">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price"><sup>&#8377;</sup>199</div>
+      <div class="plan-cycle">per month &middot; billed monthly</div>
+      <ul class="plan-features">
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Daily WhatsApp meal plan</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> 1 cuisine preference</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Weekly plan refresh</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Basic macro tracking</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> 7-day guarantee</li>
+      </ul>
+      <a href="#" class="btn btn-outline" style="width:100%;justify-content:center;">Get Started</a>
+    </div>
+    <div class="price-card featured fade-up d1">
+      <div class="featured-badge">MOST POPULAR</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price"><sup>&#8377;</sup>399</div>
+      <div class="plan-cycle">per month &middot; billed monthly</div>
+      <ul class="plan-features">
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Everything in Starter</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> 3 cuisine preferences</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Daily adaptive feedback</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Detailed PDF with recipes</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Shopping list generation</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Seasonal adjustments</li>
+      </ul>
+      <a href="#" class="btn" style="width:100%;justify-content:center;">Start Pro Plan</a>
+    </div>
+    <div class="price-card fade-up d2">
+      <div class="plan-name">Family</div>
+      <div class="plan-price"><sup>&#8377;</sup>699</div>
+      <div class="plan-cycle">per month &middot; up to 6 members</div>
+      <ul class="plan-features">
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Everything in Pro</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> 6 individual profiles</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Family meal coordination</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Child-friendly options</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Diabetic &amp; senior modes</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24"><use href="#ic-check"/></svg> Consolidated grocery list</li>
+      </ul>
+      <a href="#" class="btn btn-outline" style="width:100%;justify-content:center;">Choose Family</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TESTIMONIALS ══════════════════════════════════════════ -->
+<section id="reviews">
+  <div class="section-head center">
+    <div class="section-label fade-up">Member Stories</div>
+    <h2 class="section-title fade-up">What our members say</h2>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testi-card fade-up">
+      <div class="stars-row">
+        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+      </div>
+      <p class="testi-text">&ldquo;Lost 7 kgs in 2 months eating food I actually love &mdash; rajma, poha, khichdi. Rozkaana doesn&rsquo;t feel like dieting at all. The WhatsApp delivery at 6 AM is genius.&rdquo;</p>
+      <div class="testi-author">
+        <div class="author-avatar av1">PS</div>
+        <div class="author-info">
+          <div class="name">Priya Sharma</div>
+          <div class="detail">Software Engineer &middot; Delhi &middot; Pro Plan</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card fade-up d1">
+      <div class="stars-row">
+        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+      </div>
+      <p class="testi-text">&ldquo;As a diabetic, I was skeptical. But the AI actually understands glycemic index and keeps my blood sugar stable. My doctor noticed the improvement in my last HbA1c test.&rdquo;</p>
+      <div class="testi-author">
+        <div class="author-avatar av2">RI</div>
+        <div class="author-info">
+          <div class="name">Ramesh Iyer</div>
+          <div class="detail">Retired Teacher &middot; Chennai &middot; Family Plan</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card fade-up d2">
+      <div class="stars-row">
+        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+      </div>
+      <p class="testi-text">&ldquo;The recipes are actually from my state &mdash; Odia dishes, Chenna poda, Dalma. No other app understands regional Indian food this well. Worth every rupee.&rdquo;</p>
+      <div class="testi-author">
+        <div class="author-avatar av3">AD</div>
+        <div class="author-info">
+          <div class="name">Ankit Das</div>
+          <div class="detail">College Student &middot; Bhubaneswar &middot; Starter</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FAQ ═══════════════════════════════════════════════════ -->
+<section class="faq-bg" id="faq">
+  <div class="section-head center">
+    <div class="section-label fade-up">FAQ</div>
+    <h2 class="section-title fade-up">Common questions</h2>
+  </div>
+  <div class="faq-list">
+    <div class="faq-item fade-up">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        How is my meal plan personalised?
+        <span class="faq-toggle"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-plus"/></svg></span>
+      </button>
+      <div class="faq-a">We collect your age, weight, height, health goals, food intolerances, regional preference, and eating habits through a WhatsApp onboarding flow. Our AI engine then builds a plan from 5,000+ recipes that matches your exact macronutrient targets and taste profile.</div>
+    </div>
+    <div class="faq-item fade-up d1">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Can I switch between Indian cuisines?
+        <span class="faq-toggle"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-plus"/></svg></span>
+      </button>
+      <div class="faq-a">Yes. We support 12 regional cuisines including North Indian, South Indian, Bengali, Gujarati, Maharashtrian, Punjabi, Rajasthani, Odia, Kashmiri, Goan, Kerala Sadhya, and Hyderabadi. Pro and Family plans allow multiple cuisine rotations within the same week.</div>
+    </div>
+    <div class="faq-item fade-up d2">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        What does the 7-day guarantee mean?
+        <span class="faq-toggle"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-plus"/></svg></span>
+      </button>
+      <div class="faq-a">If you are not satisfied with your meal plans within the first 7 days for any reason, we issue a full refund &mdash; no questions asked. Reply &ldquo;REFUND&rdquo; to our WhatsApp number and our team processes it within 24 hours.</div>
+    </div>
+    <div class="faq-item fade-up d3">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        How do I receive my meal plans?
+        <span class="faq-toggle"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-plus"/></svg></span>
+      </button>
+      <div class="faq-a">Every morning at 6 AM, you receive a formatted PDF on WhatsApp with your full day&rsquo;s meal plan &mdash; complete with recipes, portion sizes, macronutrient breakdown, and a smart shopping list for the week.</div>
+    </div>
+    <div class="faq-item fade-up">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Do you support non-vegetarian and vegan diets?
+        <span class="faq-toggle"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-plus"/></svg></span>
+      </button>
+      <div class="faq-a">Rozkaana supports vegetarian, non-vegetarian, vegan, Jain, and Sattvic eating modes. Each plan is built from the ground up around your dietary identity &mdash; not adapted from a generic template.</div>
+    </div>
+    <div class="faq-item fade-up d1">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Can I cancel or pause my subscription?
+        <span class="faq-toggle"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-plus"/></svg></span>
+      </button>
+      <div class="faq-a">Yes, anytime. No long-term contracts, no cancellation fees. Message &ldquo;PAUSE&rdquo; or &ldquo;CANCEL&rdquo; on WhatsApp and your subscription adjusts immediately. Paused subscriptions can be resumed within 90 days at the same rate.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ════════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <h3>Roz<span>kaana</span></h3>
+      <p>India&rsquo;s most personalised diet subscription service. Rooted in Indian food culture, powered by modern nutrition science. <br><a href="https://rozkaana.in" style="color:var(--saffron);text-decoration:none;">rozkaana.in</a></p>
+      <div class="social-links">
+        <a href="#" class="social-link" aria-label="Instagram">
+          <svg viewBox="0 0 24 24"><use href="#ic-instagram"/></svg>
+        </a>
+        <a href="#" class="social-link" aria-label="WhatsApp">
+          <svg viewBox="0 0 24 24"><use href="#ic-whatsapp"/></svg>
+        </a>
+        <a href="#" class="social-link" aria-label="Twitter">
+          <svg viewBox="0 0 24 24"><use href="#ic-twitter"/></svg>
+        </a>
+        <a href="#" class="social-link" aria-label="YouTube">
+          <svg viewBox="0 0 24 24"><use href="#ic-youtube"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="#">How It Works</a></li>
+        <li><a href="#">Meal Library</a></li>
+        <li><a href="#">Cuisines</a></li>
+        <li><a href="#">Pricing</a></li>
+        <li><a href="#">Refer a Friend</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Nutritionists</a></li>
+        <li><a href="#">Press</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal &amp; Support</h4>
+      <ul>
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">WhatsApp Us</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Refund Policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Rozkaana. Made in India.</span>
+    <span>FSSAI Reg. &middot; ISO 27001 Certified &middot; RBI Compliant Payments</span>
+  </div>
+</footer>
+
+<script>
+  // Nav scroll shadow
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 20));
+
+  // Fade-up on scroll
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // FAQ accordion
+  function toggleFaq(btn) {
+    const answer = btn.nextElementSibling;
+    const wasOpen = btn.classList.contains('open');
+    document.querySelectorAll('.faq-q.open').forEach(q => {
+      q.classList.remove('open');
+      q.nextElementSibling.classList.remove('open');
+    });
+    if (!wasOpen) { btn.classList.add('open'); answer.classList.add('open'); }
+  }
+
+  // Counter animation for stats
+  function animateCount(el, target, suffix) {
+    let v = 0;
+    const step = target / (1800 / 16);
+    const t = setInterval(() => {
+      v = Math.min(v + step, target);
+      el.textContent = (target >= 1000 ? Math.floor(v).toLocaleString('en-IN') : Math.floor(v)) + suffix;
+      if (v >= target) clearInterval(t);
+    }, 16);
+  }
+  const statsObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const nums = e.target.querySelectorAll('.num');
+        if (nums[0]) animateCount(nums[0], 5000, '+');
+        if (nums[1]) animateCount(nums[1], 12, '');
+        statsObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.5 });
+  const strip = document.querySelector('.stats-strip');
+  if (strip) statsObs.observe(strip);
+</script>
+</body>
+</html>
