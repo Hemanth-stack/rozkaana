@@ -120,7 +120,7 @@ def send_trial_expiry_warnings():
             async def _send(u=user, s=sub):
                 await wa_service.send_template(
                     u.wa_phone,
-                    "nutriseva_trial_expiry",
+                    "rozkaana_trial_expiry",
                     {"name": u.name or "there", "trial_end": str(s.trial_end)},
                 )
 

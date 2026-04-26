@@ -161,7 +161,7 @@ async def complete_onboarding(
     if current_user.wa_phone and current_user.wa_opted_in:
         await wa_service.send_template(
             current_user.wa_phone,
-            "nutriseva_trial_start",
+            "rozkaana_trial_start",
             {"name": current_user.name, "trial_end": str(sub.trial_end)},
         )
 

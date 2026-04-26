@@ -18,7 +18,7 @@ class WhatsAppService:
 
     async def send_meal_plan(self, phone: str, name: str, pdf_url: str, menu_date: date) -> bool:
         payload = {
-            "template_name": "nutriseva_daily_plan",
+            "template_name": "rozkaana_daily_plan",
             "broadcast_name": f"daily_plan_{menu_date}",
             "receivers": [
                 {
@@ -61,7 +61,7 @@ class WhatsAppService:
 
     async def opt_in_contact(self, phone: str, name: str) -> bool:
         payload = {
-            "name": name or "NutriSeva User",
+            "name": name or "Rozkaana User",
             "phoneNumber": phone.lstrip("+"),
         }
         return await self._post("/api/v1/addContact", payload)

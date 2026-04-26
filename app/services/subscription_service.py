@@ -63,7 +63,7 @@ async def upgrade_plan(user_id: UUID, plan_type: str, db: AsyncSession) -> dict:
     try:
         if not sub or not sub.rzp_customer_id:
             customer = _rzp_client.customer.create({
-                "name": user.name or "NutriSeva User",
+                "name": user.name or "Rozkaana User",
                 "contact": user.phone.lstrip("+"),
             })
             rzp_customer_id = customer["id"]

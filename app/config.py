@@ -3,8 +3,8 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "postgresql+asyncpg://nutriseva:password@localhost:5432/nutriseva"
-    DATABASE_URL_SYNC: str = "postgresql+psycopg2://nutriseva:password@localhost:5432/nutriseva"
+    DATABASE_URL: str = "postgresql+asyncpg://rozkaana:password@localhost:5432/rozkaana"
+    DATABASE_URL_SYNC: str = "postgresql+psycopg2://rozkaana:password@localhost:5432/rozkaana"
     REDIS_URL: str = "redis://localhost:6379/0"
     CELERY_BROKER_URL: str = "redis://localhost:6379/1"
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/2"
@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     MINIO_ENDPOINT: str = "localhost:9000"
     MINIO_ACCESS_KEY: str = "minioadmin"
     MINIO_SECRET_KEY: str = "minioadmin123"
-    MINIO_BUCKET_NAME: str = "nutriseva-pdfs"
+    MINIO_BUCKET_NAME: str = "rozkaana-pdfs"
     MINIO_SECURE: bool = False
     WATI_API_BASE_URL: str = "https://live-mt-server.wati.io/000000"
     WATI_ACCESS_TOKEN: str = "Bearer token"

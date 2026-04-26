@@ -405,5 +405,5 @@ async def get_logs(
     return {
         "logs": [],
         "total": 0,
-        "message": "Structured logging via systemd journal. Use: journalctl -u nutriseva-api --since today",
+        "message": "Structured logging via systemd journal. Use: journalctl -u rozkaana-api --since today",
     }

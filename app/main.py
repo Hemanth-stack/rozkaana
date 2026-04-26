@@ -17,7 +17,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="NutriSeva API",
+    title="Rozkaana API",
     version="1.0.0",
     lifespan=lifespan,
     docs_url="/api/docs",
@@ -43,4 +43,4 @@ app.include_router(admin.router, prefix="/api/v1")
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok", "service": "nutriseva-api"}
+    return {"status": "ok", "service": "rozkaana-api"}
