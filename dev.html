@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rozkaana Dev Console</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0F0F0D; --surface: #161613; --surface2: #1E1E1A; --surface3: #252520;
+  --border: #2A2A26; --saffron: #E8593C; --green: #1DB884; --amber: #D4960A;
+  --red: #EF4444; --blue: #3B82F6; --text: #E8E5DF; --muted: #8A8578; --dim: #4A4540;
+  --font: 'DM Sans',sans-serif; --mono: 'DM Mono',monospace;
+}
+html, body { height:100%; overflow:hidden; background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; }
+
+/* ── LAYOUT ── */
+.shell { display:grid; grid-template-columns:300px 1fr 320px; height:100vh; }
+
+/* ── LEFT PANEL ── */
+.left { background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
+.panel-head { padding:14px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+.panel-head h3 { font-size:.85rem; font-weight:700; color:var(--text); }
+.panel-head .dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:blink 2s infinite; flex-shrink:0; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+.login-form { padding:16px; border-bottom:1px solid var(--border); }
+.inp { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-family:var(--font); font-size:.83rem; outline:none; }
+.inp:focus { border-color:var(--saffron); }
+.btn { padding:8px 14px; background:var(--saffron); color:#fff; border:none; border-radius:8px; font-family:var(--font); font-size:.82rem; font-weight:700; cursor:pointer; transition:.15s; }
+.btn:hover { background:#C9421F; }
+.btn:disabled { opacity:.4; cursor:not-allowed; }
+.btn-sm { padding:5px 10px; font-size:.75rem; border-radius:6px; }
+.btn-ghost { background:var(--surface2); color:var(--muted); border:1px solid var(--border); }
+.btn-ghost:hover { background:var(--surface3); color:var(--text); }
+.user-info { padding:12px 16px; border-bottom:1px solid var(--border); }
+.user-chip { display:flex; align-items:center; gap:10px; padding:10px; background:var(--surface2); border-radius:10px; margin-bottom:10px; }
+.av { width:34px; height:34px; border-radius:50%; background:var(--saffron); display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:700; flex-shrink:0; }
+.user-name { font-size:.85rem; font-weight:600; }
+.user-phone { font-size:.72rem; color:var(--muted); font-family:var(--mono); }
+.tag-row { display:flex; flex-wrap:wrap; gap:4px; }
+.tag { background:var(--surface3); border:1px solid var(--border); border-radius:4px; padding:2px 7px; font-size:.68rem; color:var(--muted); font-family:var(--mono); }
+.tag.green { background:rgba(29,184,132,.1); border-color:rgba(29,184,132,.3); color:var(--green); }
+.tag.amber { background:rgba(212,150,10,.1); border-color:rgba(212,150,10,.3); color:var(--amber); }
+.tag.saffron { background:rgba(232,89,60,.1); border-color:rgba(232,89,60,.3); color:var(--saffron); }
+.onboard-form { padding:12px 16px; overflow-y:auto; flex:1; }
+.form-group { margin-bottom:10px; }
+.form-label { display:block; font-size:.7rem; font-weight:600; color:var(--muted); margin-bottom:4px; letter-spacing:.05em; text-transform:uppercase; }
+.form-select { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:7px; padding:7px 10px; color:var(--text); font-family:var(--font); font-size:.82rem; outline:none; }
+.form-select:focus { border-color:var(--saffron); }
+.inline-row { display:flex; gap:6px; }
+.inline-row .inp, .inline-row .form-select { flex:1; }
+
+/* ── CHAT PANEL ── */
+.chat { display:flex; flex-direction:column; height:100vh; }
+.chat-head { padding:12px 20px; border-bottom:1px solid var(--border); background:var(--surface); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.chat-head-left h2 { font-size:.95rem; font-weight:700; }
+.chat-head-left p { font-size:.72rem; color:var(--muted); }
+.chat-actions { display:flex; gap:6px; }
+.messages { flex:1; overflow-y:auto; padding:16px 20px; display:flex; flex-direction:column; gap:10px; }
+.msg { max-width:78%; display:flex; flex-direction:column; gap:3px; }
+.msg.bot { align-self:flex-start; }
+.msg.user { align-self:flex-end; }
+.msg-bubble {
+  padding:10px 14px; border-radius:14px; font-size:.87rem; line-height:1.55;
+  white-space:pre-wrap; word-break:break-word;
+}
+.msg.bot .msg-bubble { background:var(--surface2); border:1px solid var(--border); border-bottom-left-radius:4px; }
+.msg.user .msg-bubble { background:var(--saffron); color:#fff; border-bottom-right-radius:4px; }
+.msg-time { font-size:.66rem; color:var(--dim); font-family:var(--mono); padding:0 2px; }
+.msg.user .msg-time { text-align:right; }
+.msg-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; max-width:320px; margin-top:4px; }
+.card-head { background:var(--saffron); padding:10px 14px; }
+.card-head h4 { font-size:.88rem; font-weight:700; color:#fff; margin-bottom:2px; }
+.card-head p { font-size:.72rem; color:rgba(255,255,255,.75); }
+.card-macros { display:grid; grid-template-columns:repeat(4,1fr); padding:8px; gap:4px; border-bottom:1px solid var(--border); }
+.macro-cell { text-align:center; background:var(--surface2); border-radius:6px; padding:5px 2px; }
+.macro-cell .v { font-size:.82rem; font-weight:700; color:var(--text); font-family:var(--mono); }
+.macro-cell .l { font-size:.62rem; color:var(--muted); }
+.card-slots { padding:8px 10px; display:flex; flex-direction:column; gap:5px; }
+.slot-row { display:flex; align-items:center; gap:8px; padding:5px 6px; border-radius:7px; background:var(--surface2); }
+.slot-icon { font-size:.9rem; flex-shrink:0; }
+.slot-info { flex:1; }
+.slot-name { font-size:.79rem; font-weight:600; color:var(--text); }
+.slot-time { font-size:.68rem; color:var(--muted); }
+.slot-kcal { font-size:.75rem; font-weight:700; color:var(--saffron); font-family:var(--mono); }
+.card-footer { padding:8px 10px; border-top:1px solid var(--border); display:flex; gap:6px; }
+.pdf-btn { flex:1; padding:7px; background:var(--saffron); color:#fff; border:none; border-radius:7px; font-size:.78rem; font-weight:700; cursor:pointer; }
+.pdf-btn:hover { background:#C9421F; }
+.regen-btn { padding:7px 10px; background:var(--surface2); border:1px solid var(--border); color:var(--muted); border-radius:7px; font-size:.78rem; cursor:pointer; }
+.regen-btn:hover { background:var(--surface3); color:var(--text); }
+
+/* PDF Viewer Overlay */
+.pdf-overlay {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,.82);
+  z-index:999; align-items:center; justify-content:center;
+}
+.pdf-overlay.open { display:flex; }
+.pdf-modal {
+  width:820px; max-width:96vw; height:90vh;
+  background:var(--surface); border-radius:16px;
+  border:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden;
+}
+.pdf-modal-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 18px; border-bottom:1px solid var(--border); flex-shrink:0;
+}
+.pdf-modal-head h3 { font-size:.9rem; font-weight:700; }
+.pdf-modal-head p { font-size:.72rem; color:var(--muted); }
+.pdf-modal-actions { display:flex; gap:8px; align-items:center; }
+.pdf-frame { flex:1; border:none; background:#fff; }
+.typing { display:flex; align-items:center; gap:4px; padding:10px 14px; background:var(--surface2); border-radius:14px; border:1px solid var(--border); width:fit-content; }
+.typing span { width:6px; height:6px; border-radius:50%; background:var(--muted); animation:bounce .9s infinite; }
+.typing span:nth-child(2) { animation-delay:.15s; }
+.typing span:nth-child(3) { animation-delay:.3s; }
+@keyframes bounce { 0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)} }
+.input-bar { padding:12px 20px; border-top:1px solid var(--border); background:var(--surface); display:flex; gap:8px; flex-shrink:0; }
+.cmd-input { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:9px 14px; color:var(--text); font-family:var(--font); font-size:.87rem; outline:none; }
+.cmd-input:focus { border-color:var(--saffron); }
+.quick-cmds { display:flex; gap:5px; padding:0 20px 10px; flex-shrink:0; overflow-x:auto; }
+.qcmd { background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:4px 12px; font-size:.74rem; color:var(--muted); cursor:pointer; white-space:nowrap; transition:.15s; }
+.qcmd:hover { background:var(--saffron); border-color:var(--saffron); color:#fff; }
+
+/* ── RIGHT PANEL ── */
+.right { background:var(--surface); border-left:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
+.right .panel-head { justify-content:space-between; }
+.log-area { flex:1; overflow-y:auto; padding:10px; font-family:var(--mono); font-size:.72rem; line-height:1.7; }
+.log-line { display:flex; gap:8px; padding:1px 4px; border-radius:3px; }
+.log-line:hover { background:rgba(255,255,255,.03); }
+.lt { color:var(--dim); flex-shrink:0; min-width:56px; }
+.lok { color:var(--green); }
+.linfo { color:var(--blue); }
+.lwarn { color:var(--amber); }
+.lerr { color:var(--red); }
+.lmsg { color:var(--muted); word-break:break-all; }
+.lmsg em { color:var(--text); font-style:normal; }
+.stat-grid { padding:10px; display:flex; flex-direction:column; gap:6px; border-top:1px solid var(--border); }
+.stat-row { display:flex; justify-content:space-between; font-size:.76rem; padding:4px 6px; }
+.stat-label { color:var(--muted); }
+.stat-val { font-family:var(--mono); color:var(--text); font-weight:600; }
+.stat-val.ok { color:var(--green); }
+.stat-val.warn { color:var(--amber); }
+.stat-val.err { color:var(--red); }
+
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ════ LEFT: USER PANEL ════ -->
+<aside class="left">
+  <div class="panel-head">
+    <span class="dot"></span>
+    <h3>Dev Console</h3>
+    <span style="margin-left:auto;font-size:.68rem;color:var(--muted);font-family:var(--mono)">rozkaana</span>
+  </div>
+
+  <div class="login-form" id="loginForm">
+    <div class="form-group">
+      <label class="form-label">Phone (or name)</label>
+      <input class="inp" id="loginPhone" placeholder="+91XXXXXXXXXX" value="+91">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Display Name</label>
+      <input class="inp" id="loginName" placeholder="Hemanth">
+    </div>
+    <button class="btn" style="width:100%;margin-top:4px" onclick="devLogin()">Sign In (No OTP)</button>
+  </div>
+
+  <div id="userPanel" style="display:none;flex:1;display:none;flex-direction:column;overflow:hidden">
+    <div class="user-info">
+      <div class="user-chip">
+        <div class="av" id="userAv">H</div>
+        <div>
+          <div class="user-name" id="userName">—</div>
+          <div class="user-phone" id="userPhone">—</div>
+        </div>
+        <button class="btn btn-sm btn-ghost" style="margin-left:auto" onclick="logout()">⏻</button>
+      </div>
+      <div class="tag-row" id="userTags"></div>
+    </div>
+
+    <div class="onboard-form" id="onboardForm">
+      <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Profile Setup</div>
+
+      <div class="form-group">
+        <label class="form-label">Age</label>
+        <input class="inp" id="age" type="number" placeholder="25" min="10" max="80">
+      </div>
+      <div class="inline-row">
+        <div class="form-group" style="flex:1">
+          <label class="form-label">Weight (kg)</label>
+          <input class="inp" id="weight" type="number" placeholder="70">
+        </div>
+        <div class="form-group" style="flex:1">
+          <label class="form-label">Height (cm)</label>
+          <input class="inp" id="height" type="number" placeholder="170">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Gender</label>
+        <select class="form-select" id="gender">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Goal</label>
+        <select class="form-select" id="goal">
+          <option value="maintenance">Maintenance</option>
+          <option value="weight_loss">Weight Loss</option>
+          <option value="muscle_gain">Muscle Gain</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Eating Mode</label>
+        <select class="form-select" id="eatingMode">
+          <option value="pure_veg">Pure Veg</option>
+          <option value="conditional_nv">Conditional NV</option>
+          <option value="full_nv">Non-Veg</option>
+          <option value="jain">Jain</option>
+          <option value="sattvic">Sattvic</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cuisine Preferences</label>
+        <select class="form-select" id="cuisine">
+          <option value="north_indian">North Indian</option>
+          <option value="south_indian">South Indian</option>
+          <option value="bengali">Bengali</option>
+          <option value="gujarati">Gujarati</option>
+          <option value="hyderabadi">Hyderabadi</option>
+          <option value="maharashtrian">Maharashtrian</option>
+          <option value="kerala">Kerala</option>
+          <option value="punjabi">Punjabi</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Health Tags</label>
+        <select class="form-select" id="healthTags">
+          <option value="">None</option>
+          <option value="diabetes_t2">Diabetes T2</option>
+          <option value="hypertension">Hypertension</option>
+          <option value="pcos">PCOS</option>
+        </select>
+      </div>
+      <button class="btn" style="width:100%;margin-top:6px" onclick="saveProfile()">Save Profile & Start</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ════ CENTER: CHAT ════ -->
+<main class="chat">
+  <div class="chat-head">
+    <div class="chat-head-left">
+      <h2>🍱 Rozkaana Dev Chat</h2>
+      <p id="chatSub">Sign in to start testing</p>
+    </div>
+    <div class="chat-actions">
+      <button class="btn btn-sm btn-ghost" onclick="clearChat()">Clear</button>
+      <button class="btn btn-sm" onclick="generateMenu()" id="genMenuBtn" disabled>Generate Menu</button>
+    </div>
+  </div>
+
+  <div class="messages" id="messages">
+    <div class="msg bot">
+      <div class="msg-bubble">👋 Welcome to the <strong>Rozkaana Dev Console</strong>
+
+Sign in on the left panel to start testing the full user flow:
+
+• Set your profile (age, weight, eating mode)
+• Generate today's meal plan
+• View & download the PDF
+• Test commands: <code>regenerate</code>, <code>today south indian</code>, etc.
+
+No WhatsApp needed — everything runs in this window.</div>
+      <div class="msg-time" id="initTime"></div>
+    </div>
+  </div>
+
+  <div class="quick-cmds" id="quickCmds" style="display:none">
+    <span class="qcmd" onclick="sendCmd('regenerate')">↻ regenerate</span>
+    <span class="qcmd" onclick="sendCmd('today south indian')">🍚 south indian</span>
+    <span class="qcmd" onclick="sendCmd('today north indian')">🫓 north indian</span>
+    <span class="qcmd" onclick="sendCmd('today gujarati')">🥘 gujarati</span>
+    <span class="qcmd" onclick="sendCmd('skip lunch')">⏭ skip lunch</span>
+    <span class="qcmd" onclick="sendCmd('help')">❓ help</span>
+    <span class="qcmd" onclick="generateMenu()">🆕 new menu</span>
+    <span class="qcmd" onclick="showSubscription()">💳 subscription</span>
+  </div>
+
+  <div class="input-bar">
+    <input class="cmd-input" id="cmdInput" placeholder="Type a command or message…" disabled
+      onkeydown="if(event.key==='Enter')sendMessage()">
+    <button class="btn" onclick="sendMessage()" id="sendBtn" disabled>Send</button>
+  </div>
+</main>
+
+<!-- ════ RIGHT: LOG PANEL ════ -->
+<aside class="right">
+  <div class="panel-head">
+    <h3>System Log</h3>
+    <button class="btn btn-sm btn-ghost" onclick="clearLog()">Clear</button>
+  </div>
+  <div class="log-area" id="logArea"></div>
+  <div class="stat-grid" id="statGrid">
+    <div style="font-size:.68rem;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;padding:0 6px 4px">Live Stats</div>
+    <div class="stat-row"><span class="stat-label">API</span><span class="stat-val ok" id="sAPI">—</span></div>
+    <div class="stat-row"><span class="stat-label">User</span><span class="stat-val" id="sUser">—</span></div>
+    <div class="stat-row"><span class="stat-label">Subscription</span><span class="stat-val" id="sSub">—</span></div>
+    <div class="stat-row"><span class="stat-label">Menu Date</span><span class="stat-val" id="sMenu">—</span></div>
+    <div class="stat-row"><span class="stat-label">PDF</span><span class="stat-val" id="sPDF">—</span></div>
+    <div class="stat-row"><span class="stat-label">Total Recipes</span><span class="stat-val" id="sRecipes">—</span></div>
+  </div>
+</aside>
+
+</div>
+
+<!-- ════ PDF VIEWER OVERLAY ════ -->
+<div class="pdf-overlay" id="pdfOverlay" onclick="if(event.target===this)closePDF()">
+  <div class="pdf-modal">
+    <div class="pdf-modal-head">
+      <div>
+        <h3>📄 Meal Plan PDF</h3>
+        <p id="pdfModalSub">Today's personalised plan</p>
+      </div>
+      <div class="pdf-modal-actions">
+        <a id="pdfDownloadLink" href="#" download="rozkaana-meal-plan.pdf"
+          class="btn btn-sm btn-ghost" style="text-decoration:none">⬇ Download</a>
+        <button class="btn btn-sm btn-ghost" onclick="closePDF()">✕ Close</button>
+      </div>
+    </div>
+    <iframe class="pdf-frame" id="pdfFrame" src=""></iframe>
+  </div>
+</div>
+
+<script>
+const API = 'https://api.rozkaana.in/api/v1';
+let token = localStorage.getItem('rzk_dev_token') || '';
+let currentUser = JSON.parse(localStorage.getItem('rzk_dev_user') || 'null');
+let currentMenu = null;
+
+// ── INIT ────────────────────────────────────────────────────────────────────
+document.getElementById('initTime').textContent = now();
+checkAPI();
+if (token && currentUser) restoreSession();
+
+async function checkAPI() {
+  try {
+    const r = await fetch('https://api.rozkaana.in/health');
+    const d = await r.json();
+    document.getElementById('sAPI').textContent = d.status === 'ok' ? 'Online ✓' : 'Error';
+    document.getElementById('sAPI').className = 'stat-val ' + (d.status === 'ok' ? 'ok' : 'err');
+    log('ok', 'api', 'Connected to api.rozkaana.in');
+  } catch(e) {
+    document.getElementById('sAPI').textContent = 'Offline ✗';
+    document.getElementById('sAPI').className = 'stat-val err';
+    log('err', 'api', 'Cannot reach api.rozkaana.in — is it running?');
+  }
+}
+
+// ── AUTH ────────────────────────────────────────────────────────────────────
+async function devLogin() {
+  const phone = document.getElementById('loginPhone').value.trim();
+  const name  = document.getElementById('loginName').value.trim() || 'Dev User';
+  if (!phone.match(/^\+91[6-9]\d{9}$/)) {
+    botMsg('❌ Phone must be +91 followed by 10 digits (e.g. +919876543210)'); return;
+  }
+  log('info', 'auth', `Dev login: ${phone}`);
+  showTyping();
+  try {
+    const r = await fetch(`${API}/auth/dev-login`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({phone, name})
+    });
+    const d = await r.json();
+    if (!r.ok) { botMsg(`❌ ${d.detail}`); log('err','auth',d.detail); hideTyping(); return; }
+    token = d.access_token;
+    localStorage.setItem('rzk_dev_token', token);
+    await loadUserProfile();
+    hideTyping();
+  } catch(e) { botMsg('❌ Network error'); log('err','auth',e.message); hideTyping(); }
+}
+
+function logout() {
+  token = ''; currentUser = null; currentMenu = null;
+  localStorage.removeItem('rzk_dev_token');
+  localStorage.removeItem('rzk_dev_user');
+  document.getElementById('loginForm').style.display = 'block';
+  document.getElementById('userPanel').style.display = 'none';
+  document.getElementById('genMenuBtn').disabled = true;
+  document.getElementById('cmdInput').disabled = true;
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('quickCmds').style.display = 'none';
+  document.getElementById('chatSub').textContent = 'Sign in to start testing';
+  updateStats();
+  log('info','auth','Logged out');
+}
+
+async function restoreSession() {
+  try {
+    const r = await apiFetch('/users/me');
+    if (r.ok) {
+      currentUser = await r.json();
+      showUserPanel();
+      const menu = await loadTodayMenu();
+      // Auto-open PDF viewer if menu has a PDF ready
+      if (menu?.pdf_url) {
+        const publicUrl = `https://api.rozkaana.in/files/${menu.id
+          ? 'pdfs/' + menu.menu_date + '/' + currentUser.id + '.pdf'
+          : ''}`;
+        setTimeout(() => openPDF(publicUrl), 600);
+      }
+    } else { token = ''; localStorage.removeItem('rzk_dev_token'); }
+  } catch(e) {}
+}
+
+// ── PROFILE ─────────────────────────────────────────────────────────────────
+async function loadUserProfile() {
+  const r = await apiFetch('/users/me');
+  currentUser = await r.json();
+  localStorage.setItem('rzk_dev_user', JSON.stringify(currentUser));
+  showUserPanel();
+
+  if (currentUser.onboarding_complete) {
+    botMsg(`✅ Welcome back, <strong>${currentUser.name || 'there'}</strong>!\n\nLoaded your profile. Checking today's menu…`);
+    await loadTodayMenu();
+  } else {
+    botMsg(`👋 Hi <strong>${currentUser.name || 'there'}</strong>! Let's set up your profile.\n\nFill in the details on the left panel and click <strong>Save Profile & Start</strong>.`);
+  }
+  log('ok','user',`Loaded: ${currentUser.name} (${currentUser.phone})`);
+}
+
+function showUserPanel() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('userPanel').style.display = 'flex';
+  document.getElementById('userPanel').style.flexDirection = 'column';
+  document.getElementById('genMenuBtn').disabled = false;
+  document.getElementById('cmdInput').disabled = false;
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('quickCmds').style.display = 'flex';
+  document.getElementById('chatSub').textContent = `Testing as ${currentUser?.phone || '—'}`;
+  document.getElementById('userName').textContent = currentUser?.name || 'Unknown';
+  document.getElementById('userPhone').textContent = currentUser?.phone || '—';
+  document.getElementById('userAv').textContent = (currentUser?.name || 'U')[0].toUpperCase();
+  renderUserTags();
+  updateStats();
+
+  // Pre-fill form
+  if (currentUser?.age) document.getElementById('age').value = currentUser.age;
+  if (currentUser?.weight_kg) document.getElementById('weight').value = currentUser.weight_kg;
+  if (currentUser?.height_cm) document.getElementById('height').value = currentUser.height_cm;
+  if (currentUser?.gender) document.getElementById('gender').value = currentUser.gender;
+  if (currentUser?.goal) document.getElementById('goal').value = currentUser.goal;
+  if (currentUser?.eating_mode) document.getElementById('eatingMode').value = currentUser.eating_mode;
+  if (currentUser?.cuisine_prefs?.[0]) document.getElementById('cuisine').value = currentUser.cuisine_prefs[0];
+}
+
+function renderUserTags() {
+  const tags = [];
+  if (currentUser?.bmi_band) tags.push({t:currentUser.bmi_band,c:currentUser.bmi_band==='normal'?'green':'amber'});
+  if (currentUser?.eating_mode) tags.push({t:currentUser.eating_mode,c:'saffron'});
+  if (currentUser?.goal) tags.push({t:currentUser.goal.replace('_',' '),c:'green'});
+  if (currentUser?.daily_calorie_target) tags.push({t:currentUser.daily_calorie_target+'kcal',c:''});
+  document.getElementById('userTags').innerHTML = tags.map(t=>`<span class="tag ${t.c}">${t.t}</span>`).join('');
+}
+
+async function saveProfile() {
+  const age = +document.getElementById('age').value;
+  const weight = +document.getElementById('weight').value;
+  const height = +document.getElementById('height').value;
+  const gender = document.getElementById('gender').value;
+  const goal = document.getElementById('goal').value;
+  const mode = document.getElementById('eatingMode').value;
+  const cuisine = document.getElementById('cuisine').value;
+  const health = document.getElementById('healthTags').value;
+
+  if (!age||!weight||!height) { botMsg('❌ Fill in age, weight, and height first.'); return; }
+
+  showTyping();
+  log('info','profile','Saving profile...');
+  try {
+    await apiFetch('/users/me/basic',{method:'PUT',body:JSON.stringify({name:currentUser?.name||'Dev User',age,weight_kg:weight,height_cm:height,gender})});
+    await apiFetch('/users/me/eating',{method:'PUT',body:JSON.stringify({eating_mode:mode,nv_days:[],cuisine_prefs:[cuisine]})});
+    await apiFetch('/users/me/health',{method:'PUT',body:JSON.stringify({health_tags:health?[health]:[],allergy_tags:[]})});
+    await apiFetch('/users/me/goal',{method:'PUT',body:JSON.stringify({goal})});
+
+    // Always call onboarding-complete to ensure trial is created
+    const onboardRes = await apiFetch('/users/me/onboarding-complete',{method:'POST'});
+    if (onboardRes.ok) log('ok','profile','Onboarding complete — trial started');
+
+    const r = await apiFetch('/users/me');
+    currentUser = await r.json();
+    localStorage.setItem('rzk_dev_user', JSON.stringify(currentUser));
+    showUserPanel();
+
+    const subRes = await apiFetch('/subscription/');
+    const sub = subRes.ok ? await subRes.json() : {trial_start:'—',trial_end:'—'};
+    hideTyping();
+    botMsg(`✅ Profile saved!\n\n📊 BMI: ${currentUser.bmi} (${currentUser.bmi_band})\n🎯 Goal: ${goal.replace('_',' ')}\n🥗 Eating: ${mode}\n🍛 Cuisine: ${cuisine}\n🔥 Target: ${currentUser.daily_calorie_target} kcal/day\n\n📅 Trial: ${sub.trial_start} → ${sub.trial_end}\n\nNow generating today's menu…`);
+    log('ok','profile',`BMI ${currentUser.bmi} | ${currentUser.daily_calorie_target}kcal`);
+    await generateMenu();
+  } catch(e) { hideTyping(); botMsg('❌ Error: ' + e.message); log('err','profile',e.message); }
+}
+
+// ── MENU ─────────────────────────────────────────────────────────────────────
+async function generateMenu() {
+  if (!token) return;
+  showTyping();
+  log('info','menu','Generating menu...');
+  document.getElementById('genMenuBtn').disabled = true;
+
+  try {
+    const adminToken = await getAdminToken();
+    const userId = currentUser.id;
+    const triggerRes = await fetch(`${API}/admin/trigger/menu/${userId}`, {
+      method:'POST', headers:{'Authorization':`Bearer ${adminToken}`}
+    });
+    const trigger = await triggerRes.json();
+    const taskId = trigger.task_id;
+    log('info','menu',`Task ${taskId.slice(0,12)}…`);
+
+    // Poll for completion
+    for (let i = 0; i < 30; i++) {
+      await sleep(2000);
+      const sr = await fetch(`${API}/admin/status/task/${taskId}`, {
+        headers:{'Authorization':`Bearer ${adminToken}`}
+      });
+      const s = await sr.json();
+      if (s.status === 'SUCCESS') { log('ok','menu','Generated'); break; }
+      if (s.status === 'FAILURE') { log('err','menu','Failed: '+s.result); break; }
+    }
+
+    // Build PDF
+    const menuData = await loadTodayMenu();
+    if (menuData?.id) {
+      log('info','pdf','Building PDF...');
+      const pdfTrigger = await fetch(`${API}/admin/trigger/pdf/${menuData.id}`, {
+        method:'POST', headers:{'Authorization':`Bearer ${adminToken}`}
+      });
+      const pdfTask = await pdfTrigger.json();
+      for (let i = 0; i < 15; i++) {
+        await sleep(2000);
+        const sr = await fetch(`${API}/admin/status/task/${pdfTask.task_id}`, {
+          headers:{'Authorization':`Bearer ${adminToken}`}
+        });
+        const s = await sr.json();
+        if (s.status === 'SUCCESS' || s.status === 'FAILURE') {
+          log(s.status==='SUCCESS'?'ok':'err','pdf',s.status);
+          break;
+        }
+      }
+      await loadTodayMenu(); // refresh with PDF URL
+    }
+  } catch(e) { log('err','menu',e.message); }
+  document.getElementById('genMenuBtn').disabled = false;
+  hideTyping();
+}
+
+async function loadTodayMenu() {
+  try {
+    const r = await apiFetch('/menu/today');
+    if (r.status === 404) {
+      botMsg('📭 No menu for today yet. Click <strong>Generate Menu</strong> to create one.');
+      updateStats();
+      return null;
+    }
+    if (r.status === 402) {
+      // No active subscription — auto-fix by calling onboarding
+      log('warn','menu','402: No subscription. Auto-creating trial...');
+      await apiFetch('/users/me/onboarding-complete', {method:'POST'});
+      log('ok','menu','Trial created — retrying menu fetch');
+      const r2 = await apiFetch('/menu/today');
+      if (!r2.ok) {
+        botMsg('📭 No menu yet. Click <strong>Generate Menu</strong> to start.');
+        return null;
+      }
+      const menu2 = await r2.json();
+      currentMenu = menu2; showMenuCard(menu2); updateStats(); return menu2;
+    }
+    if (!r.ok) { log('err','menu',`HTTP ${r.status}`); return null; }
+    const menu = await r.json();
+    currentMenu = menu;
+    showMenuCard(menu);
+    updateStats();
+    return menu;
+  } catch(e) { log('err','menu',e.message); return null; }
+}
+
+function showMenuCard(menu) {
+  const slots = [
+    {key:'breakfast',    icon:'☀️', time:'8:00 AM'},
+    {key:'morning_snack',icon:'🍵', time:'10:30 AM'},
+    {key:'lunch',        icon:'🍛', time:'1:00 PM'},
+    {key:'evening_snack',icon:'🫐', time:'4:30 PM'},
+    {key:'dinner',       icon:'🌙', time:'8:00 PM'},
+  ];
+  const filledSlots = slots.filter(s => menu[s.key]);
+  const dateStr = new Date(menu.menu_date + 'T12:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
+
+  const slotsHTML = filledSlots.map(s => `
+    <div class="slot-row">
+      <span class="slot-icon">${s.icon}</span>
+      <div class="slot-info">
+        <div class="slot-name">${menu[s.key].name}</div>
+        <div class="slot-time">${s.time}</div>
+      </div>
+      <span class="slot-kcal">${menu[s.key].calories}kcal</span>
+    </div>`).join('');
+
+  const pdfSection = menu.pdf_url
+    ? `<div class="card-footer">
+        <button class="pdf-btn" onclick="downloadPDF('${menu.pdf_url}')">📄 Download PDF</button>
+        <button class="regen-btn" onclick="generateMenu()">↻</button>
+      </div>`
+    : `<div class="card-footer">
+        <button class="pdf-btn" onclick="buildPDF()">🔨 Build PDF</button>
+        <button class="regen-btn" onclick="generateMenu()">↻</button>
+      </div>`;
+
+  const html = `<div class="msg bot">
+    <div class="msg-card">
+      <div class="card-head">
+        <h4>Today's Meal Plan</h4>
+        <p>${dateStr}</p>
+      </div>
+      <div class="card-macros">
+        <div class="macro-cell"><div class="v">${menu.total_calories||0}</div><div class="l">kcal</div></div>
+        <div class="macro-cell"><div class="v">${menu.total_protein_g||0}g</div><div class="l">protein</div></div>
+        <div class="macro-cell"><div class="v">${menu.total_carbs_g||0}g</div><div class="l">carbs</div></div>
+        <div class="macro-cell"><div class="v">${menu.total_fat_g||0}g</div><div class="l">fat</div></div>
+      </div>
+      <div class="card-slots">${slotsHTML}</div>
+      ${pdfSection}
+    </div>
+    <div class="msg-time">${now()}</div>
+  </div>`;
+
+  appendHTML(html);
+  log('ok','menu',`${filledSlots.length}/5 slots | ${menu.total_calories}kcal | PDF:${menu.pdf_url?'✓':'✗'}`);
+  document.getElementById('sMenu').textContent = menu.menu_date;
+  document.getElementById('sPDF').textContent = menu.pdf_url ? 'Ready ✓' : 'Not built';
+  document.getElementById('sPDF').className = 'stat-val ' + (menu.pdf_url ? 'ok' : 'warn');
+}
+
+function downloadPDF(url) {
+  log('info','pdf','Opening PDF viewer...');
+  // Use public /files/ URL (MinIO presigned URLs are localhost-only)
+  const publicUrl = url.includes('localhost:9000') || url.includes('minio')
+    ? `https://api.rozkaana.in/files/${currentMenu?.id ? 'pdfs/' + currentMenu.menu_date + '/' + (currentUser?.id || '') + '.pdf' : ''}`
+    : url;
+  openPDF(publicUrl);
+}
+
+function openPDF(url) {
+  const overlay = document.getElementById('pdfOverlay');
+  const frame   = document.getElementById('pdfFrame');
+  const dl      = document.getElementById('pdfDownloadLink');
+  const sub     = document.getElementById('pdfModalSub');
+  const dateStr = currentMenu?.menu_date
+    ? new Date(currentMenu.menu_date + 'T12:00:00').toLocaleDateString('en-IN', {weekday:'long',day:'numeric',month:'long',year:'numeric'})
+    : 'Today';
+  sub.textContent = dateStr + ' · ' + (currentMenu?.total_calories || '—') + ' kcal';
+  frame.src = url;
+  dl.href = url;
+  overlay.classList.add('open');
+  log('ok','pdf','Viewer opened');
+}
+
+function closePDF() {
+  document.getElementById('pdfOverlay').classList.remove('open');
+  document.getElementById('pdfFrame').src = '';
+}
+
+async function buildPDF() {
+  if (!currentMenu) return;
+  showTyping();
+  log('info','pdf','Building PDF...');
+  try {
+    const adminToken = await getAdminToken();
+    const r = await fetch(`${API}/admin/trigger/pdf/${currentMenu.id}`, {
+      method:'POST', headers:{'Authorization':`Bearer ${adminToken}`}
+    });
+    const t = await r.json();
+    for (let i = 0; i < 15; i++) {
+      await sleep(2000);
+      const sr = await fetch(`${API}/admin/status/task/${t.task_id}`,{
+        headers:{'Authorization':`Bearer ${adminToken}`}
+      });
+      const s = await sr.json();
+      if (s.status === 'SUCCESS') { log('ok','pdf','Built ✓'); break; }
+      if (s.status === 'FAILURE') { log('err','pdf','Failed'); break; }
+    }
+    await loadTodayMenu();
+  } catch(e) { log('err','pdf',e.message); }
+  hideTyping();
+}
+
+// ── COMMANDS ─────────────────────────────────────────────────────────────────
+async function sendMessage() {
+  const inp = document.getElementById('cmdInput');
+  const text = inp.value.trim();
+  if (!text || !token) return;
+  inp.value = '';
+  appendHTML(`<div class="msg user"><div class="msg-bubble">${esc(text)}</div><div class="msg-time">${now()}</div></div>`);
+  await processCommand(text.toLowerCase());
+}
+
+function sendCmd(cmd) {
+  document.getElementById('cmdInput').value = cmd;
+  sendMessage();
+}
+
+async function processCommand(cmd) {
+  showTyping();
+  log('info','cmd',`> ${cmd}`);
+
+  if (cmd === 'regenerate' || cmd === 'regen') {
+    botMsg('♻️ Regenerating your menu…');
+    hideTyping();
+    await generateMenu();
+
+  } else if (cmd.startsWith('today ')) {
+    const cuisine = cmd.replace('today','').trim();
+    botMsg(`🍛 Switching cuisine to <strong>${cuisine}</strong> and regenerating…`);
+    hideTyping();
+    // Set cuisine and regenerate
+    await apiFetch('/users/me/eating', {method:'PUT', body:JSON.stringify({eating_mode:currentUser?.eating_mode||'pure_veg', nv_days:[], cuisine_prefs:[cuisine.replace(' ','_')]})});
+    log('info','menu',`Cuisine override: ${cuisine}`);
+    await generateMenu();
+
+  } else if (cmd.startsWith('skip ')) {
+    const slot = cmd.replace('skip','').trim();
+    hideTyping();
+    botMsg(`⏭ Slot <strong>${slot}</strong> noted as skipped.\n\n(In production this would update the menu. For now, regenerate to get a fresh plan without that slot preference.)`);
+    log('info','cmd',`Skip ${slot} — noted`);
+
+  } else if (cmd === 'subscription' || cmd === 'sub') {
+    hideTyping();
+    await showSubscription();
+
+  } else if (cmd === 'profile' || cmd === 'me') {
+    hideTyping();
+    if (currentUser) {
+      botMsg(`👤 <strong>${currentUser.name}</strong>\n📱 ${currentUser.phone}\n⚖️ BMI: ${currentUser.bmi} (${currentUser.bmi_band})\n🥗 Mode: ${currentUser.eating_mode}\n🎯 Goal: ${currentUser.goal}\n🔥 Target: ${currentUser.daily_calorie_target} kcal`);
+    }
+
+  } else if (cmd === 'help' || cmd === '?') {
+    hideTyping();
+    botMsg(`📋 <strong>Available Commands</strong>\n\n<strong>Menu</strong>\n• <code>regenerate</code> — New menu for today\n• <code>today north indian</code> — Change cuisine\n• <code>today south indian</code>\n• <code>today gujarati</code>\n• <code>skip lunch</code> — Note a skip\n\n<strong>Info</strong>\n• <code>subscription</code> — Plan & trial status\n• <code>profile</code> — Your health profile\n• <code>help</code> — This message\n\n<strong>Quick buttons</strong> above the input also work.`);
+
+  } else if (cmd === 'pause') {
+    hideTyping();
+    try {
+      const r = await apiFetch('/subscription/pause', {method:'POST'});
+      const d = await r.json();
+      botMsg(r.ok ? `⏸️ Subscription paused.` : `❌ ${d.detail}`);
+      log(r.ok?'ok':'err','sub',d.message||d.detail);
+    } catch(e) { botMsg('❌ ' + e.message); }
+
+  } else if (cmd === 'resume') {
+    hideTyping();
+    try {
+      const r = await apiFetch('/subscription/resume', {method:'POST'});
+      const d = await r.json();
+      botMsg(r.ok ? `▶️ Subscription resumed.` : `❌ ${d.detail}`);
+    } catch(e) { botMsg('❌ ' + e.message); }
+
+  } else {
+    hideTyping();
+    botMsg(`🤔 Unknown command: <strong>${esc(cmd)}</strong>\n\nType <code>help</code> to see available commands.`);
+    log('warn','cmd','Unknown: '+cmd);
+  }
+}
+
+async function showSubscription() {
+  try {
+    const r = await apiFetch('/subscription/');
+    if (!r.ok) { botMsg('❌ No subscription found. Complete onboarding first.'); return; }
+    const s = await r.json();
+    const status = s.status;
+    const icon = {trial:'⏱️',active:'✅',paused:'⏸️',cancelled:'❌',expired:'⌛'}[status]||'💳';
+    botMsg(`${icon} <strong>Subscription Status</strong>\n\nPlan: ${s.plan_type.replace('_',' ')}\nStatus: <strong>${status}</strong>\nTrial: ${s.trial_start} → ${s.trial_end}\n${s.current_period_end?'Period end: '+s.current_period_end:''}\nPaused: ${s.paused_at||'—'}`);
+    document.getElementById('sSub').textContent = `${status} (${s.plan_type})`;
+    document.getElementById('sSub').className = 'stat-val ' + (status==='trial'||status==='active'?'ok':'warn');
+  } catch(e) { botMsg('❌ ' + e.message); }
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+let adminToken = null;
+async function getAdminToken() {
+  if (adminToken) return adminToken;
+  const r = await fetch(`${API}/admin/login`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({phone:'+917878787878', password:'5d55491e'})
+  });
+  const d = await r.json();
+  adminToken = d.access_token;
+  return adminToken;
+}
+
+async function apiFetch(path, opts={}) {
+  return fetch(API + path, {
+    ...opts,
+    headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json',...(opts.headers||{})}
+  });
+}
+
+function botMsg(html) {
+  appendHTML(`<div class="msg bot"><div class="msg-bubble">${html}</div><div class="msg-time">${now()}</div></div>`);
+}
+
+function appendHTML(html) {
+  const msgs = document.getElementById('messages');
+  msgs.insertAdjacentHTML('beforeend', html);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+let typingEl = null;
+function showTyping() {
+  if (typingEl) return;
+  const msgs = document.getElementById('messages');
+  typingEl = document.createElement('div');
+  typingEl.className = 'msg bot';
+  typingEl.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  msgs.appendChild(typingEl);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+function hideTyping() {
+  if (typingEl) { typingEl.remove(); typingEl = null; }
+}
+
+function clearChat() {
+  document.getElementById('messages').innerHTML = '';
+  botMsg('💬 Chat cleared. Type <code>help</code> to see commands.');
+}
+
+function log(level, svc, msg) {
+  const panel = document.getElementById('logArea');
+  const cls = {ok:'lok',info:'linfo',warn:'lwarn',err:'lerr'}[level]||'linfo';
+  const pfx = {ok:'OK  ',info:'INFO',warn:'WARN',err:'ERR '}[level]||'INFO';
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = `<span class="lt">${now(true)}</span><span class="${cls}">${pfx}</span><span class="lmsg"><em>${svc}</em>  ${esc(msg)}</span>`;
+  panel.appendChild(line);
+  panel.scrollTop = panel.scrollHeight;
+}
+
+function clearLog() { document.getElementById('logArea').innerHTML = ''; }
+
+async function updateStats() {
+  document.getElementById('sUser').textContent = currentUser ? currentUser.name || currentUser.phone : '—';
+  if (!token) { document.getElementById('sSub').textContent = '—'; return; }
+  try {
+    const r = await apiFetch('/subscription/');
+    if (r.ok) {
+      const s = await r.json();
+      document.getElementById('sSub').textContent = `${s.status} · ${s.plan_type}`;
+    }
+  } catch(e) {}
+  // Recipe count via admin
+  try {
+    const at = await getAdminToken();
+    const r = await fetch(`${API}/admin/recipes?is_verified=true&limit=1`,{headers:{'Authorization':'Bearer '+at}});
+    const d = await r.json();
+    document.getElementById('sRecipes').textContent = d.total + ' verified';
+  } catch(e) {}
+}
+
+function now(short=false) {
+  const d = new Date();
+  if (short) return d.toTimeString().slice(0,8);
+  return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePDF(); });
+</script>
+</body>
+</html>

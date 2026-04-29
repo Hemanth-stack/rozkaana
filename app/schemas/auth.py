@@ -17,6 +17,8 @@ class SendOTPRequest(BaseModel):
 class SendOTPResponse(BaseModel):
     session_id: str
     message: str = "OTP sent successfully"
+    # Only populated when MSG91 is not configured (dev/pilot mode)
+    dev_otp: str | None = None
 
 
 class VerifyOTPRequest(BaseModel):

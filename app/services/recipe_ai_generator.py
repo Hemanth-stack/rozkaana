@@ -72,6 +72,40 @@ def _validate_recipe(recipe: dict) -> bool:
     return True
 
 
+async def _call_claude_raw(model: str, prompt: str) -> str:
+    response = _client.messages.create(
+        model=model,
+        max_tokens=8192,
+        system=SYSTEM_PROMPT,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    if response.stop_reason == "max_tokens":
+        logger.warning("Claude hit max_tokens — response may be truncated")
+    return response.content[0].text
+
+
+async def _call_claude(model: str, prompt: str) -> list[dict]:
+    try:
+        raw = await _call_claude_raw(model, prompt)
+        payload = json.loads(raw)
+        if isinstance(payload, list):
+            return payload
+        elif isinstance(payload, dict):
+            recipes = payload.get("recipes") or []
+            if not isinstance(recipes, list):
+                for v in payload.values():
+                    if isinstance(v, list):
+                        return v
+            return recipes
+        return []
+    except json.JSONDecodeError as exc:
+        logger.error("JSON parse error in sub-batch: %s", exc)
+        return []
+    except Exception as exc:
+        logger.error("Claude sub-batch call failed: %s", exc)
+        return []
+
+
 async def generate_recipe_batch(
     meal_type: str,
     cuisine_region: str,
@@ -89,34 +123,27 @@ async def generate_recipe_batch(
         health_tags=", ".join(health_tags) or "general healthy",
     )
 
-    try:
-        response = _client.messages.create(
-            model=model,
-            max_tokens=4096,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        raw = response.content[0].text
-        payload = json.loads(raw)
-    except json.JSONDecodeError as exc:
-        logger.error("Failed to parse Claude response as JSON: %s", exc)
-        return []
-    except Exception as exc:
-        logger.error("Claude API call failed: %s", exc)
-        return []
+    # If count > 5 split into sub-batches of 5 to avoid token limit truncation
+    if count > 5:
+        all_valid: list[dict] = []
+        batch_size = 5
+        for i in range(0, count, batch_size):
+            batch_count = min(batch_size, count - i)
+            batch = await _call_claude(
+                model=model,
+                prompt=USER_PROMPT_TEMPLATE.format(
+                    count=batch_count,
+                    meal_type=meal_type,
+                    cuisine_region=cuisine_region,
+                    eating_mode=eating_mode,
+                    health_tags=", ".join(health_tags) or "general healthy",
+                ),
+            )
+            all_valid.extend([r for r in batch if isinstance(r, dict) and _validate_recipe(r)])
+        logger.info("Generated %d valid recipes (batched) for %s/%s/%s", len(all_valid), meal_type, cuisine_region, eating_mode)
+        return all_valid
 
-    if isinstance(payload, list):
-        recipes = payload
-    elif isinstance(payload, dict):
-        recipes = payload.get("recipes") or []
-        if not isinstance(recipes, list):
-            for v in payload.values():
-                if isinstance(v, list):
-                    recipes = v
-                    break
-    else:
-        recipes = []
-
+    recipes = await _call_claude(model, prompt)
     valid = [r for r in recipes if isinstance(r, dict) and _validate_recipe(r)]
     logger.info(
         "Generated %d/%d valid recipes for %s/%s/%s",

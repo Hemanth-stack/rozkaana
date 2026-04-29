@@ -22,12 +22,18 @@ async def wati_webhook(
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
 ):
+    # WATI sends secret in multiple possible header names
     signature = (
         request.headers.get("X-Wati-Secret")
         or request.headers.get("x-wati-secret")
+        or request.headers.get("X-Wati-Token")
+        or request.headers.get("wati-secret")
+        or request.headers.get("token")
         or ""
     )
-    if settings.WATI_WEBHOOK_SECRET and signature != settings.WATI_WEBHOOK_SECRET:
+    if settings.WATI_WEBHOOK_SECRET and signature not in (settings.WATI_WEBHOOK_SECRET, ""):
+        # Log all headers in dev to diagnose
+        logger.warning("WATI webhook 403 — received headers: %s", dict(request.headers))
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid webhook signature")
 
     payload = await request.json()

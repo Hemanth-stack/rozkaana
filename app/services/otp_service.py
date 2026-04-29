@@ -17,8 +17,18 @@ _OTP_EXPIRY_MINUTES = 10
 _MAX_ATTEMPTS = 3
 _MAX_OTP_PER_HOUR = 5
 
+import logging
+logger = logging.getLogger(__name__)
 
-async def send_otp(phone: str, db: AsyncSession, redis: Redis) -> str:
+def _msg91_configured() -> bool:
+    key = settings.MSG91_AUTH_KEY.strip()
+    # Treat any obviously-fake value as unconfigured
+    return bool(key) and not any(p in key.lower() for p in (
+        "placeholder", "your_", "your-", "xxxx", "changeme", "msg91-auth"
+    ))
+
+
+async def send_otp(phone: str, db: AsyncSession, redis: Redis) -> tuple[str, str | None]:
     rate_key = f"otp_rate:{phone}"
     count = await redis.get(rate_key)
     if count and int(count) >= _MAX_OTP_PER_HOUR:
@@ -43,14 +53,19 @@ async def send_otp(phone: str, db: AsyncSession, redis: Redis) -> str:
     db.add(otp_session)
     await db.flush()
 
-    await _send_sms_msg91(phone, otp)
+    dev_otp: str | None = None
+    if _msg91_configured():
+        await _send_sms_msg91(phone, otp)
+    else:
+        logger.warning("MSG91 not configured — OTP for %s: %s", phone, otp)
+        dev_otp = otp  # return to caller so it can surface in response
 
     pipe = redis.pipeline()
     await pipe.incr(rate_key)
     await pipe.expire(rate_key, 3600)
     await pipe.execute()
 
-    return str(session_id)
+    return str(session_id), dev_otp
 
 
 async def verify_otp(phone: str, otp: str, session_id: str, db: AsyncSession) -> tuple[bool, User | None]:
@@ -109,20 +124,32 @@ async def verify_otp(phone: str, otp: str, session_id: str, db: AsyncSession) ->
 
 
 async def _send_sms_msg91(phone: str, otp: str) -> None:
-    e164 = phone.lstrip("+")
+    # MSG91 v5 — authkey goes in header, mobile must be without +
+    mobile = phone.lstrip("+")
+    headers = {
+        "authkey": settings.MSG91_AUTH_KEY,
+        "accept": "application/json",
+        "content-type": "application/json",
+    }
     payload = {
         "template_id": settings.MSG91_TEMPLATE_ID,
-        "mobile": e164,
-        "authkey": settings.MSG91_AUTH_KEY,
+        "mobile": mobile,
         "otp": otp,
         "sender": settings.MSG91_SENDER_ID,
+        "otp_length": 6,
+        "otp_expiry": 10,
     }
     try:
         async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.post("https://api.msg91.com/api/v5/otp", json=payload)
+            resp = await client.post(
+                "https://api.msg91.com/api/v5/otp",
+                json=payload,
+                headers=headers,
+            )
+            resp_text = resp.text
             if resp.status_code not in (200, 201):
-                import logging
-                logging.warning("MSG91 returned %s: %s", resp.status_code, resp.text)
+                logger.warning("MSG91 error %s: %s", resp.status_code, resp_text)
+            else:
+                logger.info("MSG91 OTP sent to %s — response: %s", phone, resp_text)
     except Exception as exc:
-        import logging
-        logging.warning("MSG91 send failed: %s", exc)
+        logger.warning("MSG91 send failed: %s", exc)

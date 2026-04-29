@@ -364,7 +364,31 @@
     .nav-links { display: none; }
     .footer-bottom { flex-direction: column; gap: .8rem; text-align: center; }
     .ps-north { flex-direction: column; }
+    .trial-banner { flex-direction: column; text-align: center; }
+    .trial-banner .btn { width: 100%; justify-content: center; }
   }
+
+  /* ── TRIAL BANNER ─────────────────────────────────────────── */
+  .trial-banner {
+    display: flex; align-items: center; gap: 1.2rem;
+    background: linear-gradient(135deg, rgba(46,125,82,.1), rgba(46,125,82,.05));
+    border: 1.5px solid rgba(46,125,82,.25); border-radius: 16px;
+    padding: 1.2rem 1.8rem; margin: 0 auto 2.8rem; max-width: 860px;
+  }
+  .trial-icon { font-size: 1.8rem; flex-shrink: 0; }
+  .trial-text { flex: 1; }
+  .trial-text strong { display: block; font-size: .97rem; color: var(--charcoal); margin-bottom: .2rem; }
+  .trial-text span { font-size: .84rem; color: var(--text-muted); }
+
+  /* ── TRIAL TAG on price card ──────────────────────────────── */
+  .trial-tag {
+    display: inline-flex; align-items: center;
+    background: var(--green-faint); color: var(--green);
+    border-radius: 6px; padding: .22rem .7rem;
+    font-size: .72rem; font-weight: 700; margin-bottom: .7rem;
+    letter-spacing: .04em;
+  }
+  .featured-trial { background: rgba(29,184,132,.18); color: #4ade80; }
 </style>
 </head>
 <body>
@@ -535,7 +559,7 @@
     <li><a href="#pricing">Pricing</a></li>
     <li><a href="#faq">FAQ</a></li>
   </ul>
-  <a href="#pricing" class="btn" onclick="openSignup('solo_pro');return false">Start Free Trial <a href="#pricing" class="btn">Start Your Plan &rarr;</a>rarr;</a>
+  <a href="#pricing" class="btn" onclick="openSignup('solo_pro');return false">Start Free Trial &rarr;</a>
 </nav>
 
 <!-- ═══ HERO ══════════════════════════════════════════════════ -->
@@ -545,7 +569,7 @@
     <h1>Eat <em>Desi</em>,<br>Live Healthy,<br>Feel Amazing.</h1>
     <p class="hero-sub">Hyper-personalised Indian diet plans — built around your body, your region, and your taste. Delivered to WhatsApp at 6 AM every morning.</p>
     <div class="hero-ctas">
-      <a href="#pricing" class="btn">Get Your Plan &mdash; &#8377;199/mo</a>
+      <a href="#pricing" class="btn" onclick="openSignup('solo_pro');return false">Try Free for 7 Days &rarr;</a>
       <a href="#how" class="btn btn-outline">See How It Works</a>
     </div>
     <div class="hero-trust">
@@ -830,10 +854,21 @@
   <div class="section-head center">
     <div class="section-label fade-up">Pricing</div>
     <h2 class="section-title fade-up">Simple, transparent plans</h2>
-    <p class="section-sub fade-up">No lock-ins. Cancel anytime. All plans include a 7-day money-back guarantee.</p>
+    <p class="section-sub fade-up">No lock-ins. Cancel anytime.</p>
   </div>
+
+  <div class="trial-banner fade-up">
+    <span class="trial-icon">🎁</span>
+    <div class="trial-text">
+      <strong>7-Day Free Trial on all plans</strong>
+      <span>No credit card required &middot; Cancel anytime &middot; Full access from day one</span>
+    </div>
+    <a href="#" class="btn" onclick="openSignup('solo_pro');return false" style="white-space:nowrap;flex-shrink:0">Start Free Trial</a>
+  </div>
+
   <div class="pricing-grid">
     <div class="price-card fade-up">
+      <div class="trial-tag">7 days free</div>
       <div class="plan-name">Starter</div>
       <div class="plan-price"><sup>&#8377;</sup>199</div>
       <div class="plan-cycle">per month &middot; billed monthly</div>
@@ -848,6 +883,7 @@
     </div>
     <div class="price-card featured fade-up d1">
       <div class="featured-badge">MOST POPULAR</div>
+      <div class="trial-tag featured-trial">7 days free</div>
       <div class="plan-name">Pro</div>
       <div class="plan-price"><sup>&#8377;</sup>399</div>
       <div class="plan-cycle">per month &middot; billed monthly</div>
@@ -862,6 +898,7 @@
       <a href="#" class="btn" style="width:100%;justify-content:center;" onclick="openSignup('solo_pro');return false">Start Free Trial</a>
     </div>
     <div class="price-card fade-up d2">
+      <div class="trial-tag">7 days free</div>
       <div class="plan-name">Family</div>
       <div class="plan-price"><sup>&#8377;</sup>699</div>
       <div class="plan-cycle">per month &middot; up to 6 members</div>
@@ -1095,7 +1132,7 @@
   if (strip) statsObs.observe(strip);
 
   // ── SIGNUP MODAL ──────────────────────────────────────────────────────────
-  const API = '/api/v1';
+  const API = 'https://api.rozkaana.in/api/v1';
   let selectedPlan = 'solo_pro';
   let sessionId = '';
 
@@ -1146,6 +1183,13 @@
       sessionId = d.session_id;
       document.getElementById('otpPhoneLabel').textContent = phone;
       showStep('stepOTP');
+      // Dev mode: SMS not configured — show OTP prominently and auto-fill
+      if (d.dev_otp) {
+        document.getElementById('otpInput').value = d.dev_otp;
+        const note = document.getElementById('otpDevNote');
+        note.style.display = 'block';
+        note.innerHTML = '🔧 SMS not configured &mdash; your OTP is <strong style="font-size:1.1rem;letter-spacing:.15em">' + d.dev_otp + '</strong>';
+      }
       document.getElementById('otpInput').focus();
     } catch(e) {
       err.textContent = 'Network error — is the server running?';
@@ -1269,6 +1313,7 @@
       <input class="modal-input" id="otpInput" type="text" inputmode="numeric"
         maxlength="6" placeholder="· · · · · ·" style="letter-spacing:.4em;font-size:1.2rem;text-align:center"
         onkeydown="if(event.key==='Enter')verifyOTP()">
+      <div id="otpDevNote" style="display:none;margin-top:6px;font-size:.75rem;color:#b45309;background:#fef3c7;border-radius:6px;padding:6px 10px;"></div>
       <div class="modal-err" id="otpErr"></div>
       <button class="modal-btn" id="verifyOtpBtn" onclick="verifyOTP()">Verify &amp; Start Free Trial →</button>
       <button onclick="showStep('stepPhone')" style="width:100%;background:none;border:none;color:var(--text-muted);font-size:.8rem;margin-top:10px;cursor:pointer;padding:4px;">

@@ -301,8 +301,7 @@ async def dashboard_stats(
         )
     ).scalars().all()
 
-    from app.schemas.admin import PLAN_PRICES
-    plan_prices = {"solo_basic": 299.0, "solo_pro": 499.0, "family": 799.0}
+    plan_prices = {"solo_basic": 199.0, "solo_pro": 399.0, "family": 699.0}
     mrr = sum(plan_prices.get(pt, 0) for pt in active_sub_rows)
 
     plan_distribution: dict[str, int] = {}
@@ -415,6 +414,80 @@ async def list_menus(
         ))
 
     return MenuAdminListResponse(menus=items, total=total)
+
+
+@router.post("/trigger/full-pipeline", status_code=202)
+async def trigger_full_pipeline(
+    target_date: str | None = None,
+    current_user: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Dev trigger: generate menus for all active subscribers → build PDFs → send WA."""
+    from datetime import timedelta
+    from app.tasks.menu_tasks import generate_all_menus
+    run_date = date.fromisoformat(target_date) if target_date else date.today()
+    task = generate_all_menus.delay()
+    return {
+        "message": f"Full pipeline triggered for {run_date}",
+        "task_id": task.id,
+        "steps": ["menu_generation", "pdf_build (auto after menu)", "whatsapp_send (manual or auto)"],
+    }
+
+
+@router.post("/trigger/menu/{user_id}", status_code=202)
+async def trigger_user_menu(
+    user_id: str,
+    for_date: str | None = None,
+    current_user: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Generate + build PDF + send WA for a single user right now."""
+    from app.tasks.menu_tasks import generate_single_menu
+    user = await db.get(User, uuid.UUID(user_id))
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    run_date = for_date or str(date.today())
+    owner_id = str(user.household_id or user.id)
+    owner_type = "household" if user.household_id else "user"
+    task = generate_single_menu.delay(owner_id, owner_type, run_date, None)
+    return {"message": f"Menu → PDF → WA triggered for {user.phone}", "task_id": task.id, "date": run_date}
+
+
+@router.post("/trigger/pdf/{menu_id}", status_code=202)
+async def trigger_pdf(
+    menu_id: str,
+    current_user: User = Depends(get_current_admin),
+):
+    """Build PDF for a specific menu_id."""
+    from app.tasks.pdf_tasks import build_single_pdf
+    task = build_single_pdf.delay(menu_id)
+    return {"message": "PDF build queued", "task_id": task.id}
+
+
+@router.post("/trigger/wa/{menu_id}", status_code=202)
+async def trigger_wa(
+    menu_id: str,
+    current_user: User = Depends(get_current_admin),
+):
+    """Send WhatsApp for a specific menu_id."""
+    from app.tasks.wa_tasks import send_single_whatsapp
+    task = send_single_whatsapp.delay(menu_id)
+    return {"message": "WhatsApp send queued", "task_id": task.id}
+
+
+@router.get("/status/task/{task_id}")
+async def task_status(
+    task_id: str,
+    current_user: User = Depends(get_current_admin),
+):
+    """Poll a Celery task result."""
+    from celery.result import AsyncResult
+    r = AsyncResult(task_id)
+    return {
+        "task_id": task_id,
+        "status": r.status,
+        "result": str(r.result) if r.ready() else None,
+    }
 
 
 @router.post("/menus/{menu_id}/retry-wa", status_code=202)

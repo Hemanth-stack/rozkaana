@@ -4,7 +4,9 @@ from datetime import date
 from typing import Any
 
 from redis.asyncio import Redis
-from sqlalchemy import and_, or_, text
+from sqlalchemy import and_, cast, or_, text
+from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
+from sqlalchemy import String
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -185,23 +187,27 @@ async def _query_candidates(
         if excluded_uuids:
             base_filters.append(Recipe.id.notin_(excluded_uuids))
 
-    # Eating mode filter using PostgreSQL array contains
+    def arr_contains(col, values: list[str]):
+        """PostgreSQL array @> operator: col contains all values."""
+        return col.op("@>")(cast(values, PG_ARRAY(String)))
+
+    # Eating mode filter using PostgreSQL @> array operator
     if not is_nv_day:
         base_filters.append(
             or_(
-                Recipe.eating_mode_tags.contains(["pure_veg"]),
-                Recipe.eating_mode_tags.contains(["jain"]),
-                Recipe.eating_mode_tags.contains(["sattvic"]),
+                arr_contains(Recipe.eating_mode_tags, ["pure_veg"]),
+                arr_contains(Recipe.eating_mode_tags, ["jain"]),
+                arr_contains(Recipe.eating_mode_tags, ["sattvic"]),
             )
         )
     else:
-        base_filters.append(Recipe.eating_mode_tags.contains([eating_mode]))
+        base_filters.append(arr_contains(Recipe.eating_mode_tags, [eating_mode]))
 
     for tag in ctx["health_tags"]:
-        base_filters.append(Recipe.health_safe_tags.contains([tag]))
+        base_filters.append(arr_contains(Recipe.health_safe_tags, [tag]))
 
     for allergen in ctx["allergy_tags"]:
-        base_filters.append(Recipe.allergy_free_tags.contains([f"{allergen}_free"]))
+        base_filters.append(arr_contains(Recipe.allergy_free_tags, [f"{allergen}_free"]))
 
     results: list[Recipe] = []
     seen_ids: set = set()

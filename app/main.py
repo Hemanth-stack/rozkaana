@@ -44,3 +44,22 @@ app.include_router(admin.router, prefix="/api/v1")
 @app.get("/health")
 async def health_check():
     return {"status": "ok", "service": "rozkaana-api"}
+
+
+@app.get("/files/{file_path:path}")
+async def serve_file(file_path: str):
+    """Serve files from MinIO publicly — used by WATI to download PDFs."""
+    from fastapi.responses import StreamingResponse
+    from app.utils.minio_client import _client, settings as _s
+    import io
+    try:
+        resp = _client.get_object(_s.MINIO_BUCKET_NAME, file_path)
+        data = resp.read()
+        return StreamingResponse(
+            io.BytesIO(data),
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'inline; filename="{file_path.split("/")[-1]}"'},
+        )
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="File not found")
