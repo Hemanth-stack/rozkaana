@@ -15,8 +15,9 @@ from app.models.recipe import Recipe
 from app.models.subscription import Subscription
 from app.models.user import User
 from app.schemas.menu import (
-    HistoryResponse, MenuResponse, OverrideCuisineRequest,
-    PDFURLResponse, RegenRequest, RegenerateResponse, TaskStatusResponse,
+    GroceryItem, GroceryListResponse, HistoryResponse, MenuInsightsResponse,
+    MenuResponse, OverrideCuisineRequest, PDFURLResponse,
+    RegenRequest, RegenerateResponse, TaskStatusResponse,
 )
 from app.utils.minio_client import get_presigned_url
 from app.utils.redis_client import get_redis, regen_lock_key
@@ -196,6 +197,106 @@ async def override_cuisine(
     return RegenerateResponse(
         task_id=task.id,
         message=f"Generating menu with {request.cuisine} cuisine preference",
+    )
+
+
+VALID_SLOTS = {"breakfast", "morning_snack", "lunch", "evening_snack", "dinner"}
+
+
+@router.patch("/today/{slot}/skip", status_code=200)
+async def skip_slot(
+    slot: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    _sub: Subscription = Depends(get_active_subscription),
+):
+    """Clear a single meal slot from today's menu."""
+    if slot not in VALID_SLOTS:
+        raise HTTPException(status_code=400, detail=f"slot must be one of: {VALID_SLOTS}")
+
+    owner_id, owner_type = _get_owner(current_user)
+    result = await db.execute(
+        select(DailyMenu).where(
+            and_(
+                DailyMenu.owner_id == uuid.UUID(owner_id),
+                DailyMenu.owner_type == owner_type,
+                DailyMenu.menu_date == date.today(),
+            )
+        )
+    )
+    menu = result.scalar_one_or_none()
+    if not menu:
+        raise HTTPException(status_code=404, detail="No menu for today")
+
+    setattr(menu, f"{slot}_id", None)
+    await db.flush()
+    return {"message": f"{slot} skipped for today"}
+
+
+@router.get("/today/insights", response_model=MenuInsightsResponse)
+async def get_menu_insights(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    redis: Redis = Depends(get_redis),
+    _sub: Subscription = Depends(get_active_subscription),
+):
+    """Why was today's menu generated this way? Returns signals, candidate pool sizes, cuisine."""
+    from app.services.menu_engine import get_menu_insights as _insights
+    owner_id, owner_type = _get_owner(current_user)
+    data = await _insights(db, redis, owner_id, owner_type, date.today())
+    return MenuInsightsResponse(**data)
+
+
+@router.get("/{menu_date}/grocery-list", response_model=GroceryListResponse)
+async def get_grocery_list(
+    menu_date: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    _sub: Subscription = Depends(get_active_subscription),
+):
+    try:
+        parsed_date = date.fromisoformat(menu_date)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+
+    owner_id, owner_type = _get_owner(current_user)
+    result = await db.execute(
+        select(DailyMenu).where(
+            and_(
+                DailyMenu.owner_id == uuid.UUID(owner_id),
+                DailyMenu.owner_type == owner_type,
+                DailyMenu.menu_date == parsed_date,
+            )
+        )
+    )
+    menu = result.scalar_one_or_none()
+    if not menu:
+        raise HTTPException(status_code=404, detail="No menu for this date")
+
+    recipes = {
+        "breakfast":     await _fetch_recipe(db, menu.breakfast_id),
+        "morning_snack": await _fetch_recipe(db, menu.morning_snack_id),
+        "lunch":         await _fetch_recipe(db, menu.lunch_id),
+        "evening_snack": await _fetch_recipe(db, menu.evening_snack_id),
+        "dinner":        await _fetch_recipe(db, menu.dinner_id),
+    }
+    recipe_count = sum(1 for r in recipes.values() if r is not None)
+
+    member_count = 1
+    if owner_type == "household":
+        members_result = await db.execute(
+            select(User).where(User.household_id == uuid.UUID(owner_id))
+        )
+        member_count = len(members_result.scalars().all()) or 1
+
+    from app.services.grocery_service import build_grocery_list
+    items = build_grocery_list(recipes, member_count)
+
+    return GroceryListResponse(
+        date=parsed_date,
+        items=[GroceryItem(**item) for item in items],
+        recipe_count=recipe_count,
+        member_count=member_count,
     )
 
 

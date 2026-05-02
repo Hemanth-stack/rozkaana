@@ -52,6 +52,10 @@ class Settings(BaseSettings):
     PDF_BUILD_HOUR_UTC: int = 22
     EMAIL_SEND_HOUR_UTC: int = 0
 
+    # Security
+    ADMIN_PASSWORD_HASH: str = ""   # bcrypt hash; empty = fall back to JWT[:8] (legacy)
+    APP_ENV: str = "production"     # "development" enables dev-login endpoint
+
     class Config:
         env_file = ".env"
         case_sensitive = False

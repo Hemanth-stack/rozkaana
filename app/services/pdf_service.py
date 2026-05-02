@@ -185,22 +185,5 @@ def _calc_totals(recipes: dict) -> dict:
 
 
 def _build_grocery_list(recipes: dict, member_count: int) -> list[dict]:
-    agg: dict[str, dict] = defaultdict(lambda: {"qty": 0.0, "unit": ""})
-    for recipe in recipes.values():
-        if not recipe:
-            continue
-        for ing in (recipe.ingredients or []):
-            name = (ing.get("name") or "").lower().strip()
-            if not name:
-                continue
-            mult = member_count if ing.get("per_person") else 1
-            agg[name]["qty"] += float(ing.get("qty", 0)) * mult
-            agg[name]["unit"] = ing.get("unit", "")
-
-    result = []
-    for name, val in sorted(agg.items()):
-        qty, unit = val["qty"], val["unit"]
-        if unit == "g" and qty >= 1000:
-            qty, unit = qty / 1000, "kg"
-        result.append({"name": name.title(), "qty": round(qty, 1), "unit": unit})
-    return result
+    from app.services.grocery_service import build_grocery_list
+    return build_grocery_list(recipes, member_count)

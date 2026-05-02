@@ -17,6 +17,21 @@ from app.services.subscription_service import create_trial
 router = APIRouter(prefix="/users", tags=["users"])
 
 
+@router.delete("/me", status_code=204)
+async def delete_account(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    current_user.is_active = False
+    await db.flush()
+    # Cancel any active subscription
+    result = await db.execute(select(Subscription).where(Subscription.user_id == current_user.id))
+    sub = result.scalar_one_or_none()
+    if sub and sub.status in ("trial", "active"):
+        sub.status = "cancelled"
+        await db.flush()
+
+
 @router.get("/me", response_model=UserProfile)
 async def get_profile(current_user: User = Depends(get_current_user)):
     return current_user

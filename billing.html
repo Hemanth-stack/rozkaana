@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Billing — Rozkaana</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--saffron:#E8593C;--saffron-dark:#C9421F;--cream:#FAF7F2;--cream-dark:#F2ECE3;--charcoal:#1A1612;--text:#3A3028;--muted:#7A6E65;--border:#E8DDD0;--green:#2E7D52}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--charcoal);text-decoration:none}
+.nav-logo span{color:var(--saffron)}
+.nav-links{display:flex;gap:20px;list-style:none}
+.nav-links a{text-decoration:none;color:var(--muted);font-size:.88rem;font-weight:500;transition:.15s}
+.nav-links a:hover,.nav-links a.active{color:var(--saffron)}
+.wrap{max-width:720px;margin:0 auto;padding:32px 20px 60px}
+h1{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--charcoal);margin-bottom:6px}
+.page-sub{color:var(--muted);font-size:.9rem;margin-bottom:32px}
+/* Current plan banner */
+.current-plan{border-radius:20px;padding:28px;margin-bottom:24px;color:#fff}
+.current-plan.trial{background:linear-gradient(135deg,#E8593C,#C9421F)}
+.current-plan.active{background:linear-gradient(135deg,#2E7D52,#1a5c38)}
+.current-plan.paused{background:linear-gradient(135deg,#D4960A,#a87407)}
+.current-plan.cancelled,.current-plan.expired{background:linear-gradient(135deg,#5A5550,#3A3028)}
+.plan-badge{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.75;margin-bottom:6px}
+.plan-name{font-size:1.5rem;font-weight:800;margin-bottom:4px}
+.plan-status{font-size:.88rem;opacity:.85}
+.plan-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.plan-btn{padding:9px 20px;border-radius:9px;font-size:.85rem;font-weight:700;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:.15s}
+.plan-btn-white{background:#fff;color:var(--saffron)}.plan-btn-white:hover{background:rgba(255,255,255,.9)}
+.plan-btn-outline{background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.4)}.plan-btn-outline:hover{background:rgba(255,255,255,.25)}
+/* Plan cards */
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.plan-card{background:#fff;border-radius:16px;padding:22px 18px;border:2px solid var(--border);transition:.2s;position:relative}
+.plan-card.current{border-color:var(--saffron)}
+.plan-card.popular{border-color:var(--charcoal)}
+.popular-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--charcoal);color:#fff;border-radius:20px;padding:3px 12px;font-size:.7rem;font-weight:700;white-space:nowrap}
+.current-badge{position:absolute;top:-12px;right:12px;background:var(--saffron);color:#fff;border-radius:20px;padding:3px 12px;font-size:.7rem;font-weight:700}
+.plan-card h3{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--saffron);margin-bottom:8px}
+.plan-price{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--charcoal);line-height:1}
+.plan-price sup{font-size:1rem;vertical-align:super}
+.plan-cycle{font-size:.78rem;color:var(--muted);margin:4px 0 14px}
+.plan-features{list-style:none;font-size:.82rem;color:var(--text);display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.plan-features li::before{content:'✓ ';color:var(--green);font-weight:700}
+.upgrade-btn{width:100%;padding:10px;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:.15s;border:none}
+.upgrade-btn.active-btn{background:var(--saffron);color:#fff}.upgrade-btn.active-btn:hover{background:var(--saffron-dark)}
+.upgrade-btn.current-btn{background:var(--cream-dark);color:var(--muted);cursor:default}
+.upgrade-btn:disabled{opacity:.6;cursor:not-allowed}
+/* Info section */
+.section{background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(26,22,18,.06);margin-bottom:20px}
+.section-title{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:.88rem}
+.info-row:last-child{border-bottom:none}
+.info-label{color:var(--muted)}
+.info-val{font-weight:600;color:var(--charcoal)}
+.status-pill{padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700}
+.pill-trial{background:rgba(232,89,60,.1);color:var(--saffron)}
+.pill-active{background:rgba(46,125,82,.1);color:var(--green)}
+.pill-paused{background:rgba(212,150,10,.1);color:#D4960A}
+.pill-cancelled{background:rgba(90,85,80,.15);color:var(--muted)}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--saffron);border-radius:50%;animation:spin .8s linear infinite;margin:40px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--charcoal);color:#fff;padding:12px 24px;border-radius:12px;font-size:.88rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--green)}
+.toast.error{background:#c0392b}
+@media(max-width:640px){.plans-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">Roz<span>kaana</span></a>
+  <ul class="nav-links">
+    <li><a href="/app">My Plan</a></li>
+    <li><a href="/history">History</a></li>
+    <li><a href="/billing" class="active">Billing</a></li>
+    <li><a href="/settings">Settings</a></li>
+  </ul>
+</nav>
+
+<div class="wrap">
+  <h1>Billing</h1>
+  <p class="page-sub">Manage your subscription and plan</p>
+
+  <div id="loading"><div class="spinner"></div></div>
+  <div id="content" style="display:none">
+
+    <!-- Current plan banner -->
+    <div class="current-plan trial" id="currentBanner">
+      <div class="plan-badge" id="bannerBadge">YOUR PLAN</div>
+      <div class="plan-name" id="bannerName">Starter</div>
+      <div class="plan-status" id="bannerStatus">Trial active</div>
+      <div class="plan-actions" id="bannerActions"></div>
+    </div>
+
+    <!-- Plan cards -->
+    <div class="plans-grid">
+      <div class="plan-card" id="card-solo_basic">
+        <h3>Starter</h3>
+        <div class="plan-price"><sup>₹</sup>199</div>
+        <div class="plan-cycle">per month</div>
+        <ul class="plan-features">
+          <li>Daily meal plan email</li>
+          <li>1 cuisine preference</li>
+          <li>Basic macro tracking</li>
+          <li>7-day free trial</li>
+        </ul>
+        <button class="upgrade-btn active-btn" id="btn-solo_basic" onclick="selectPlan('solo_basic')">Get Started</button>
+      </div>
+      <div class="plan-card popular" id="card-solo_pro">
+        <div class="popular-badge">MOST POPULAR</div>
+        <h3>Pro</h3>
+        <div class="plan-price"><sup>₹</sup>399</div>
+        <div class="plan-cycle">per month</div>
+        <ul class="plan-features">
+          <li>Everything in Starter</li>
+          <li>3 cuisine preferences</li>
+          <li>Daily PDF with recipes</li>
+          <li>Menu regeneration</li>
+          <li>Cuisine override</li>
+        </ul>
+        <button class="upgrade-btn active-btn" id="btn-solo_pro" onclick="selectPlan('solo_pro')">Upgrade to Pro</button>
+      </div>
+      <div class="plan-card" id="card-family">
+        <h3>Family</h3>
+        <div class="plan-price"><sup>₹</sup>699</div>
+        <div class="plan-cycle">per month · up to 6</div>
+        <ul class="plan-features">
+          <li>Everything in Pro</li>
+          <li>6 member profiles</li>
+          <li>Household coordination</li>
+          <li>Consolidated grocery list</li>
+          <li>Diabetic &amp; senior modes</li>
+        </ul>
+        <button class="upgrade-btn active-btn" id="btn-family" onclick="selectPlan('family')">Choose Family</button>
+      </div>
+    </div>
+
+    <!-- Subscription details -->
+    <div class="section">
+      <div class="section-title">Subscription Details</div>
+      <div id="subDetails"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://api.rozkaana.in/api/v1';
+const token = localStorage.getItem('rzk_token');
+if (!token) window.location.href = '/';
+function h() { return { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }; }
+
+const PLAN_LABELS = { solo_basic: 'Starter', solo_pro: 'Pro', family: 'Family' };
+const STATUS_COLORS = { trial: 'trial', active: 'active', paused: 'paused', cancelled: 'cancelled', expired: 'cancelled' };
+let currentSub = null;
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => { t.className = 'toast'; }, 4000);
+}
+
+async function load() {
+  const r = await fetch(API + '/subscription/', { headers: h() });
+  if (!r.ok) {
+    document.getElementById('loading').innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px">No active subscription. Complete onboarding first.</p>';
+    return;
+  }
+  currentSub = await r.json();
+  render();
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+}
+
+function render() {
+  const s = currentSub;
+  const planLabel = PLAN_LABELS[s.plan_type] || s.plan_type;
+  const colorClass = STATUS_COLORS[s.status] || 'trial';
+
+  // Banner
+  const banner = document.getElementById('currentBanner');
+  banner.className = 'current-plan ' + colorClass;
+  document.getElementById('bannerBadge').textContent = 'YOUR PLAN';
+  document.getElementById('bannerName').textContent = planLabel;
+
+  let statusText = '';
+  if (s.status === 'trial') {
+    const days = Math.max(0, Math.ceil((new Date(s.trial_end) - new Date()) / 86400000));
+    statusText = `Free trial · ${days} day${days !== 1 ? 's' : ''} remaining`;
+  } else if (s.status === 'active') {
+    statusText = `Active · renews ${s.current_period_end || '—'}`;
+  } else if (s.status === 'paused') {
+    statusText = `Paused · ${s.pause_days_used || 0} of 30 pause days used`;
+  } else {
+    statusText = s.status.charAt(0).toUpperCase() + s.status.slice(1);
+  }
+  document.getElementById('bannerStatus').textContent = statusText;
+
+  // Action buttons
+  const actions = document.getElementById('bannerActions');
+  actions.innerHTML = '';
+  if (s.status === 'active') {
+    actions.innerHTML += `<button class="plan-btn plan-btn-outline" onclick="doPause()">Pause</button>`;
+    actions.innerHTML += `<button class="plan-btn plan-btn-outline" onclick="doCancel()">Cancel</button>`;
+  } else if (s.status === 'trial') {
+    actions.innerHTML += `<button class="plan-btn plan-btn-white" onclick="selectPlan('solo_pro')">Upgrade Now</button>`;
+    actions.innerHTML += `<button class="plan-btn plan-btn-outline" onclick="doCancel()">Cancel Trial</button>`;
+  } else if (s.status === 'paused') {
+    actions.innerHTML += `<button class="plan-btn plan-btn-white" onclick="doResume()">Resume Plan</button>`;
+  } else if (s.status === 'cancelled' || s.status === 'expired') {
+    actions.innerHTML += `<button class="plan-btn plan-btn-white" onclick="selectPlan('solo_pro')">Reactivate</button>`;
+  }
+
+  // Highlight current plan card
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('current'));
+  document.querySelectorAll('.plan-card .current-badge').forEach(b => b.remove());
+  const cur = document.getElementById('card-' + s.plan_type);
+  if (cur) {
+    cur.classList.add('current');
+    const badge = document.createElement('div');
+    badge.className = 'current-badge'; badge.textContent = 'Current';
+    cur.appendChild(badge);
+  }
+
+  // Disable current plan button only if already active on that plan
+  ['solo_basic', 'solo_pro', 'family'].forEach(p => {
+    const btn = document.getElementById('btn-' + p);
+    if (p === s.plan_type && s.status === 'active') {
+      btn.className = 'upgrade-btn current-btn'; btn.textContent = 'Current Plan';
+    } else {
+      btn.className = 'upgrade-btn active-btn';
+      btn.textContent = p === 'family' ? 'Choose Family' : p === 'solo_basic' ? 'Get Starter' : 'Upgrade to Pro';
+    }
+  });
+
+  // Details
+  const pill = `<span class="status-pill pill-${colorClass}">${s.status}</span>`;
+  document.getElementById('subDetails').innerHTML = `
+    <div class="info-row"><span class="info-label">Status</span><span>${pill}</span></div>
+    <div class="info-row"><span class="info-label">Plan</span><span class="info-val">${planLabel}</span></div>
+    ${s.trial_end ? `<div class="info-row"><span class="info-label">Trial ends</span><span class="info-val">${s.trial_end}</span></div>` : ''}
+    ${s.current_period_end ? `<div class="info-row"><span class="info-label">Next billing / access until</span><span class="info-val">${s.current_period_end}</span></div>` : ''}
+    <div class="info-row"><span class="info-label">Pause days used</span><span class="info-val">${s.pause_days_used || 0} / 30</span></div>
+  `;
+}
+
+async function selectPlan(plan) {
+  const btn = document.getElementById('btn-' + plan);
+  const originalText = btn.textContent;
+  btn.textContent = 'Opening checkout…';
+  btn.disabled = true;
+
+  try {
+    // Create Razorpay order
+    const r = await fetch(API + '/subscription/create-checkout', {
+      method: 'POST', headers: h(),
+      body: JSON.stringify({ plan_type: plan }),
+    });
+    if (!r.ok) {
+      const err = await r.json();
+      showToast(err.detail || 'Failed to start checkout', 'error');
+      btn.textContent = originalText; btn.disabled = false;
+      return;
+    }
+    const checkout = await r.json();
+
+    // Open Razorpay checkout modal
+    const rzp = new Razorpay({
+      key: checkout.key_id,
+      order_id: checkout.order_id,
+      amount: checkout.amount,
+      currency: checkout.currency,
+      name: 'Rozkaana',
+      description: `${checkout.plan_label} Plan – 1 Month`,
+      prefill: {
+        name: checkout.user_name,
+        email: checkout.user_email,
+      },
+      theme: { color: '#E8593C' },
+      handler: async function(response) {
+        btn.textContent = 'Verifying…';
+        await verifyPayment(response);
+        btn.textContent = originalText; btn.disabled = false;
+      },
+      modal: {
+        ondismiss: function() {
+          btn.textContent = originalText; btn.disabled = false;
+        },
+      },
+    });
+    rzp.open();
+  } catch(e) {
+    console.error(e);
+    showToast('Something went wrong. Please try again.', 'error');
+    btn.textContent = originalText; btn.disabled = false;
+  }
+}
+
+async function verifyPayment(response) {
+  try {
+    const r = await fetch(API + '/subscription/verify-payment', {
+      method: 'POST', headers: h(),
+      body: JSON.stringify({
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_order_id:   response.razorpay_order_id,
+        razorpay_signature:  response.razorpay_signature,
+      }),
+    });
+    if (r.ok) {
+      currentSub = await r.json();
+      render();
+      showToast('Payment successful! Your plan is now active.', 'success');
+    } else {
+      const err = await r.json();
+      showToast('Verification failed: ' + (err.detail || 'contact support'), 'error');
+    }
+  } catch(e) {
+    showToast('Could not verify payment. Please contact support.', 'error');
+  }
+}
+
+async function doPause() {
+  if (!confirm('Pause your subscription? You can resume anytime (up to 30 days/year).')) return;
+  const r = await fetch(API + '/subscription/pause', { method: 'POST', headers: h() });
+  if (r.ok) { showToast('Subscription paused.'); await load(); }
+  else { const e = await r.json(); showToast(e.detail || 'Failed to pause', 'error'); }
+}
+
+async function doResume() {
+  const r = await fetch(API + '/subscription/resume', { method: 'POST', headers: h() });
+  if (r.ok) { showToast('Subscription resumed!'); await load(); }
+  else { const e = await r.json(); showToast(e.detail || 'Failed to resume', 'error'); }
+}
+
+async function doCancel() {
+  if (!confirm('Cancel your subscription? You keep access until the end of the current period.')) return;
+  const r = await fetch(API + '/subscription/cancel', { method: 'POST', headers: h() });
+  if (r.ok) { showToast('Subscription cancelled.'); await load(); }
+  else { const e = await r.json(); showToast(e.detail || 'Failed to cancel', 'error'); }
+}
+
+load();
+</script>
+</body>
+</html>

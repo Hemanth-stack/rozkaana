@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings — Rozkaana</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--saffron:#E8593C;--saffron-dark:#C9421F;--cream:#FAF7F2;--cream-dark:#F2ECE3;--charcoal:#1A1612;--text:#3A3028;--muted:#7A6E65;--border:#E8DDD0;--green:#2E7D52;--red:#dc2626}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--charcoal);text-decoration:none}
+.nav-logo span{color:var(--saffron)}
+.nav-links{display:flex;gap:20px;list-style:none}
+.nav-links a{text-decoration:none;color:var(--muted);font-size:.88rem;font-weight:500;transition:.15s}
+.nav-links a:hover,.nav-links a.active{color:var(--saffron)}
+.wrap{max-width:680px;margin:0 auto;padding:32px 20px 60px}
+h1{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--charcoal);margin-bottom:6px}
+.page-sub{color:var(--muted);font-size:.9rem;margin-bottom:32px}
+.section{background:#fff;border-radius:16px;padding:28px;box-shadow:0 2px 12px rgba(26,22,18,.06);margin-bottom:20px}
+.section-title{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.field{margin-bottom:16px}
+.field:last-child{margin-bottom:0}
+label{display:block;font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:5px}
+input,select{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--text);background:var(--cream);outline:none;transition:.2s}
+input:focus,select:focus{border-color:var(--saffron)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chip-group{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:.83rem;font-weight:500;color:var(--muted);cursor:pointer;transition:.15s;user-select:none}
+.chip:hover{border-color:var(--saffron);color:var(--saffron)}
+.chip.selected{border-color:var(--saffron);background:rgba(232,89,60,.07);color:var(--saffron);font-weight:700}
+.save-row{display:flex;align-items:center;gap:12px;margin-top:20px}
+.btn{padding:10px 24px;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;border:none;transition:.15s}
+.btn-primary{background:var(--saffron);color:#fff}.btn-primary:hover{background:var(--saffron-dark)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:none;border:1.5px solid var(--border);color:var(--muted)}.btn-ghost:hover{border-color:var(--charcoal);color:var(--charcoal)}
+.btn-danger{background:none;border:1.5px solid var(--red);color:var(--red)}.btn-danger:hover{background:var(--red);color:#fff}
+.saved-tag{font-size:.8rem;color:var(--green);font-weight:600;display:none}
+.info-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none}
+.info-label{font-size:.85rem;font-weight:600;color:var(--text)}
+.info-val{font-size:.85rem;color:var(--muted)}
+.danger-zone{border:1.5px solid rgba(220,38,38,.2);border-radius:16px;padding:24px;background:rgba(220,38,38,.03);margin-bottom:20px}
+.danger-title{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin-bottom:14px}
+.danger-desc{font-size:.85rem;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:16px;padding:32px;max-width:400px;width:90%;text-align:center}
+.modal-box h3{font-size:1.1rem;font-weight:700;color:var(--charcoal);margin-bottom:8px}
+.modal-box p{font-size:.88rem;color:var(--muted);margin-bottom:24px;line-height:1.6}
+.modal-btns{display:flex;gap:10px;justify-content:center}
+@media(max-width:600px){.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">Roz<span>kaana</span></a>
+  <ul class="nav-links">
+    <li><a href="/app">My Plan</a></li>
+    <li><a href="/history">History</a></li>
+    <li><a href="/billing">Billing</a></li>
+    <li><a href="/settings" class="active">Settings</a></li>
+  </ul>
+</nav>
+
+<div class="wrap">
+  <h1>Settings</h1>
+  <p class="page-sub">Manage your profile, preferences, and account</p>
+
+  <!-- Personal Info -->
+  <div class="section">
+    <div class="section-title">Personal Information</div>
+    <div class="row">
+      <div class="field"><label>Full Name</label><input id="name" placeholder="Your name"></div>
+      <div class="field"><label>Age</label><input id="age" type="number" min="10" max="80"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Weight (kg)</label><input id="weight" type="number" step="0.1"></div>
+      <div class="field"><label>Height (cm)</label><input id="height" type="number"></div>
+    </div>
+    <div class="field">
+      <label>Gender</label>
+      <select id="gender">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="save-row">
+      <button class="btn btn-primary" onclick="saveBasic()">Save</button>
+      <span class="saved-tag" id="savedBasic">✓ Saved</span>
+    </div>
+  </div>
+
+  <!-- Goals & Health -->
+  <div class="section">
+    <div class="section-title">Goal & Health</div>
+    <div class="field">
+      <label>Your Goal</label>
+      <div class="chip-group" id="goalGroup">
+        <div class="chip" data-val="weight_loss" onclick="pickOne(this,'goalGroup')">⬇ Weight Loss</div>
+        <div class="chip" data-val="maintenance" onclick="pickOne(this,'goalGroup')">⚖ Maintenance</div>
+        <div class="chip" data-val="muscle_gain" onclick="pickOne(this,'goalGroup')">💪 Muscle Gain</div>
+      </div>
+    </div>
+    <div class="field" style="margin-top:16px">
+      <label>Health Conditions</label>
+      <div class="chip-group" id="healthGroup">
+        <div class="chip" data-val="diabetes_t2" onclick="pickMany(this)">🩺 Diabetes T2</div>
+        <div class="chip" data-val="hypertension" onclick="pickMany(this)">❤️ High BP</div>
+        <div class="chip" data-val="pcos" onclick="pickMany(this)">🔬 PCOS</div>
+        <div class="chip" data-val="thyroid" onclick="pickMany(this)">🦋 Thyroid</div>
+      </div>
+    </div>
+    <div class="save-row">
+      <button class="btn btn-primary" onclick="saveGoalHealth()">Save</button>
+      <span class="saved-tag" id="savedGoal">✓ Saved</span>
+    </div>
+  </div>
+
+  <!-- Food Preferences -->
+  <div class="section">
+    <div class="section-title">Food Preferences</div>
+    <div class="field">
+      <label>Dietary Mode</label>
+      <select id="eatingMode">
+        <option value="pure_veg">Pure Vegetarian</option>
+        <option value="conditional_nv">Conditional Non-Veg</option>
+        <option value="full_nv">Non-Vegetarian</option>
+        <option value="jain">Jain</option>
+        <option value="sattvic">Sattvic</option>
+      </select>
+    </div>
+    <div class="field" style="margin-top:14px">
+      <label>Cuisine Preferences (up to 3)</label>
+      <div class="chip-group" id="cuisineGroup">
+        <div class="chip" data-val="north_indian" onclick="pickMax(this,'cuisineGroup',3)">🫓 North Indian</div>
+        <div class="chip" data-val="south_indian" onclick="pickMax(this,'cuisineGroup',3)">🍚 South Indian</div>
+        <div class="chip" data-val="bengali" onclick="pickMax(this,'cuisineGroup',3)">🐟 Bengali</div>
+        <div class="chip" data-val="gujarati" onclick="pickMax(this,'cuisineGroup',3)">🥘 Gujarati</div>
+        <div class="chip" data-val="maharashtrian" onclick="pickMax(this,'cuisineGroup',3)">🥙 Maharashtrian</div>
+        <div class="chip" data-val="punjabi" onclick="pickMax(this,'cuisineGroup',3)">🧆 Punjabi</div>
+        <div class="chip" data-val="hyderabadi" onclick="pickMax(this,'cuisineGroup',3)">🍖 Hyderabadi</div>
+        <div class="chip" data-val="kerala" onclick="pickMax(this,'cuisineGroup',3)">🥥 Kerala</div>
+        <div class="chip" data-val="rajasthani" onclick="pickMax(this,'cuisineGroup',3)">🏜 Rajasthani</div>
+      </div>
+    </div>
+    <div class="save-row">
+      <button class="btn btn-primary" onclick="saveEating()">Save</button>
+      <span class="saved-tag" id="savedEating">✓ Saved</span>
+    </div>
+  </div>
+
+  <!-- Account -->
+  <div class="section">
+    <div class="section-title">Account</div>
+    <div class="info-row">
+      <span class="info-label">Email</span>
+      <span class="info-val" id="accEmail">—</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Sign-in method</span>
+      <span class="info-val" id="accMethod">—</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Member since</span>
+      <span class="info-val" id="accSince">—</span>
+    </div>
+    <div style="margin-top:16px">
+      <button class="btn btn-ghost" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- Danger Zone -->
+  <div class="danger-zone">
+    <div class="danger-title">Danger Zone</div>
+    <p class="danger-desc">Deleting your account permanently removes all your data including meal plans, profile and subscription. This cannot be undone.</p>
+    <button class="btn btn-danger" onclick="confirmDelete()">Delete My Account</button>
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box">
+    <h3>Delete Account?</h3>
+    <p>This will permanently delete your account, all meal plans, and cancel your subscription. There is no undo.</p>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="deleteAccount()">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'https://api.rozkaana.in/api/v1';
+const token = localStorage.getItem('rzk_token');
+if (!token) window.location.href = '/';
+
+function h() { return { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }; }
+
+// ── Chip helpers ───────────────────────────────────────────────────────────
+function pickOne(el, g) { document.querySelectorAll('#'+g+' .chip').forEach(c=>c.classList.remove('selected')); el.classList.add('selected'); }
+function pickMany(el) { el.classList.toggle('selected'); }
+function pickMax(el, g, max) {
+  const sel = document.querySelectorAll('#'+g+' .chip.selected');
+  if (!el.classList.contains('selected') && sel.length >= max) return;
+  el.classList.toggle('selected');
+}
+function getSelected(g) { return [...document.querySelectorAll('#'+g+' .chip.selected')].map(c=>c.dataset.val); }
+function setSelected(g, vals) {
+  document.querySelectorAll('#'+g+' .chip').forEach(c => {
+    c.classList.toggle('selected', vals.includes(c.dataset.val));
+  });
+}
+
+function showSaved(id) {
+  const el = document.getElementById(id);
+  el.style.display = 'inline';
+  setTimeout(() => el.style.display = 'none', 2000);
+}
+
+// ── Load current profile ───────────────────────────────────────────────────
+async function loadProfile() {
+  const r = await fetch(API + '/users/me', { headers: h() });
+  if (!r.ok) { logout(); return; }
+  const d = await r.json();
+
+  document.getElementById('name').value = d.name || '';
+  document.getElementById('age').value = d.age || '';
+  document.getElementById('weight').value = d.weight_kg || '';
+  document.getElementById('height').value = d.height_cm || '';
+  if (d.gender) document.getElementById('gender').value = d.gender;
+  if (d.goal) setSelected('goalGroup', [d.goal]);
+  if (d.health_tags?.length) setSelected('healthGroup', d.health_tags);
+  if (d.eating_mode) document.getElementById('eatingMode').value = d.eating_mode;
+  if (d.cuisine_prefs?.length) setSelected('cuisineGroup', d.cuisine_prefs);
+
+  document.getElementById('accEmail').textContent = d.email || '—';
+  document.getElementById('accMethod').textContent = d.email ? 'Google / Email OTP' : 'Email OTP';
+  document.getElementById('accSince').textContent = d.created_at
+    ? new Date(d.created_at).toLocaleDateString('en-IN', {day:'numeric',month:'long',year:'numeric'}) : '—';
+}
+
+// ── Save handlers ──────────────────────────────────────────────────────────
+async function saveBasic() {
+  const btn = event.target; btn.disabled = true;
+  await fetch(API+'/users/me/basic', { method:'PUT', headers:h(), body: JSON.stringify({
+    name: document.getElementById('name').value,
+    age: +document.getElementById('age').value,
+    gender: document.getElementById('gender').value,
+    weight_kg: +document.getElementById('weight').value,
+    height_cm: +document.getElementById('height').value,
+  })});
+  btn.disabled = false; showSaved('savedBasic');
+}
+
+async function saveGoalHealth() {
+  const btn = event.target; btn.disabled = true;
+  const goal = getSelected('goalGroup')[0];
+  if (goal) await fetch(API+'/users/me/goal', { method:'PUT', headers:h(), body: JSON.stringify({ goal }) });
+  await fetch(API+'/users/me/health', { method:'PUT', headers:h(), body: JSON.stringify({
+    health_tags: getSelected('healthGroup'), allergy_tags: []
+  })});
+  btn.disabled = false; showSaved('savedGoal');
+}
+
+async function saveEating() {
+  const btn = event.target; btn.disabled = true;
+  await fetch(API+'/users/me/eating', { method:'PUT', headers:h(), body: JSON.stringify({
+    eating_mode: document.getElementById('eatingMode').value,
+    nv_days: [],
+    cuisine_prefs: getSelected('cuisineGroup'),
+  })});
+  btn.disabled = false; showSaved('savedEating');
+}
+
+function logout() {
+  localStorage.removeItem('rzk_token'); localStorage.removeItem('rzk_refresh');
+  window.location.href = '/';
+}
+
+function confirmDelete() { document.getElementById('deleteModal').classList.add('open'); }
+function closeModal() { document.getElementById('deleteModal').classList.remove('open'); }
+
+async function deleteAccount() {
+  const r = await fetch(API+'/users/me', { method:'DELETE', headers:h() });
+  if (r.ok || r.status === 204) {
+    localStorage.removeItem('rzk_token'); localStorage.removeItem('rzk_refresh');
+    window.location.href = '/?deleted=1';
+  }
+}
+
+loadProfile();
+</script>
+</body>
+</html>

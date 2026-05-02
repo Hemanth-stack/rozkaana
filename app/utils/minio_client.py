@@ -35,6 +35,10 @@ def upload_pdf(object_key: str, pdf_bytes: bytes) -> str:
 
 
 def get_presigned_url(object_key: str) -> str:
+    # If MinIO is on localhost it's not reachable by browsers — use the API proxy instead.
+    # The /files/{path} endpoint on the API server fetches from MinIO internally.
+    if "localhost" in settings.MINIO_ENDPOINT or "127.0.0.1" in settings.MINIO_ENDPOINT:
+        return f"{settings.APP_BASE_URL}/files/{object_key}"
     return _client.presigned_get_object(
         settings.MINIO_BUCKET_NAME,
         object_key,

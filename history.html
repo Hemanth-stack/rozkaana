@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meal History — Rozkaana</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--saffron:#E8593C;--saffron-dark:#C9421F;--cream:#FAF7F2;--cream-dark:#F2ECE3;--charcoal:#1A1612;--text:#3A3028;--muted:#7A6E65;--border:#E8DDD0;--green:#2E7D52}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--charcoal);text-decoration:none}
+.nav-logo span{color:var(--saffron)}
+.nav-links{display:flex;gap:20px;list-style:none}
+.nav-links a{text-decoration:none;color:var(--muted);font-size:.88rem;font-weight:500;transition:.15s}
+.nav-links a:hover,.nav-links a.active{color:var(--saffron)}
+.wrap{max-width:720px;margin:0 auto;padding:32px 20px 60px}
+h1{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--charcoal);margin-bottom:6px}
+.page-sub{color:var(--muted);font-size:.9rem;margin-bottom:28px}
+.filter-row{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap}
+.filter-btn{padding:7px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:.82rem;font-weight:600;cursor:pointer;transition:.15s;color:var(--muted)}
+.filter-btn:hover,.filter-btn.active{border-color:var(--saffron);color:var(--saffron);background:rgba(232,89,60,.06)}
+.macro-trend{background:#fff;border-radius:16px;padding:20px;margin-bottom:24px;box-shadow:0 2px 12px rgba(26,22,18,.06)}
+.trend-title{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.trend-bars{display:flex;gap:8px;align-items:flex-end;height:64px}
+.trend-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.trend-bar{width:100%;border-radius:4px 4px 0 0;background:var(--saffron);opacity:.7;min-height:4px;transition:.3s}
+.trend-label{font-size:.62rem;color:var(--muted)}
+.day-card{background:#fff;border-radius:16px;padding:0;box-shadow:0 2px 12px rgba(26,22,18,.06);margin-bottom:14px;overflow:hidden;transition:.2s}
+.day-card:hover{box-shadow:0 4px 20px rgba(26,22,18,.1)}
+.day-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;cursor:pointer;border-bottom:1px solid var(--border)}
+.day-header:hover{background:var(--cream)}
+.day-date{font-weight:700;color:var(--charcoal);font-size:.92rem}
+.day-sub{font-size:.75rem;color:var(--muted);margin-top:2px}
+.day-macros{display:flex;gap:12px;align-items:center}
+.day-kcal{font-weight:800;color:var(--saffron);font-size:.9rem}
+.day-macro-pills{display:flex;gap:6px}
+.mpill{font-size:.72rem;color:var(--muted);background:var(--cream-dark);border-radius:5px;padding:2px 7px}
+.day-actions{display:flex;gap:6px;align-items:center}
+.icon-btn{width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;transition:.15s}
+.icon-btn:hover{border-color:var(--saffron);background:rgba(232,89,60,.06)}
+.day-slots{padding:12px 16px;display:none}
+.day-slots.open{display:block}
+.slot-row{display:flex;align-items:center;gap:12px;padding:8px 4px;border-bottom:1px solid var(--cream-dark)}
+.slot-row:last-child{border-bottom:none}
+.slot-icon{font-size:1.1rem;width:28px;text-align:center;flex-shrink:0}
+.slot-name{flex:1;font-size:.85rem;font-weight:600;color:var(--charcoal)}
+.slot-time{font-size:.72rem;color:var(--muted)}
+.slot-kcal{font-size:.8rem;font-weight:700;color:var(--saffron)}
+.empty{text-align:center;padding:48px;color:var(--muted)}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--saffron);border-radius:50%;animation:spin .8s linear infinite;margin:40px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">Roz<span>kaana</span></a>
+  <ul class="nav-links">
+    <li><a href="/app">My Plan</a></li>
+    <li><a href="/history" class="active">History</a></li>
+    <li><a href="/billing">Billing</a></li>
+    <li><a href="/settings">Settings</a></li>
+  </ul>
+</nav>
+
+<div class="wrap">
+  <h1>Meal History</h1>
+  <p class="page-sub">Your past meal plans</p>
+
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="setDays(7,this)">Last 7 days</button>
+    <button class="filter-btn" onclick="setDays(14,this)">14 days</button>
+    <button class="filter-btn" onclick="setDays(30,this)">30 days</button>
+  </div>
+
+  <!-- Calorie trend chart -->
+  <div class="macro-trend" id="trendSection" style="display:none">
+    <div class="trend-title">Calorie Trend (7-day)</div>
+    <div class="trend-bars" id="trendBars"></div>
+  </div>
+
+  <div id="loading"><div class="spinner"></div></div>
+  <div id="historyList"></div>
+</div>
+
+<!-- PDF Viewer -->
+<div id="pdfOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center" onclick="if(event.target===this)closePDF()">
+  <div style="width:820px;max-width:96vw;height:90vh;background:#fff;border-radius:16px;display:flex;flex-direction:column;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border)">
+      <strong id="pdfTitle" style="font-size:.95rem">Meal Plan</strong>
+      <div style="display:flex;gap:8px">
+        <a id="pdfDl" href="#" download="rozkaana-meal-plan.pdf" style="padding:6px 14px;background:var(--saffron);color:#fff;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:700">⬇ Download</a>
+        <button onclick="closePDF()" style="padding:6px 12px;border:1px solid var(--border);background:none;border-radius:8px;cursor:pointer;font-size:.82rem">✕</button>
+      </div>
+    </div>
+    <iframe id="pdfFrame" style="flex:1;border:none"></iframe>
+  </div>
+</div>
+
+<script>
+const API = 'https://api.rozkaana.in/api/v1';
+const token = localStorage.getItem('rzk_token');
+if (!token) window.location.href = '/';
+function h() { return { Authorization: 'Bearer ' + token }; }
+
+const SLOT_DEF = [
+  {key:'breakfast',    icon:'☀️', label:'Breakfast',      time:'8:00 AM'},
+  {key:'morning_snack',icon:'🍵', label:'Morning Snack',  time:'10:30 AM'},
+  {key:'lunch',        icon:'🍛', label:'Lunch',          time:'1:00 PM'},
+  {key:'evening_snack',icon:'🫐', label:'Evening Snack',  time:'4:30 PM'},
+  {key:'dinner',       icon:'🌙', label:'Dinner',         time:'8:00 PM'},
+];
+
+let currentDays = 7;
+
+function setDays(days, btn) {
+  currentDays = days;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadHistory();
+}
+
+async function loadHistory() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('historyList').innerHTML = '';
+  document.getElementById('trendSection').style.display = 'none';
+
+  const r = await fetch(`${API}/menu/history?days=${currentDays}`, { headers: h() });
+  document.getElementById('loading').style.display = 'none';
+
+  if (!r.ok) {
+    document.getElementById('historyList').innerHTML = '<div class="empty">No meal history yet.</div>';
+    return;
+  }
+  const data = await r.json();
+  const menus = data.menus || [];
+
+  if (!menus.length) {
+    document.getElementById('historyList').innerHTML = '<div class="empty">No meal plans found for this period.</div>';
+    return;
+  }
+
+  // Render trend chart for last 7
+  if (currentDays <= 7 && menus.length > 1) {
+    renderTrend(menus.slice(0, 7).reverse());
+    document.getElementById('trendSection').style.display = 'block';
+  }
+
+  // Render day cards
+  const list = document.getElementById('historyList');
+  menus.forEach((m, idx) => {
+    const dateObj = new Date(m.menu_date + 'T12:00:00');
+    const isToday = m.menu_date === new Date().toISOString().slice(0,10);
+    const dateStr = isToday ? 'Today' : dateObj.toLocaleDateString('en-IN', {weekday:'long', day:'numeric', month:'short'});
+    const filled = SLOT_DEF.filter(s => m[s.key]);
+
+    const card = document.createElement('div');
+    card.className = 'day-card';
+    card.innerHTML = `
+      <div class="day-header" onclick="toggleDay(this)">
+        <div>
+          <div class="day-date">${dateStr}</div>
+          <div class="day-sub">${filled.length} meals · ${m.menu_date}</div>
+        </div>
+        <div class="day-macros">
+          <div class="day-macro-pills">
+            <span class="mpill">P: ${m.total_protein_g||0}g</span>
+            <span class="mpill">C: ${m.total_carbs_g||0}g</span>
+          </div>
+          <span class="day-kcal">${m.total_calories||0} kcal</span>
+          <div class="day-actions">
+            <div class="icon-btn" title="Grocery List" onclick="event.stopPropagation();openGroceryList('${m.menu_date}')">🛒</div>
+            ${m.pdf_url ? `<div class="icon-btn" title="View PDF" onclick="event.stopPropagation();openPDF('${m.pdf_url}','${dateStr}')">📄</div>` : ''}
+            <div class="icon-btn" title="Expand" style="font-size:.7rem;color:var(--muted)">▾</div>
+          </div>
+        </div>
+      </div>
+      <div class="day-slots">
+        ${filled.map(s => `
+          <div class="slot-row">
+            <span class="slot-icon">${s.icon}</span>
+            <div style="flex:1">
+              <div class="slot-name">${m[s.key].name}</div>
+              <div class="slot-time">${s.label} · ${s.time}</div>
+            </div>
+            <span class="slot-kcal">${m[s.key].calories} kcal</span>
+          </div>`).join('')}
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function toggleDay(header) {
+  const slots = header.nextElementSibling;
+  slots.classList.toggle('open');
+  const arrow = header.querySelector('.day-actions div:last-child');
+  if (arrow) arrow.textContent = slots.classList.contains('open') ? '▴' : '▾';
+}
+
+function renderTrend(menus) {
+  const max = Math.max(...menus.map(m => m.total_calories || 0)) || 1;
+  document.getElementById('trendBars').innerHTML = menus.map(m => {
+    const pct = ((m.total_calories || 0) / max * 100).toFixed(0);
+    const d = new Date(m.menu_date + 'T12:00:00');
+    const label = d.toLocaleDateString('en-IN', {weekday:'short'}).slice(0,3);
+    return `<div class="trend-col">
+      <div style="font-size:.62rem;color:var(--muted)">${m.total_calories||0}</div>
+      <div class="trend-bar" style="height:${pct}%"></div>
+      <div class="trend-label">${label}</div>
+    </div>`;
+  }).join('');
+}
+
+async function openGroceryList(menuDate) {
+  try {
+    const r = await fetch(`${API}/menu/${menuDate}/grocery-list`, { headers: h() });
+    if (!r.ok) { alert('No grocery list available for this date'); return; }
+    const data = await r.json();
+    const win = window.open('', '_blank', 'width=480,height=640');
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+      <title>Grocery List — ${menuDate}</title>
+      <style>body{font-family:sans-serif;padding:24px;max-width:400px}
+      h2{margin-bottom:4px}p{color:#777;font-size:.85rem;margin-bottom:16px}
+      ul{list-style:none;padding:0}li{padding:8px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between}
+      .qty{font-weight:700;color:#E8593C}</style></head><body>
+      <h2>🛒 Grocery List</h2>
+      <p>${menuDate} · ${data.recipe_count} meals · ${data.member_count} person(s)</p>
+      <ul>${(data.items||[]).map(i=>`<li><span>${i.name}</span><span class="qty">${i.qty} ${i.unit}</span></li>`).join('')}</ul>
+      <button onclick="window.print()" style="margin-top:16px;padding:8px 16px;background:#E8593C;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨 Print</button>
+      </body></html>`);
+    win.document.close();
+  } catch(e) { alert('Could not load grocery list'); }
+}
+
+function openPDF(url, title) {
+  document.getElementById('pdfTitle').textContent = '📄 ' + title;
+  document.getElementById('pdfFrame').src = url;
+  document.getElementById('pdfDl').href = url;
+  document.getElementById('pdfOverlay').style.display = 'flex';
+}
+function closePDF() {
+  document.getElementById('pdfOverlay').style.display = 'none';
+  document.getElementById('pdfFrame').src = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePDF(); });
+
+loadHistory();
+</script>
+</body>
+</html>

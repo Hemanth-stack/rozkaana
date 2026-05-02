@@ -31,6 +31,9 @@ host:
 		-v /opt/hemanth/rozkaana/auth-success.html:/usr/share/nginx/html/auth-success.html:ro \
 		-v /opt/hemanth/rozkaana/onboard.html:/usr/share/nginx/html/onboard.html:ro \
 		-v /opt/hemanth/rozkaana/app.html:/usr/share/nginx/html/app.html:ro \
+		-v /opt/hemanth/rozkaana/settings.html:/usr/share/nginx/html/settings.html:ro \
+		-v /opt/hemanth/rozkaana/billing.html:/usr/share/nginx/html/billing.html:ro \
+		-v /opt/hemanth/rozkaana/history.html:/usr/share/nginx/html/history.html:ro \
 		nginx:alpine
 	@sleep 2
 	@$(MAKE) status

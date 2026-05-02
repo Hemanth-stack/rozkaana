@@ -33,8 +33,30 @@ class GenerateBatchResponse(BaseModel):
     recipes: list[RecipeOut]
 
 
+class UserAdminProfile(BaseModel):
+    id: UUID
+    name: Optional[str]
+    email: Optional[str]
+    phone: str
+    eating_mode: Optional[str]
+    goal: Optional[str]
+    bmi: Optional[float]
+    health_tags: Optional[list[str]] = []
+    is_active: bool = True
+    is_admin: bool = False
+    onboarding_complete: bool = False
+    wa_opted_in: bool = False
+    created_at: Optional[datetime]
+    plan_type: Optional[str] = None
+    sub_status: Optional[str] = None
+    sub_period_end: Optional[date] = None
+    trial_end: Optional[date] = None
+
+    model_config = {"from_attributes": True}
+
+
 class UserListResponse(BaseModel):
-    users: list[UserProfile]
+    users: list[UserAdminProfile]
     total: int
     page: int = 1
     limit: int = 20
@@ -47,6 +69,7 @@ class DashboardStats(BaseModel):
     pdfs_built_today: int
     wa_delivered_today: int
     wa_failed_today: int
+    emails_sent_today: int = 0
     mrr: float
     plan_distribution: dict[str, int]
 
@@ -81,3 +104,15 @@ class MenuAdminItem(BaseModel):
 class MenuAdminListResponse(BaseModel):
     menus: list[MenuAdminItem]
     total: int
+
+
+class ComponentHealth(BaseModel):
+    status: str                    # "ok" | "degraded" | "down"
+    latency_ms: Optional[float] = None
+    detail: Optional[str] = None
+
+
+class SystemHealthResponse(BaseModel):
+    overall: str
+    components: dict[str, ComponentHealth]
+    checked_at: datetime

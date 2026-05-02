@@ -1,3 +1,5 @@
+import hashlib
+import hmac
 import logging
 from datetime import date, timedelta
 from uuid import UUID
@@ -13,18 +15,16 @@ from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
-# Razorpay plan IDs per plan type (set in Razorpay dashboard, store in .env or hardcode for now)
-RZP_PLAN_IDS: dict[str, str] = {
-    "solo_basic": "plan_solo_basic",
-    "solo_pro": "plan_solo_pro",
-    "family": "plan_family",
+PLAN_AMOUNTS: dict[str, int] = {
+    "solo_basic": 19900,   # ₹199 in paise
+    "solo_pro":   39900,   # ₹399 in paise
+    "family":     69900,   # ₹699 in paise
 }
 
-# Approximate MRR per plan
-PLAN_PRICES: dict[str, float] = {
-    "solo_basic": 299.0,
-    "solo_pro": 499.0,
-    "family": 799.0,
+PLAN_LABELS: dict[str, str] = {
+    "solo_basic": "Starter",
+    "solo_pro":   "Pro",
+    "family":     "Family",
 }
 
 _rzp_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
@@ -51,9 +51,11 @@ async def create_trial(user_id: UUID, plan_type: str, db: AsyncSession) -> Subsc
     return sub
 
 
-async def upgrade_plan(user_id: UUID, plan_type: str, db: AsyncSession) -> dict:
-    result = await db.execute(select(Subscription).where(Subscription.user_id == user_id))
-    sub = result.scalar_one_or_none()
+async def create_checkout_order(user_id: UUID, plan_type: str, db: AsyncSession) -> dict:
+    """Create a Razorpay Order for one month of the given plan."""
+    amount = PLAN_AMOUNTS.get(plan_type)
+    if not amount:
+        raise HTTPException(status_code=400, detail="Invalid plan type")
 
     user_result = await db.execute(select(User).where(User.id == user_id))
     user = user_result.scalar_one_or_none()
@@ -61,60 +63,123 @@ async def upgrade_plan(user_id: UUID, plan_type: str, db: AsyncSession) -> dict:
         raise HTTPException(status_code=404, detail="User not found")
 
     try:
-        if not sub or not sub.rzp_customer_id:
-            customer = _rzp_client.customer.create({
-                "name": user.name or "Rozkaana User",
-                "contact": user.phone.lstrip("+"),
-            })
-            rzp_customer_id = customer["id"]
-        else:
-            rzp_customer_id = sub.rzp_customer_id
-
-        rzp_plan_id = RZP_PLAN_IDS.get(plan_type, "plan_solo_basic")
-
-        rzp_sub = _rzp_client.subscription.create({
-            "plan_id": rzp_plan_id,
-            "customer_notify": 1,
-            "quantity": 1,
-            "total_count": 12,
-            "customer_id": rzp_customer_id,
+        order = _rzp_client.order.create({
+            "amount": amount,
+            "currency": "INR",
+            "notes": {
+                "plan_type": plan_type,
+                "user_id": str(user_id),
+            },
         })
-
-        payment_link = f"https://rzp.io/l/{rzp_sub['id']}"
-
-        if sub:
-            sub.rzp_customer_id = rzp_customer_id
-            sub.rzp_subscription_id = rzp_sub["id"]
-            sub.rzp_plan_id = rzp_plan_id
-            sub.plan_type = plan_type
-        else:
-            sub = Subscription(
-                user_id=user_id,
-                plan_type=plan_type,
-                status="trial",
-                rzp_customer_id=rzp_customer_id,
-                rzp_subscription_id=rzp_sub["id"],
-                rzp_plan_id=rzp_plan_id,
-            )
-            db.add(sub)
-
-        await db.flush()
-
-        return {
-            "payment_link": payment_link,
-            "rzp_subscription_id": rzp_sub["id"],
-        }
     except Exception as exc:
-        logger.error("Razorpay upgrade failed for user %s: %s", user_id, exc)
+        logger.error("Razorpay order creation failed for user %s: %s", user_id, exc)
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Payment gateway error")
+
+    return {
+        "order_id": order["id"],
+        "amount": amount,
+        "currency": "INR",
+        "key_id": settings.RAZORPAY_KEY_ID,
+        "user_name": user.name or "",
+        "user_email": user.email or "",
+        "plan_type": plan_type,
+        "plan_label": PLAN_LABELS.get(plan_type, plan_type),
+    }
+
+
+async def verify_and_activate(
+    user_id: UUID,
+    razorpay_payment_id: str,
+    razorpay_order_id: str,
+    razorpay_signature: str,
+    db: AsyncSession,
+) -> Subscription:
+    """Verify Razorpay HMAC signature and activate the subscription."""
+    # Verify HMAC-SHA256(key_secret, order_id|payment_id)
+    expected = hmac.new(
+        settings.RAZORPAY_KEY_SECRET.encode(),
+        f"{razorpay_order_id}|{razorpay_payment_id}".encode(),
+        hashlib.sha256,
+    ).hexdigest()
+    if not hmac.compare_digest(expected, razorpay_signature):
+        raise HTTPException(status_code=400, detail="Payment verification failed — invalid signature")
+
+    # Fetch order from Razorpay to read the authoritative plan_type (prevents spoofing)
+    try:
+        order = _rzp_client.order.fetch(razorpay_order_id)
+        plan_type = order["notes"].get("plan_type")
+    except Exception as exc:
+        logger.error("Razorpay order fetch failed: %s", exc)
+        raise HTTPException(status_code=502, detail="Payment gateway error")
+
+    if not plan_type or plan_type not in PLAN_AMOUNTS:
+        raise HTTPException(status_code=400, detail="Invalid order — plan not found")
+
+    # Activate subscription
+    result = await db.execute(select(Subscription).where(Subscription.user_id == user_id))
+    sub = result.scalar_one_or_none()
+    today = date.today()
+
+    if sub:
+        sub.plan_type = plan_type
+        sub.status = "active"
+        sub.current_period_start = today
+        sub.current_period_end = today + timedelta(days=30)
+        sub.rzp_subscription_id = razorpay_payment_id
+    else:
+        sub = Subscription(
+            user_id=user_id,
+            plan_type=plan_type,
+            status="active",
+            current_period_start=today,
+            current_period_end=today + timedelta(days=30),
+            rzp_subscription_id=razorpay_payment_id,
+        )
+        db.add(sub)
+
+    await db.flush()
+    await db.refresh(sub)
+    return sub
 
 
 async def handle_razorpay_webhook(event: str, payload: dict, db: AsyncSession) -> None:
-    subscription_data = (
-        payload.get("payload", {}).get("subscription", {}).get("entity", {})
-    )
-    rzp_sub_id = subscription_data.get("id")
+    if event == "payment.captured":
+        payment = payload.get("payload", {}).get("payment", {}).get("entity", {})
+        order_id = payment.get("order_id")
+        if not order_id:
+            return
+        try:
+            order = _rzp_client.order.fetch(order_id)
+            user_id_str = order["notes"].get("user_id")
+            plan_type = order["notes"].get("plan_type")
+        except Exception as exc:
+            logger.warning("Webhook: order fetch failed for order_id=%s: %s", order_id, exc)
+            return
 
+        if not user_id_str or not plan_type:
+            return
+
+        from uuid import UUID as _UUID
+        try:
+            uid = _UUID(user_id_str)
+        except ValueError:
+            return
+
+        result = await db.execute(select(Subscription).where(Subscription.user_id == uid))
+        sub = result.scalar_one_or_none()
+        today = date.today()
+        if sub:
+            sub.status = "active"
+            sub.plan_type = plan_type
+            sub.current_period_start = today
+            sub.current_period_end = today + timedelta(days=30)
+            sub.rzp_subscription_id = payment.get("id")
+        await db.flush()
+        return
+
+    # Handle legacy subscription events (if Razorpay Subscriptions are ever used)
+    subscription_data = payload.get("payload", {}).get("subscription", {}).get("entity", {})
+    rzp_sub_id = subscription_data.get("id")
     if not rzp_sub_id:
         return
 
@@ -123,23 +188,19 @@ async def handle_razorpay_webhook(event: str, payload: dict, db: AsyncSession) -
     )
     sub = result.scalar_one_or_none()
     if not sub:
-        logger.warning("Webhook: no subscription found for rzp_id=%s", rzp_sub_id)
+        logger.warning("Webhook: no subscription for rzp_id=%s", rzp_sub_id)
         return
 
     if event == "subscription.activated":
         sub.status = "active"
         _set_period_from_payload(sub, subscription_data)
-
     elif event == "subscription.charged":
         sub.status = "active"
         _set_period_from_payload(sub, subscription_data)
-
     elif event == "subscription.cancelled":
         sub.status = "cancelled"
-
     elif event == "subscription.halted":
         sub.status = "paused"
-
     elif event == "payment.failed":
         logger.warning("Payment failed for rzp_sub=%s", rzp_sub_id)
 
@@ -164,7 +225,7 @@ async def pause_subscription(user_id: UUID, db: AsyncSession) -> Subscription:
     if sub.status != "active":
         raise HTTPException(status_code=400, detail="Subscription is not active")
     if (sub.pause_days_used or 0) >= 30:
-        raise HTTPException(status_code=400, detail="Pause limit (30 days) reached")
+        raise HTTPException(status_code=400, detail="Pause limit (30 days/year) reached")
 
     sub.status = "paused"
     sub.paused_at = date.today()
@@ -195,12 +256,6 @@ async def cancel_subscription(user_id: UUID, db: AsyncSession) -> Subscription:
     sub = result.scalar_one_or_none()
     if not sub:
         raise HTTPException(status_code=404, detail="No subscription found")
-
-    if sub.rzp_subscription_id:
-        try:
-            _rzp_client.subscription.cancel(sub.rzp_subscription_id, {"cancel_at_cycle_end": 1})
-        except Exception as exc:
-            logger.warning("Razorpay cancel failed: %s", exc)
 
     sub.status = "cancelled"
     await db.flush()

@@ -1,9 +1,11 @@
 from pydantic import BaseModel
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
+from app.utils.rate_limiter import limiter
 
 from app.database import get_db
 from app.schemas.auth import (
@@ -24,7 +26,9 @@ class DevLoginRequest(BaseModel):
 
 
 @router.post("/send-otp", response_model=SendOTPResponse)
+@limiter.limit("5/10minutes")
 async def send_otp_endpoint(
+    http_request: Request,
     request: SendOTPRequest,
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
@@ -55,7 +59,10 @@ async def dev_login(
     request: DevLoginRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    """Dev-only: skip OTP. Automatically disabled when SMTP is configured."""
+    """Dev-only: skip OTP. Disabled in production (APP_ENV=production)."""
+    from app.config import settings
+    if settings.APP_ENV != "development":
+        raise HTTPException(status_code=403, detail="Dev login disabled in production")
     from app.services.otp_service import _smtp_configured
     if _smtp_configured():
         raise HTTPException(status_code=403, detail="Dev login disabled — use /auth/send-otp")

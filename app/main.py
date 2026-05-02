@@ -1,10 +1,23 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
+from app.utils.rate_limiter import limiter
 from app.routers import auth, users, household, menu, subscription, webhook, admin
 from app.routers import google_auth
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    handlers=[
+        logging.FileHandler("/tmp/rozkaana-api.log"),
+        logging.StreamHandler(),
+    ],
+)
 
 
 @asynccontextmanager
@@ -25,12 +38,15 @@ app = FastAPI(
     redoc_url="/api/redoc",
 )
 
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://rozkaana.in", "https://api.rozkaana.in"],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
 )
 
 app.include_router(auth.router, prefix="/api/v1")
@@ -50,7 +66,7 @@ async def health_check():
 
 @app.get("/files/{file_path:path}")
 async def serve_file(file_path: str):
-    """Serve files from MinIO publicly — used by WATI to download PDFs."""
+    """Serve files from MinIO — used by WATI for PDF delivery."""
     from fastapi.responses import StreamingResponse
     from app.utils.minio_client import _client, settings as _s
     import io
@@ -62,6 +78,6 @@ async def serve_file(file_path: str):
             media_type="application/pdf",
             headers={"Content-Disposition": f'inline; filename="{file_path.split("/")[-1]}"'},
         )
-    except Exception as e:
+    except Exception:
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="File not found")

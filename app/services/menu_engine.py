@@ -295,6 +295,50 @@ async def _update_history(redis: Redis, owner_id: str, selected: dict[str, Recip
         await redis.expire(key, 8 * 24 * 3600)
 
 
+async def get_menu_insights(
+    db: AsyncSession,
+    redis: Redis,
+    owner_id: str,
+    owner_type: str,
+    menu_date: date,
+) -> dict:
+    """Return diagnostic info about how the menu engine would build today's menu."""
+    ctx = await _load_context(db, owner_id, owner_type, menu_date)
+    excluded = await _get_excluded_ids(redis, owner_id)
+    cuisine_pool = _resolve_cuisine(ctx, menu_date, None)
+
+    candidate_counts: dict[str, int] = {}
+    for slot in SLOT_RATIOS:
+        candidates = await _query_candidates(
+            db, slot, ctx, excluded.get(slot, set()), cuisine_pool
+        )
+        candidate_counts[slot] = len(candidates)
+
+    cuisine_used = cuisine_pool[0] if cuisine_pool else "unknown"
+    if ctx.get("is_festival") and ctx.get("festival_name"):
+        cuisine_reason = f"Festival: {ctx['festival_name']}"
+    else:
+        prefs = ctx.get("cuisine_prefs") or []
+        cuisine_reason = f"Preference: {prefs[0]}" if prefs else "Default rotation"
+
+    return {
+        "signals_active": {
+            "eating_mode": ctx.get("eating_mode"),
+            "health_tags": ctx.get("health_tags", []),
+            "allergy_tags": ctx.get("allergy_tags", []),
+            "calorie_target": ctx.get("calorie_target"),
+            "is_festival": ctx.get("is_festival", False),
+            "festival_name": ctx.get("festival_name"),
+            "is_nv_day": ctx.get("is_nv_day", False),
+        },
+        "candidate_pool": candidate_counts,
+        "cuisine_used": cuisine_used,
+        "cuisine_reason": cuisine_reason,
+        "calorie_target": ctx.get("calorie_target"),
+        "exclusion_window_7d": {slot: len(ids) for slot, ids in excluded.items()},
+    }
+
+
 def _build_menu_record(
     selected: dict[str, Recipe | None],
     menu_date: date,

@@ -240,8 +240,8 @@
     <h2>🍱 Rozkaana Admin</h2>
     <p>Sign in to access the admin panel</p>
     <div class="form-group">
-      <label class="form-label">Admin Phone (+91XXXXXXXXXX)</label>
-      <input class="form-input" id="loginPhone" type="tel" placeholder="+91XXXXXXXXXX" value="+91">
+      <label class="form-label">Admin Email</label>
+      <input class="form-input" id="loginEmail" type="email" placeholder="admin@rozkaana.in">
     </div>
     <div class="form-group">
       <label class="form-label">Password</label>
@@ -265,6 +265,7 @@
     <div class="nav-section-label">Overview</div>
     <button class="nav-item active" onclick="showPage('dashboard',this)"><span class="icon">📊</span> Dashboard</button>
     <button class="nav-item" onclick="showPage('pipeline',this)"><span class="icon">⚙️</span> Daily Pipeline</button>
+    <button class="nav-item" onclick="showPage('health',this)"><span class="icon">💚</span> System Health</button>
     <button class="nav-item" onclick="showPage('logs',this)"><span class="icon">📋</span> System Logs</button>
   </div>
   <div class="nav-section">
@@ -319,7 +320,7 @@
       </div>
       <div class="card">
         <div class="section-title">Recent Users</div>
-        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Phone</th><th>Plan</th><th>Status</th><th>Joined</th><th>WA</th></tr></thead><tbody id="recentUsersBody"><tr><td colspan="6" class="loading"> </td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Sub Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="recentUsersBody"><tr><td colspan="6" class="loading"> </td></tr></tbody></table></div>
       </div>
     </div>
 
@@ -328,15 +329,22 @@
       <div class="pipeline-steps" id="pipelineSteps"><div class="loading"> </div></div>
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div class="section-title" style="margin-bottom:0">Failed / Pending WhatsApp</div>
+          <div class="section-title" style="margin-bottom:0">Failed / Pending Email Delivery</div>
           <button class="btn-sm verify" style="flex:none;padding:6px 14px" onclick="loadFailedMenus()">↻ Refresh</button>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>Menu ID</th><th>Owner</th><th>Date</th><th>WA Status</th><th>PDF</th><th>Action</th></tr></thead><tbody id="failedMenusBody"><tr><td colspan="6" class="loading"> </td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Menu ID</th><th>Owner</th><th>Date</th><th>Email Status</th><th>PDF</th><th>Action</th></tr></thead><tbody id="failedMenusBody"><tr><td colspan="6" class="loading"> </td></tr></tbody></table></div>
       </div>
     </div>
 
     <!-- ══ RECIPES ══ -->
     <div class="page" id="page-recipes">
+      <div class="card mb20">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div class="section-title" style="margin-bottom:0">Recipe Bank</div>
+          <button class="btn-sm" onclick="loadRecipeStats()">↻ Refresh</button>
+        </div>
+        <div id="recipeStatsContent"><div class="loading"> </div></div>
+      </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
         <div>
           <div class="section-title" style="margin-bottom:2px">Unverified Recipes</div>
@@ -447,8 +455,8 @@
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <div class="section-title" style="margin-bottom:0">User Directory</div>
           <div style="display:flex;gap:8px">
-            <input class="form-input" id="userSearch" placeholder="Search name/phone…" style="width:180px" oninput="filterUsers()">
-            <select class="form-select" id="userPlanFilter" style="width:120px" onchange="filterUsers()">
+            <input class="form-input" id="userSearch" placeholder="Search name/email…" style="width:200px" oninput="searchUsers()">
+            <select class="form-select" id="userPlanFilter" style="width:120px" onchange="loadUsers()">
               <option value="">All Plans</option>
               <option value="solo_basic">Starter</option>
               <option value="solo_pro">Pro</option>
@@ -456,7 +464,7 @@
             </select>
           </div>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Phone</th><th>Plan</th><th>Eating Mode</th><th>BMI</th><th>Goal</th><th>WA</th><th>Status</th><th>Joined</th></tr></thead><tbody id="usersBody"><tr><td colspan="9" class="loading"> </td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Sub Status</th><th>Eating Mode</th><th>BMI</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="usersBody"><tr><td colspan="8" class="loading"> </td></tr></tbody></table></div>
         <div style="display:flex;justify-content:center;gap:8px;margin-top:14px">
           <button class="btn-sm" id="prevUserBtn" onclick="userPage--; loadUsers()">← Prev</button>
           <span style="font-size:.78rem;color:var(--text-muted);align-self:center" id="userPageInfo">Page 1</span>
@@ -485,14 +493,48 @@
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
         <div class="section-title" style="margin-bottom:0">System Log Stream</div>
         <div style="display:flex;gap:8px;align-items:center">
+          <select class="form-select" id="logLevelFilter" style="width:100px" onchange="loadLogs()">
+            <option value="">All</option>
+            <option value="ERR">Errors</option>
+            <option value="WARN">Warnings</option>
+            <option value="INFO">Info</option>
+          </select>
           <button class="btn-sm" onclick="loadLogs()">↻ Refresh</button>
         </div>
       </div>
       <div class="syslog-panel" id="syslogPanel"><div class="loading"> </div></div>
     </div>
 
+    <!-- ══ SYSTEM HEALTH ══ -->
+    <div class="page" id="page-health">
+      <div class="grid-4 mb20" id="healthComponents"><div class="loading"> </div></div>
+      <div class="grid-2">
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div class="section-title" style="margin-bottom:0">Celery Workers</div>
+            <button class="btn-sm" onclick="loadHealth()">↻</button>
+          </div>
+          <div id="celeryWorkerStats"><div class="loading"> </div></div>
+        </div>
+        <div class="card">
+          <div class="section-title">Queue Depth</div>
+          <div id="queueDepthStats"><div class="loading"> </div></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </main>
+
+<!-- ═══ USER DETAIL DRAWER ═══ -->
+<div id="userDrawerBg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100" onclick="closeDrawer()"></div>
+<div id="userDrawer" style="display:none;position:fixed;top:0;right:0;width:420px;max-width:100vw;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:101;overflow-y:auto;padding:24px;flex-direction:column;gap:0">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <h3 style="font-size:1rem;font-weight:700;color:var(--text)">User Detail</h3>
+    <button onclick="closeDrawer()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.2rem">✕</button>
+  </div>
+  <div id="drawerContent"><div class="loading"> </div></div>
+</div>
 
 <script>
 const API = 'https://api.rozkaana.in/api/v1';
@@ -503,14 +545,14 @@ const USER_LIMIT = 20, RECIPE_LIMIT = 9;
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
 async function doLogin() {
-  const phone = document.getElementById('loginPhone').value.trim();
+  const email = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPass').value.trim();
   const err   = document.getElementById('loginErr');
   err.style.display = 'none';
   try {
     const r = await fetch(`${API}/admin/login`, {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({phone, password: pass})
+      body: JSON.stringify({email, password: pass})
     });
     if (!r.ok) { err.textContent = 'Invalid credentials'; err.style.display = 'block'; return; }
     const d = await r.json();
@@ -549,12 +591,13 @@ if (token) showApp();
 // ── PAGE SWITCHING ────────────────────────────────────────────────────────────
 const META = {
   dashboard:     ['Dashboard', ''],
-  pipeline:      ['Daily Pipeline', 'Menu generation → PDF build → WhatsApp delivery'],
+  pipeline:      ['Daily Pipeline', 'Menu generation → PDF build → email delivery'],
   recipes:       ['Recipes', 'AI-generated recipes pending verification'],
   aigenerate:    ['AI Generate', 'Generate new recipes with Claude AI'],
   users:         ['All Users', 'User management and profiles'],
   subscriptions: ['Subscriptions', 'Revenue, churn, and subscription status'],
   logs:          ['System Logs', 'Real-time log stream'],
+  health:        ['System Health', 'Component status and Celery worker health'],
 };
 
 function showPage(id, el) {
@@ -567,8 +610,8 @@ function showPage(id, el) {
   document.getElementById('page-sub').textContent = s;
   const loaders = {
     dashboard: loadDashboard, pipeline: loadPipeline,
-    recipes: loadRecipes, users: loadUsers,
-    subscriptions: loadSubscriptions, logs: loadLogs,
+    recipes: () => { loadRecipes(); loadRecipeStats(); }, users: loadUsers,
+    subscriptions: loadSubscriptions, logs: loadLogs, health: loadHealth,
   };
   if (loaders[id]) loaders[id]();
 }
@@ -579,8 +622,8 @@ function refreshPage() {
   const id = active.id.replace('page-', '');
   const loaders = {
     dashboard: loadDashboard, pipeline: loadPipeline,
-    recipes: loadRecipes, users: loadUsers,
-    subscriptions: loadSubscriptions, logs: loadLogs,
+    recipes: () => { loadRecipes(); loadRecipeStats(); }, users: loadUsers,
+    subscriptions: loadSubscriptions, logs: loadLogs, health: loadHealth,
   };
   if (loaders[id]) loaders[id]();
 }
@@ -626,8 +669,8 @@ async function loadDashboard() {
         <div class="metric-val">${stats.active_subscribers.toLocaleString('en-IN')}</div><div class="metric-label">Active Subscribers</div></div>
       <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-amber">🍱</div></div>
         <div class="metric-val">${stats.menus_today.toLocaleString('en-IN')}</div><div class="metric-label">Menus Today</div></div>
-      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-blue">💬</div></div>
-        <div class="metric-val">${stats.wa_delivered_today.toLocaleString('en-IN')}</div><div class="metric-label">WA Delivered</div></div>`;
+      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-blue">📧</div></div>
+        <div class="metric-val">${(stats.emails_sent_today||0).toLocaleString('en-IN')}</div><div class="metric-label">Emails Sent</div></div>`;
 
     // Donut
     const dist = stats.plan_distribution || {};
@@ -660,20 +703,20 @@ async function loadDashboard() {
       <div style="display:flex;flex-direction:column;gap:10px;font-size:.82rem">
         <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Menus Generated</span><span style="font-family:var(--mono);color:var(--text)">${stats.menus_today}</span></div>
         <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">PDFs Built</span><span style="font-family:var(--mono);color:var(--text)">${stats.pdfs_built_today}</span></div>
-        <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">WA Delivered</span><span style="font-family:var(--mono);color:var(--teal)">${stats.wa_delivered_today}</span></div>
-        <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">WA Failed</span><span style="font-family:var(--mono);color:${stats.wa_failed_today>0?'var(--red)':'var(--text-muted)'}">${stats.wa_failed_today}</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Emails Sent</span><span style="font-family:var(--mono);color:var(--teal)">${stats.emails_sent_today||0}</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Email Failed</span><span style="font-family:var(--mono);color:${(stats.wa_failed_today||0)>0?'var(--red)':'var(--text-muted)'}">${stats.wa_failed_today||0}</span></div>
         <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:10px;margin-top:4px"><span style="color:var(--text-muted)">MRR</span><span style="font-family:var(--mono);color:var(--saffron)">₹${stats.mrr.toLocaleString('en-IN')}</span></div>
       </div>`;
 
     // Recent users
     const rows = (usersData.users || []).map(u => `
-      <tr>
+      <tr style="cursor:pointer" onclick="openDrawer('${u.id}')">
         <td style="color:var(--text);font-weight:600">${u.name||'—'}</td>
-        <td style="font-family:var(--mono);font-size:.72rem">${u.phone}</td>
-        <td>—</td>
-        <td>${statusBadge(u.is_active?'active':'inactive')}</td>
+        <td style="font-family:var(--mono);font-size:.72rem">${u.email||'—'}</td>
+        <td>${planBadge(u.plan_type)}</td>
+        <td>${statusBadge(u.sub_status||'—')}</td>
         <td style="font-family:var(--mono);font-size:.72rem">${fmtDate(u.created_at)}</td>
-        <td>${u.wa_opted_in?'<span class="badge b-teal">✓</span>':'<span class="badge b-gray">✗</span>'}</td>
+        <td><button class="btn-sm verify" style="max-width:72px" onclick="event.stopPropagation();triggerMenu('${u.id}',this)">⚡ Gen</button></td>
       </tr>`).join('');
     document.getElementById('recentUsersBody').innerHTML = rows || `<tr><td colspan="6" class="empty">No users yet</td></tr>`;
   } catch(e) {
@@ -712,7 +755,7 @@ async function loadFailedMenus() {
         <td style="font-family:var(--mono)">${fmtDate(m.menu_date)}</td>
         <td><span class="badge b-red">${m.wa_status||'—'}</span></td>
         <td>${m.pdf_key?'<span class="badge b-teal">✓</span>':'<span class="badge b-red">✗</span>'}</td>
-        <td><button class="btn-sm verify" style="max-width:68px" onclick="retryWA('${m.id}',this)">Retry</button></td>
+        <td><button class="btn-sm verify" style="max-width:80px" onclick="retryEmail('${m.id}',this)">↻ Email</button></td>
       </tr>`).join('');
     document.getElementById('failedMenusBody').innerHTML = rows || `<tr><td colspan="6" class="empty">No failed menus 🎉</td></tr>`;
   } catch(e) {
@@ -720,10 +763,10 @@ async function loadFailedMenus() {
   }
 }
 
-async function retryWA(menuId, btn) {
+async function retryEmail(menuId, btn) {
   btn.textContent = '…'; btn.disabled = true;
   try {
-    await apiFetch(`/admin/menus/${menuId}/retry-wa`, {method:'POST'});
+    await apiFetch(`/admin/menus/${menuId}/retry-email`, {method:'POST'});
     btn.textContent = 'Queued ✓'; btn.style.color = 'var(--teal)';
     setTimeout(() => loadFailedMenus(), 2000);
   } catch(e) { btn.textContent = 'Error'; btn.disabled = false; }
@@ -853,10 +896,22 @@ async function startGeneration() {
 }
 
 // ── USERS ─────────────────────────────────────────────────────────────────────
+let searchDebounce;
+function searchUsers() {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => { userPage = 1; loadUsers(); }, 400);
+}
+
 async function loadUsers() {
-  document.getElementById('usersBody').innerHTML = `<tr><td colspan="9" class="loading"> </td></tr>`;
+  document.getElementById('usersBody').innerHTML = `<tr><td colspan="8" class="loading"> </td></tr>`;
   try {
-    const r = await apiFetch(`/admin/users?page=${userPage}&limit=${USER_LIMIT}`);
+    const search = document.getElementById('userSearch').value.trim();
+    const plan   = document.getElementById('userPlanFilter').value;
+    const params = new URLSearchParams({page: userPage, limit: USER_LIMIT});
+    if (search) params.set('search', search);
+    if (plan)   params.set('plan_type', plan);
+
+    const r = await apiFetch(`/admin/users?${params}`);
     const data = await r.json();
     allUsers = data.users || [];
     const total = data.total || 0;
@@ -864,43 +919,118 @@ async function loadUsers() {
     document.getElementById('prevUserBtn').disabled = userPage <= 1;
     document.getElementById('nextUserBtn').disabled = userPage >= Math.ceil(total/USER_LIMIT);
 
-    // Metrics
     document.getElementById('userMetrics').innerHTML = `
       <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-saffron">👥</div></div><div class="metric-val">${total}</div><div class="metric-label">Total Users</div></div>
-      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-teal">✅</div></div><div class="metric-val">${allUsers.filter(u=>u.is_active).length}</div><div class="metric-label">Active (this page)</div></div>
-      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-amber">💬</div></div><div class="metric-val">${allUsers.filter(u=>u.wa_opted_in).length}</div><div class="metric-label">WA Opted-In (this page)</div></div>
-      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-blue">✔️</div></div><div class="metric-val">${allUsers.filter(u=>u.onboarding_complete).length}</div><div class="metric-label">Onboarded (this page)</div></div>`;
+      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-teal">✅</div></div><div class="metric-val">${allUsers.filter(u=>u.sub_status==='active').length}</div><div class="metric-label">Active Paid (page)</div></div>
+      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-amber">🔬</div></div><div class="metric-val">${allUsers.filter(u=>u.sub_status==='trial').length}</div><div class="metric-label">On Trial (page)</div></div>
+      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-blue">✔️</div></div><div class="metric-val">${allUsers.filter(u=>u.onboarding_complete).length}</div><div class="metric-label">Onboarded (page)</div></div>`;
 
     renderUsers(allUsers);
   } catch(e) {
-    document.getElementById('usersBody').innerHTML = `<tr><td colspan="9" class="empty">Error: ${e.message}</td></tr>`;
+    document.getElementById('usersBody').innerHTML = `<tr><td colspan="8" class="empty">Error: ${e.message}</td></tr>`;
   }
 }
 
 function renderUsers(users) {
   const rows = users.map(u => `
-    <tr>
+    <tr style="cursor:pointer" onclick="openDrawer('${u.id}')">
       <td style="color:var(--text);font-weight:600">${u.name||'—'}</td>
-      <td style="font-family:var(--mono);font-size:.72rem">${u.phone}</td>
-      <td>—</td>
+      <td style="font-family:var(--mono);font-size:.72rem">${u.email||'—'}</td>
+      <td>${planBadge(u.plan_type)}</td>
+      <td>${statusBadge(u.sub_status||'—')}</td>
       <td>${u.eating_mode||'—'}</td>
       <td style="font-family:var(--mono)">${u.bmi||'—'}</td>
-      <td>${u.goal||'—'}</td>
-      <td>${u.wa_opted_in?'<span class="badge b-teal">✓</span>':'<span class="badge b-gray">✗</span>'}</td>
-      <td>${statusBadge(u.is_active?'active':'inactive')}</td>
       <td style="font-family:var(--mono);font-size:.72rem">${fmtDate(u.created_at)}</td>
+      <td><button class="btn-sm verify" style="max-width:72px" onclick="event.stopPropagation();triggerMenu('${u.id}',this)">⚡ Gen</button></td>
     </tr>`).join('');
-  document.getElementById('usersBody').innerHTML = rows || `<tr><td colspan="9" class="empty">No users found</td></tr>`;
+  document.getElementById('usersBody').innerHTML = rows || `<tr><td colspan="8" class="empty">No users found</td></tr>`;
 }
 
-function filterUsers() {
-  const q = (document.getElementById('userSearch').value||'').toLowerCase();
-  const plan = document.getElementById('userPlanFilter').value;
-  const filtered = allUsers.filter(u => {
-    const matchQ = !q || (u.name||'').toLowerCase().includes(q) || (u.phone||'').includes(q);
-    return matchQ;
-  });
-  renderUsers(filtered);
+async function triggerMenu(userId, btn) {
+  const orig = btn.textContent; btn.textContent = '…'; btn.disabled = true;
+  try {
+    const r = await apiFetch(`/admin/trigger/menu/${userId}`, {method:'POST'});
+    const d = await r.json();
+    btn.textContent = '✓'; btn.style.color = 'var(--teal)';
+    setTimeout(() => { btn.textContent = orig; btn.disabled = false; btn.style.color = ''; }, 3000);
+  } catch(e) { btn.textContent = 'Err'; btn.disabled = false; }
+}
+
+async function openDrawer(userId) {
+  document.getElementById('userDrawerBg').style.display = 'block';
+  document.getElementById('userDrawer').style.display = 'flex';
+  document.getElementById('drawerContent').innerHTML = '<div class="loading"> </div>';
+
+  try {
+    const r = await apiFetch(`/admin/users/${userId}`);
+    const d = await r.json();
+    const u = d.user; const sub = d.subscription;
+    const PLAN_L = {solo_basic:'Starter',solo_pro:'Pro',family:'Family'};
+    document.getElementById('drawerContent').innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)">
+        <div style="width:48px;height:48px;background:var(--saffron);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:#fff;flex-shrink:0">${(u.name||u.email||'U')[0].toUpperCase()}</div>
+        <div>
+          <div style="font-size:1rem;font-weight:700;color:var(--text)">${u.name||'—'}</div>
+          <div style="font-size:.78rem;color:var(--text-muted);font-family:var(--mono)">${u.email||'—'}</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;font-size:.82rem"><span style="color:var(--text-muted)">Plan</span><span>${planBadge(sub?.plan_type)}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.82rem"><span style="color:var(--text-muted)">Sub Status</span><span>${statusBadge(sub?.status||'—')}</span></div>
+        ${sub?.trial_end?`<div style="display:flex;justify-content:space-between;font-size:.82rem"><span style="color:var(--text-muted)">Trial ends</span><span style="font-family:var(--mono)">${fmtDate(sub.trial_end)}</span></div>`:''}
+        ${sub?.current_period_end?`<div style="display:flex;justify-content:space-between;font-size:.82rem"><span style="color:var(--text-muted)">Active until</span><span style="font-family:var(--mono)">${fmtDate(sub.current_period_end)}</span></div>`:''}
+        <div style="display:flex;justify-content:space-between;font-size:.82rem"><span style="color:var(--text-muted)">Eating Mode</span><span>${u.eating_mode||'—'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.82rem"><span style="color:var(--text-muted)">BMI</span><span style="font-family:var(--mono)">${u.bmi||'—'} ${u.bmi_band?'('+u.bmi_band+')':''}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.82rem"><span style="color:var(--text-muted)">Goal</span><span>${u.goal||'—'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.82rem"><span style="color:var(--text-muted)">Health Tags</span><span style="text-align:right">${(u.health_tags||[]).join(', ')||'None'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.82rem"><span style="color:var(--text-muted)">Onboarded</span><span>${u.onboarding_complete?'<span class="badge b-teal">Yes</span>':'<span class="badge b-gray">No</span>'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.82rem"><span style="color:var(--text-muted)">Joined</span><span style="font-family:var(--mono)">${fmtDate(u.created_at)}</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn-primary" style="margin:0" onclick="triggerMenuDrawer('${u.id}',this)">⚡ Generate Today's Menu</button>
+        <button class="btn-sm" style="padding:9px" onclick="triggerEmailDrawer('${u.id}',this)">📧 Send Menu Email</button>
+      </div>
+      ${(d.recent_menus||[]).length ? `
+      <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
+        <div class="section-title">Recent Menus</div>
+        ${(d.recent_menus||[]).map(m=>`
+          <div style="display:flex;justify-content:space-between;font-size:.78rem;padding:6px 0;border-bottom:1px solid rgba(42,42,38,.3)">
+            <span style="font-family:var(--mono);color:var(--text)">${fmtDate(m.menu_date)}</span>
+            <span class="badge ${m.pdf_key?'b-teal':'b-gray'}">${m.pdf_key?'PDF':'No PDF'}</span>
+            <span class="badge ${m.wa_status==='delivered'?'b-teal':m.wa_status==='failed'?'b-red':'b-gray'}">${m.wa_status||'pending'}</span>
+          </div>`).join('')}
+      </div>` : ''}`;
+  } catch(e) {
+    document.getElementById('drawerContent').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+  }
+}
+
+async function triggerMenuDrawer(userId, btn) {
+  btn.textContent = 'Generating…'; btn.disabled = true;
+  try {
+    await apiFetch(`/admin/trigger/menu/${userId}`, {method:'POST'});
+    btn.textContent = '✓ Queued';
+    setTimeout(() => { btn.textContent = '⚡ Generate Today\'s Menu'; btn.disabled = false; }, 3000);
+  } catch(e) { btn.textContent = 'Error'; btn.disabled = false; }
+}
+
+async function triggerEmailDrawer(userId, btn) {
+  btn.textContent = 'Looking up menu…'; btn.disabled = true;
+  try {
+    const today = new Date().toISOString().slice(0,10);
+    const r = await apiFetch(`/admin/menus?owner_id=${userId}&menu_date=${today}`);
+    const d = await r.json();
+    const menu = (d.menus||[])[0];
+    if (!menu) { btn.textContent = 'No menu for today'; setTimeout(() => { btn.textContent = '📧 Send Menu Email'; btn.disabled = false; }, 2000); return; }
+    await apiFetch(`/admin/menus/${menu.id}/retry-email`, {method:'POST'});
+    btn.textContent = '✓ Email Queued';
+    setTimeout(() => { btn.textContent = '📧 Send Menu Email'; btn.disabled = false; }, 3000);
+  } catch(e) { btn.textContent = 'Error'; btn.disabled = false; }
+}
+
+function closeDrawer() {
+  document.getElementById('userDrawerBg').style.display = 'none';
+  document.getElementById('userDrawer').style.display = 'none';
 }
 
 // ── SUBSCRIPTIONS ─────────────────────────────────────────────────────────────
@@ -933,8 +1063,8 @@ async function loadSubscriptions() {
       <div style="display:flex;flex-direction:column;gap:12px;font-size:.84rem">
         <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Menus Today</span><span style="font-family:var(--mono);color:var(--text)">${stats.menus_today}</span></div>
         <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">PDFs Built</span><span style="font-family:var(--mono);color:var(--text)">${stats.pdfs_built_today}</span></div>
-        <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">WA Delivered</span><span style="font-family:var(--mono);color:var(--teal)">${stats.wa_delivered_today}</span></div>
-        <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">WA Failed</span><span style="font-family:var(--mono);color:var(--red)">${stats.wa_failed_today}</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Emails Sent</span><span style="font-family:var(--mono);color:var(--teal)">${stats.emails_sent_today||0}</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Email Failed</span><span style="font-family:var(--mono);color:var(--red)">${stats.wa_failed_today||0}</span></div>
       </div>`;
   } catch(e) {
     document.getElementById('subMetrics').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
@@ -944,17 +1074,14 @@ async function loadSubscriptions() {
 // ── LOGS ──────────────────────────────────────────────────────────────────────
 async function loadLogs() {
   document.getElementById('syslogPanel').innerHTML = '<div class="loading"> </div>';
+  const level = document.getElementById('logLevelFilter')?.value || '';
   try {
-    const r = await apiFetch('/admin/logs');
+    const params = new URLSearchParams({limit: 200});
+    if (level) params.set('level', level);
+    const r = await apiFetch(`/admin/logs?${params}`);
     const data = await r.json();
     const panel = document.getElementById('syslogPanel');
-    if (data.message) {
-      panel.innerHTML = `<div style="color:var(--text-muted);font-size:.82rem;padding:8px">
-        ${data.message}<br><br>
-        <span style="color:var(--text-dim)">System is running on the host — logs are available via journalctl.</span></div>`;
-      return;
-    }
-    const clsMap = {OK:'slog-ok',INFO:'slog-info',WARN:'slog-warn',ERR:'slog-err'};
+    const clsMap = {INFO:'slog-info',WARN:'slog-warn',ERR:'slog-err',OK:'slog-ok'};
     const rows = (data.logs||[]).map(l =>
       `<div class="slog-line"><span class="slog-ts">${l.ts||'—'}</span>
        <span class="slog-level ${clsMap[l.level]||'slog-info'}">${l.level||'INFO'}</span>
@@ -964,6 +1091,90 @@ async function loadLogs() {
   } catch(e) {
     document.getElementById('syslogPanel').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
   }
+}
+
+// ── SYSTEM HEALTH ─────────────────────────────────────────────────────────────
+async function loadHealth() {
+  document.getElementById('healthComponents').innerHTML = '<div class="loading"> </div>';
+  document.getElementById('celeryWorkerStats').innerHTML = '<div class="loading"> </div>';
+  document.getElementById('queueDepthStats').innerHTML = '<div class="loading"> </div>';
+  try {
+    const [hRes, cRes] = await Promise.all([
+      apiFetch('/admin/system/health'),
+      apiFetch('/admin/celery/stats'),
+    ]);
+    const health = await hRes.json();
+    const celery = await cRes.json();
+
+    const statusColor = {ok:'var(--teal)',degraded:'var(--amber)',down:'var(--red)'};
+    const statusIcon  = {ok:'✓',degraded:'⚠',down:'✗'};
+    const compIcons   = {database:'🗄️',redis:'⚡',minio:'📦',celery:'⚙️'};
+
+    document.getElementById('healthComponents').innerHTML =
+      Object.entries(health.components||{}).map(([name, c]) => `
+        <div class="metric-card">
+          <div class="metric-top">
+            <div class="metric-icon" style="background:${c.status==='ok'?'var(--teal-dim)':c.status==='degraded'?'var(--amber-dim)':'var(--red-dim)'}">${compIcons[name]||'🔧'}</div>
+            <span style="font-size:.75rem;font-family:var(--mono);color:${statusColor[c.status]||'var(--text-muted)'}">${statusIcon[c.status]||'?'} ${c.status}</span>
+          </div>
+          <div style="font-size:1rem;font-weight:700;color:var(--text)">${name}</div>
+          <div style="font-size:.72rem;color:var(--text-muted)">${c.latency_ms!=null?c.latency_ms+'ms':'—'}${c.detail?` · ${c.detail}`:''}</div>
+        </div>`).join('');
+
+    const workers = celery.workers || [];
+    document.getElementById('celeryWorkerStats').innerHTML = workers.length
+      ? workers.map(w => {
+          const active = (celery.active_tasks[w]||[]);
+          return `<div style="font-size:.82rem;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span style="color:var(--text);font-family:var(--mono)">${w.split('@')[1]||w}</span>
+            <span class="badge b-${active.length>0?'teal':'gray'}" style="margin-left:8px">${active.length} active</span>
+            ${active.slice(0,2).map(t=>`<div style="font-size:.68rem;color:var(--text-dim);margin-top:2px">↳ ${t}</div>`).join('')}
+          </div>`;
+        }).join('')
+      : `<div class="empty">No workers responding</div>`;
+
+    const depths = celery.queue_depths || {};
+    document.getElementById('queueDepthStats').innerHTML = Object.keys(depths).length
+      ? Object.entries(depths).map(([q,d]) =>
+          `<div class="info-row"><span class="info-label">${q}</span><span class="badge ${d>0?'b-amber':'b-teal'}">${d} pending</span></div>`
+        ).join('') + `<div style="margin-top:12px;font-size:.72rem;color:var(--text-dim)">Total active: ${celery.total_active} · Reserved: ${celery.total_reserved}</div>`
+      : `<div class="empty">All queues empty</div>`;
+
+  } catch(e) {
+    document.getElementById('healthComponents').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+  }
+}
+
+// ── RECIPE BANK STATS ─────────────────────────────────────────────────────────
+async function loadRecipeStats() {
+  document.getElementById('recipeStatsContent').innerHTML = '<div class="loading"> </div>';
+  try {
+    const r = await apiFetch('/admin/recipes/stats');
+    const data = await r.json();
+    const gaps = data.coverage_gaps || [];
+
+    document.getElementById('recipeStatsContent').innerHTML = `
+      <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:14px">
+        <div><span style="font-size:1.4rem;font-weight:800;font-family:var(--mono);color:var(--teal)">${data.total_verified||0}</span><span style="font-size:.75rem;color:var(--text-muted);margin-left:6px">verified</span></div>
+        <div><span style="font-size:1.4rem;font-weight:800;font-family:var(--mono);color:var(--text)">${data.total_active||0}</span><span style="font-size:.75rem;color:var(--text-muted);margin-left:6px">total active</span></div>
+        <div><span style="font-size:1.4rem;font-weight:800;font-family:var(--mono);color:${gaps.length>0?'var(--amber)':'var(--teal)'}">${gaps.length}</span><span style="font-size:.75rem;color:var(--text-muted);margin-left:6px">gaps (&lt;5 verified)</span></div>
+      </div>
+      ${gaps.length ? `<div style="font-size:.75rem;color:var(--amber);margin-bottom:8px">Coverage gaps: ${gaps.map(g=>`${g.cuisine_region}/${g.meal_type}/${g.eating_mode} (${g.count})`).join(' · ')}</div>` : ''}
+      <button class="btn-sm verify" style="max-width:160px;padding:7px 14px" onclick="triggerSeed(this)">🌱 Run Seed (~45min)</button>`;
+  } catch(e) {
+    document.getElementById('recipeStatsContent').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+  }
+}
+
+async function triggerSeed(btn) {
+  if (!confirm('This will generate ~2200 new recipes using Claude AI. Cost: ~$15-20, Time: ~45-60 min. Continue?')) return;
+  btn.textContent = 'Starting…'; btn.disabled = true;
+  try {
+    const r = await apiFetch('/admin/recipes/run-seed?verify=true', {method:'POST'});
+    const d = await r.json();
+    btn.textContent = `✓ Running (task: ${String(d.task_id).slice(0,8)}…)`;
+    btn.style.color = 'var(--teal)';
+  } catch(e) { btn.textContent = 'Error'; btn.disabled = false; }
 }
 </script>
 </body>

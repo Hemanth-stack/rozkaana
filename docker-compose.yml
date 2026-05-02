@@ -45,6 +45,27 @@ services:
       - miniodata:/data
     restart: unless-stopped
 
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    environment:
+      DATABASE_URL: postgresql+asyncpg://rozkaana:password@postgres:5432/rozkaana
+      DATABASE_URL_SYNC: postgresql+psycopg2://rozkaana:password@postgres:5432/rozkaana
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-rozkaana}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-changeme}
+      MINIO_BUCKET_NAME: rozkaana-pdfs
+      MINIO_SECURE: "false"
+    restart: unless-stopped
+
 volumes:
   pgdata:
   redisdata:

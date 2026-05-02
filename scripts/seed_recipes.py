@@ -1,57 +1,149 @@
 """
-Seed recipe database using GPT-4o batch generation.
+Seed recipe database using Claude AI batch generation.
 Run: python -m scripts.seed_recipes
 """
 import asyncio
 import logging
-import time
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
+# Target: ~2200 recipes covering all cuisines × meal types × eating modes × health tags
+# All seeded recipes are auto-verified (is_verified=True) — admins can reject bad ones later
 GENERATION_MATRIX = [
-    # (meal_type, cuisine_region, eating_mode, health_tags, count)
-    ("breakfast", "north_indian", "pure_veg", [], 10),
-    ("breakfast", "south_indian", "pure_veg", [], 10),
-    ("breakfast", "gujarati", "pure_veg", [], 8),
-    ("breakfast", "bengali", "pure_veg", [], 8),
-    ("breakfast", "north_indian", "pure_veg", ["diabetes_t2"], 8),
-    ("breakfast", "north_indian", "pure_veg", ["hypertension"], 6),
-    ("breakfast", "south_indian", "pure_veg", ["diabetes_t2"], 6),
-    ("morning_snack", "north_indian", "pure_veg", [], 10),
-    ("morning_snack", "south_indian", "pure_veg", [], 8),
-    ("morning_snack", "north_indian", "pure_veg", ["diabetes_t2"], 8),
-    ("lunch", "north_indian", "pure_veg", [], 15),
-    ("lunch", "north_indian", "full_nv", [], 10),
-    ("lunch", "south_indian", "pure_veg", [], 12),
-    ("lunch", "hyderabadi", "full_nv", [], 8),
-    ("lunch", "bengali", "full_nv", [], 8),
-    ("lunch", "gujarati", "pure_veg", [], 8),
-    ("lunch", "maharashtrian", "pure_veg", [], 8),
-    ("lunch", "rajasthani", "pure_veg", [], 8),
-    ("lunch", "kerala", "full_nv", [], 8),
-    ("lunch", "north_indian", "pure_veg", ["diabetes_t2"], 10),
-    ("lunch", "north_indian", "pure_veg", ["hypertension"], 8),
-    ("lunch", "south_indian", "pure_veg", ["pcos"], 8),
-    ("lunch", "north_indian", "jain", [], 8),
-    ("lunch", "north_indian", "sattvic", [], 8),
-    ("evening_snack", "north_indian", "pure_veg", [], 10),
-    ("evening_snack", "south_indian", "pure_veg", [], 8),
-    ("evening_snack", "north_indian", "pure_veg", ["diabetes_t2"], 8),
-    ("dinner", "north_indian", "pure_veg", [], 12),
-    ("dinner", "south_indian", "pure_veg", [], 10),
-    ("dinner", "bengali", "full_nv", [], 8),
-    ("dinner", "hyderabadi", "full_nv", [], 8),
-    ("dinner", "gujarati", "pure_veg", [], 8),
-    ("dinner", "maharashtrian", "pure_veg", [], 8),
-    ("dinner", "kerala", "full_nv", [], 8),
-    ("dinner", "north_indian", "pure_veg", ["diabetes_t2"], 10),
-    ("dinner", "north_indian", "pure_veg", ["hypertension"], 8),
-    ("dinner", "north_indian", "jain", [], 8),
-    ("dinner", "north_indian", "sattvic", [], 8),
-    ("dinner", "north_indian", "conditional_nv", [], 8),
+    # ── BREAKFAST ────────────────────────────────────────────────────────────────
+    ("breakfast", "north_indian",   "pure_veg",      [],                10),
+    ("breakfast", "north_indian",   "full_nv",        [],                8),
+    ("breakfast", "north_indian",   "jain",           [],                8),
+    ("breakfast", "north_indian",   "sattvic",        [],                8),
+    ("breakfast", "north_indian",   "pure_veg",       ["diabetes_t2"],   10),
+    ("breakfast", "north_indian",   "pure_veg",       ["hypertension"],  8),
+    ("breakfast", "north_indian",   "pure_veg",       ["weight_loss"],   8),
+    ("breakfast", "north_indian",   "pure_veg",       ["pcos"],          6),
+    ("breakfast", "south_indian",   "pure_veg",       [],                10),
+    ("breakfast", "south_indian",   "full_nv",        [],                6),
+    ("breakfast", "south_indian",   "pure_veg",       ["diabetes_t2"],   8),
+    ("breakfast", "south_indian",   "pure_veg",       ["pcos"],          6),
+    ("breakfast", "gujarati",       "pure_veg",       [],                8),
+    ("breakfast", "gujarati",       "jain",           [],                8),
+    ("breakfast", "bengali",        "pure_veg",       [],                8),
+    ("breakfast", "bengali",        "full_nv",        [],                6),
+    ("breakfast", "maharashtrian",  "pure_veg",       [],                8),
+    ("breakfast", "maharashtrian",  "full_nv",        [],                6),
+    ("breakfast", "punjabi",        "pure_veg",       [],                8),
+    ("breakfast", "punjabi",        "full_nv",        [],                6),
+    ("breakfast", "hyderabadi",     "pure_veg",       [],                6),
+    ("breakfast", "hyderabadi",     "full_nv",        [],                6),
+    ("breakfast", "rajasthani",     "pure_veg",       [],                8),
+    ("breakfast", "rajasthani",     "jain",           [],                6),
+    ("breakfast", "kerala",         "pure_veg",       [],                8),
+    ("breakfast", "kerala",         "full_nv",        [],                6),
+    ("breakfast", "goan",           "pure_veg",       [],                6),
+    ("breakfast", "goan",           "full_nv",        [],                6),
+    ("breakfast", "sattvic",        "sattvic",        [],                8),
+
+    # ── MORNING SNACK ─────────────────────────────────────────────────────────
+    ("morning_snack", "north_indian",   "pure_veg",   [],                10),
+    ("morning_snack", "north_indian",   "jain",       [],                6),
+    ("morning_snack", "north_indian",   "pure_veg",   ["diabetes_t2"],   10),
+    ("morning_snack", "north_indian",   "pure_veg",   ["weight_loss"],   8),
+    ("morning_snack", "north_indian",   "pure_veg",   ["hypertension"],  6),
+    ("morning_snack", "south_indian",   "pure_veg",   [],                8),
+    ("morning_snack", "south_indian",   "pure_veg",   ["diabetes_t2"],   6),
+    ("morning_snack", "gujarati",       "pure_veg",   [],                8),
+    ("morning_snack", "gujarati",       "jain",       [],                6),
+    ("morning_snack", "maharashtrian",  "pure_veg",   [],                6),
+    ("morning_snack", "bengali",        "pure_veg",   [],                6),
+    ("morning_snack", "punjabi",        "pure_veg",   [],                6),
+    ("morning_snack", "kerala",         "pure_veg",   [],                6),
+    ("morning_snack", "rajasthani",     "pure_veg",   [],                6),
+    ("morning_snack", "sattvic",        "sattvic",    [],                6),
+
+    # ── LUNCH ─────────────────────────────────────────────────────────────────
+    ("lunch", "north_indian",   "pure_veg",           [],                12),
+    ("lunch", "north_indian",   "full_nv",            [],                10),
+    ("lunch", "north_indian",   "jain",               [],                10),
+    ("lunch", "north_indian",   "sattvic",            [],                8),
+    ("lunch", "north_indian",   "conditional_nv",     [],                8),
+    ("lunch", "north_indian",   "pure_veg",           ["diabetes_t2"],   12),
+    ("lunch", "north_indian",   "pure_veg",           ["hypertension"],  10),
+    ("lunch", "north_indian",   "pure_veg",           ["weight_loss"],   10),
+    ("lunch", "north_indian",   "pure_veg",           ["pcos"],          8),
+    ("lunch", "north_indian",   "full_nv",            ["diabetes_t2"],   6),
+    ("lunch", "south_indian",   "pure_veg",           [],                12),
+    ("lunch", "south_indian",   "full_nv",            [],                10),
+    ("lunch", "south_indian",   "pure_veg",           ["diabetes_t2"],   10),
+    ("lunch", "south_indian",   "pure_veg",           ["pcos"],          8),
+    ("lunch", "south_indian",   "pure_veg",           ["hypertension"],  6),
+    ("lunch", "gujarati",       "pure_veg",           [],                10),
+    ("lunch", "gujarati",       "jain",               [],                8),
+    ("lunch", "gujarati",       "pure_veg",           ["diabetes_t2"],   6),
+    ("lunch", "bengali",        "pure_veg",           [],                8),
+    ("lunch", "bengali",        "full_nv",            [],                10),
+    ("lunch", "maharashtrian",  "pure_veg",           [],                8),
+    ("lunch", "maharashtrian",  "full_nv",            [],                8),
+    ("lunch", "punjabi",        "pure_veg",           [],                8),
+    ("lunch", "punjabi",        "full_nv",            [],                8),
+    ("lunch", "hyderabadi",     "full_nv",            [],                10),
+    ("lunch", "hyderabadi",     "pure_veg",           [],                6),
+    ("lunch", "rajasthani",     "pure_veg",           [],                8),
+    ("lunch", "rajasthani",     "jain",               [],                8),
+    ("lunch", "kerala",         "full_nv",            [],                10),
+    ("lunch", "kerala",         "pure_veg",           [],                8),
+    ("lunch", "goan",           "full_nv",            [],                8),
+    ("lunch", "goan",           "pure_veg",           [],                6),
+    ("lunch", "sattvic",        "sattvic",            [],                8),
+
+    # ── EVENING SNACK ─────────────────────────────────────────────────────────
+    ("evening_snack", "north_indian",   "pure_veg",   [],                10),
+    ("evening_snack", "north_indian",   "jain",       [],                6),
+    ("evening_snack", "north_indian",   "pure_veg",   ["diabetes_t2"],   10),
+    ("evening_snack", "north_indian",   "pure_veg",   ["weight_loss"],   8),
+    ("evening_snack", "south_indian",   "pure_veg",   [],                8),
+    ("evening_snack", "south_indian",   "pure_veg",   ["diabetes_t2"],   6),
+    ("evening_snack", "gujarati",       "pure_veg",   [],                8),
+    ("evening_snack", "gujarati",       "jain",       [],                6),
+    ("evening_snack", "maharashtrian",  "pure_veg",   [],                6),
+    ("evening_snack", "bengali",        "pure_veg",   [],                6),
+    ("evening_snack", "punjabi",        "pure_veg",   [],                6),
+    ("evening_snack", "kerala",         "pure_veg",   [],                6),
+    ("evening_snack", "rajasthani",     "pure_veg",   [],                6),
+    ("evening_snack", "sattvic",        "sattvic",    [],                6),
+
+    # ── DINNER ────────────────────────────────────────────────────────────────
+    ("dinner", "north_indian",   "pure_veg",          [],                12),
+    ("dinner", "north_indian",   "full_nv",           [],                10),
+    ("dinner", "north_indian",   "jain",              [],                10),
+    ("dinner", "north_indian",   "sattvic",           [],                8),
+    ("dinner", "north_indian",   "conditional_nv",    [],                8),
+    ("dinner", "north_indian",   "pure_veg",          ["diabetes_t2"],   12),
+    ("dinner", "north_indian",   "pure_veg",          ["hypertension"],  10),
+    ("dinner", "north_indian",   "pure_veg",          ["weight_loss"],   10),
+    ("dinner", "north_indian",   "pure_veg",          ["pcos"],          8),
+    ("dinner", "north_indian",   "full_nv",           ["diabetes_t2"],   6),
+    ("dinner", "south_indian",   "pure_veg",          [],                12),
+    ("dinner", "south_indian",   "full_nv",           [],                10),
+    ("dinner", "south_indian",   "pure_veg",          ["diabetes_t2"],   10),
+    ("dinner", "south_indian",   "pure_veg",          ["pcos"],          8),
+    ("dinner", "gujarati",       "pure_veg",          [],                10),
+    ("dinner", "gujarati",       "jain",              [],                8),
+    ("dinner", "bengali",        "pure_veg",          [],                8),
+    ("dinner", "bengali",        "full_nv",           [],                10),
+    ("dinner", "maharashtrian",  "pure_veg",          [],                10),
+    ("dinner", "maharashtrian",  "full_nv",           [],                8),
+    ("dinner", "punjabi",        "pure_veg",          [],                8),
+    ("dinner", "punjabi",        "full_nv",           [],                10),
+    ("dinner", "hyderabadi",     "full_nv",           [],                10),
+    ("dinner", "hyderabadi",     "pure_veg",          [],                6),
+    ("dinner", "rajasthani",     "pure_veg",          [],                8),
+    ("dinner", "rajasthani",     "jain",              [],                8),
+    ("dinner", "kerala",         "full_nv",           [],                10),
+    ("dinner", "kerala",         "pure_veg",          [],                8),
+    ("dinner", "goan",           "full_nv",           [],                10),
+    ("dinner", "goan",           "pure_veg",          [],                6),
+    ("dinner", "sattvic",        "sattvic",           [],                8),
 ]
 
 
@@ -68,7 +160,9 @@ async def main():
 
     async with AsyncSessionLocal() as db:
         for idx, (meal_type, cuisine, eating_mode, health_tags, count) in enumerate(GENERATION_MATRIX, 1):
-            logger.info("[%d/%d] Generating %d recipes: %s / %s / %s", idx, total_batches, count, meal_type, cuisine, eating_mode)
+            logger.info("[%d/%d] Generating %d recipes: %s / %s / %s %s",
+                        idx, total_batches, count, meal_type, cuisine, eating_mode,
+                        health_tags or "")
             try:
                 recipes_data = await generate_recipe_batch(
                     meal_type=meal_type,
@@ -104,7 +198,7 @@ async def main():
                         main_ingredient=data.get("main_ingredient"),
                         ingredients=data.get("ingredients", []),
                         steps=data.get("steps", []),
-                        is_verified=False,
+                        is_verified=True,   # auto-verified; admins can reject via admin panel
                         is_active=True,
                         source="ai_generated",
                     )
@@ -115,9 +209,7 @@ async def main():
 
             await db.commit()
             total_inserted += valid
-            logger.info("  → Inserted %d/%d valid recipes. Running total: %d", valid, len(recipes_data), total_inserted)
-
-            # Rate limit: 1 request/sec
+            logger.info("  → Inserted %d/%d. Running total: %d", valid, len(recipes_data), total_inserted)
             await asyncio.sleep(1)
 
     logger.info("Seed complete. Total recipes inserted: %d", total_inserted)

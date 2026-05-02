@@ -55,3 +55,24 @@ class OverrideCuisineRequest(BaseModel):
 class PDFURLResponse(BaseModel):
     pdf_url: str
     expires_in_hours: int
+
+
+class GroceryItem(BaseModel):
+    name: str
+    qty: float
+    unit: str
+
+
+class GroceryListResponse(BaseModel):
+    date: date
+    items: list[GroceryItem]
+    recipe_count: int
+    member_count: int
+
+
+class MenuInsightsResponse(BaseModel):
+    signals_active: dict
+    candidate_pool: dict[str, int]
+    cuisine_used: str
+    calorie_target: Optional[int]
+    exclusion_window_7d: dict[str, int]

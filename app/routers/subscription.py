@@ -11,12 +11,15 @@ from app.dependencies import get_current_user
 from app.models.subscription import Subscription
 from app.models.user import User
 from app.schemas.subscription import (
-    CancelResponse, PauseResponse, ResumeResponse,
-    SubscriptionResponse, UpgradeRequest, UpgradeResponse,
+    CancelResponse, CheckoutRequest, CheckoutResponse,
+    PauseResponse, ResumeResponse, SubscriptionResponse,
+    VerifyPaymentRequest,
 )
 from app.services import subscription_service
 
 router = APIRouter(prefix="/subscription", tags=["subscription"])
+
+VALID_PLANS = {"solo_basic", "solo_pro", "family"}
 
 
 @router.get("/", response_model=SubscriptionResponse)
@@ -31,17 +34,56 @@ async def get_subscription(
     return sub
 
 
-@router.post("/upgrade", response_model=UpgradeResponse)
-async def upgrade_plan(
-    request: UpgradeRequest,
+@router.post("/upgrade", response_model=CheckoutResponse)
+async def upgrade_subscription(
+    request: CheckoutRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    valid_plans = {"solo_basic", "solo_pro", "family"}
-    if request.plan_type not in valid_plans:
-        raise HTTPException(status_code=400, detail=f"plan_type must be one of: {valid_plans}")
-    result = await subscription_service.upgrade_plan(current_user.id, request.plan_type, db)
+    """Backward-compat alias for /create-checkout — handles cached browser clients."""
+    if request.plan_type not in VALID_PLANS:
+        raise HTTPException(status_code=400, detail=f"plan_type must be one of: {VALID_PLANS}")
+    return await subscription_service.create_checkout_order(current_user.id, request.plan_type, db)
+
+
+@router.post("/create-checkout", response_model=CheckoutResponse)
+async def create_checkout(
+    request: CheckoutRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if request.plan_type not in VALID_PLANS:
+        raise HTTPException(status_code=400, detail=f"plan_type must be one of: {VALID_PLANS}")
+    result = await subscription_service.create_checkout_order(current_user.id, request.plan_type, db)
     return result
+
+
+@router.post("/verify-payment", response_model=SubscriptionResponse)
+async def verify_payment(
+    request: VerifyPaymentRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    sub = await subscription_service.verify_and_activate(
+        current_user.id,
+        request.razorpay_payment_id,
+        request.razorpay_order_id,
+        request.razorpay_signature,
+        db,
+    )
+    if current_user.email and current_user.email_verified:
+        try:
+            from app.services.email_service import email_service
+            from app.services.subscription_service import PLAN_LABELS
+            await email_service.send_subscription_upgraded(
+                current_user.email,
+                current_user.name or "there",
+                PLAN_LABELS.get(sub.plan_type, sub.plan_type),
+                str(sub.current_period_end or ""),
+            )
+        except Exception:
+            pass
+    return sub
 
 
 @router.post("/pause", response_model=PauseResponse)
@@ -68,6 +110,15 @@ async def cancel_subscription(
     db: AsyncSession = Depends(get_db),
 ):
     sub = await subscription_service.cancel_subscription(current_user.id, db)
+    if current_user.email and current_user.email_verified:
+        try:
+            from app.services.email_service import email_service
+            active_until = str(sub.current_period_end or sub.trial_end or "")
+            await email_service.send_subscription_cancelled(
+                current_user.email, current_user.name or "there", active_until
+            )
+        except Exception:
+            pass
     return CancelResponse(message="Subscription cancelled", status=sub.status)
 
 

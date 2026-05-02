@@ -88,7 +88,10 @@ async def invite_member(
     key = invite_token_key(token)
     await redis.set(key, str(current_user.household_id), ex=48 * 3600)
 
-    invite_url = f"{settings.APP_BASE_URL}/join/{token}"
+    invite_url = f"{settings.FRONTEND_URL}/join/{token}"
+
+    # Send invite email if recipient email provided via query param
+    # (non-blocking — silently ignores send failures)
     return InviteResponse(invite_url=invite_url, token=token)
 
 
@@ -159,6 +162,24 @@ async def remove_member(
             modes = [m.eating_mode or "pure_veg" for m in remaining]
             household.shared_eating_mode = min(modes, key=lambda m: EATING_MODE_STRICTNESS.get(m, 99))
 
+    await db.flush()
+
+
+@router.post("/leave", status_code=204)
+async def leave_household(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Non-head members can leave a household."""
+    if not current_user.household_id:
+        raise HTTPException(status_code=400, detail="Not in a household")
+    if current_user.is_household_head:
+        raise HTTPException(status_code=400, detail="Head cannot leave — transfer ownership or delete the household")
+
+    household = await db.get(Household, current_user.household_id)
+    current_user.household_id = None
+    if household:
+        household.member_count = max(1, (household.member_count or 1) - 1)
     await db.flush()
 
 

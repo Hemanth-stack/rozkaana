@@ -12,9 +12,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
 .nav-logo{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--charcoal);text-decoration:none}
 .nav-logo span{color:var(--saffron)}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-link{padding:7px 14px;border-radius:8px;font-size:.82rem;font-weight:600;color:var(--muted);text-decoration:none;transition:.15s}
+.nav-link:hover{color:var(--saffron);background:rgba(232,89,60,.06)}
+.nav-link.active{color:var(--saffron);background:rgba(232,89,60,.1)}
 .nav-right{display:flex;align-items:center;gap:14px}
 .nav-avatar{width:36px;height:36px;background:var(--saffron);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.85rem;cursor:pointer}
 .nav-name{font-size:.88rem;font-weight:600;color:var(--text)}
+@media(max-width:640px){.nav-links{display:none}}
 .btn-sm{padding:7px 16px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:.15s}
 .btn-primary{background:var(--saffron);color:#fff}.btn-primary:hover{background:var(--saffron-dark)}
 .btn-ghost{background:none;border:1.5px solid var(--border);color:var(--muted)}.btn-ghost:hover{border-color:var(--saffron);color:var(--saffron)}
@@ -60,12 +65,22 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
 .tag.saffron{background:rgba(232,89,60,.1);color:var(--saffron)}
 .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--saffron);border-radius:50%;animation:spin .8s linear infinite;margin:40px auto}
 @keyframes spin{to{transform:rotate(360deg)}}
+.skip-btn{background:none;border:none;cursor:pointer;color:var(--border);font-size:.8rem;padding:2px 6px;border-radius:5px;transition:.15s;flex-shrink:0}
+.skip-btn:hover{color:var(--saffron);background:rgba(232,89,60,.08)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--charcoal);color:#fff;padding:12px 24px;border-radius:12px;font-size:.88rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media(max-width:600px){.info-cards{grid-template-columns:1fr}.trial-banner{flex-direction:column;gap:12px}.trial-banner a{margin:0;width:100%;text-align:center}}
 </style>
 </head>
 <body>
 <nav>
   <a href="/" class="nav-logo">Roz<span>kaana</span></a>
+  <div class="nav-links">
+    <a href="/app" class="nav-link active">My Plan</a>
+    <a href="/history" class="nav-link">History</a>
+    <a href="/billing" class="nav-link">Billing</a>
+    <a href="/settings" class="nav-link">Settings</a>
+  </div>
   <div class="nav-right">
     <span class="nav-name" id="navName"></span>
     <div class="nav-avatar" id="navAv" title="Sign out" onclick="logout()">?</div>
@@ -81,13 +96,13 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
       <p id="greetingSub">Your personalised meal plan</p>
     </div>
 
-    <!-- Trial banner -->
+    <!-- Status banner (trial / expired / cancelled) -->
     <div class="trial-banner" id="trialBanner" style="display:none">
       <div>
         <h3 id="trialTitle">Free Trial Active</h3>
         <p id="trialSub">Your first 7 days are free — no card needed.</p>
       </div>
-      <a href="/#pricing">Upgrade Plan</a>
+      <a href="/billing" id="trialCta">Upgrade Plan</a>
     </div>
 
     <!-- Today's menu -->
@@ -103,17 +118,27 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
   </div>
 </div>
 
-<!-- PDF Viewer -->
-<div id="pdfOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center" onclick="if(event.target===this)closePDF()">
-  <div style="width:820px;max-width:96vw;height:90vh;background:#fff;border-radius:16px;display:flex;flex-direction:column;overflow:hidden">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border)">
-      <strong style="font-size:.95rem">📄 Your Meal Plan</strong>
-      <div style="display:flex;gap:8px">
-        <a id="pdfDl" href="#" download="rozkaana-meal-plan.pdf" style="padding:6px 14px;background:var(--saffron);color:#fff;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:700">⬇ Download</a>
-        <button onclick="closePDF()" style="padding:6px 12px;border:1px solid var(--border);background:none;border-radius:8px;cursor:pointer;font-size:.82rem">✕</button>
-      </div>
+<div class="toast" id="toast"></div>
+
+<!-- PDF actions modal -->
+<div id="pdfOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;align-items:center;justify-content:center" onclick="if(event.target===this)closePDF()">
+  <div style="background:#fff;border-radius:20px;padding:32px 28px;width:340px;max-width:92vw;text-align:center">
+    <div style="font-size:2rem;margin-bottom:12px">📄</div>
+    <h3 style="font-size:1.1rem;font-weight:700;color:var(--charcoal);margin-bottom:8px">Your Meal Plan PDF</h3>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:24px">Open in your browser or download to your device.</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <a id="pdfOpenBtn" href="#" target="_blank" rel="noopener"
+         style="display:block;padding:12px;background:var(--saffron);color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:.9rem">
+        🔗 Open PDF
+      </a>
+      <a id="pdfDlBtn" href="#" download="rozkaana-meal-plan.pdf"
+         style="display:block;padding:12px;border:1.5px solid var(--border);color:var(--text);border-radius:10px;text-decoration:none;font-weight:600;font-size:.9rem">
+        ⬇ Download
+      </a>
+      <button onclick="closePDF()" style="padding:10px;border:none;background:none;color:var(--muted);font-size:.85rem;cursor:pointer;font-family:'DM Sans',sans-serif">
+        Cancel
+      </button>
     </div>
-    <iframe id="pdfFrame" style="flex:1;border:none"></iframe>
   </div>
 </div>
 
@@ -136,8 +161,20 @@ function logout() {
   window.location.href = '/';
 }
 
-async function api(path) {
-  const r = await fetch(API + path, { headers:{ Authorization:'Bearer '+token } });
+function showToast(msg, color = '#1A1612') {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.style.background = color;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+async function api(path, opts = {}) {
+  const r = await fetch(API + path, {
+    ...opts,
+    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers || {}) },
+  });
   if (r.status === 401) { logout(); throw new Error('auth'); }
   return r;
 }
@@ -152,26 +189,41 @@ async function init() {
 
     if (!me.onboarding_complete) { window.location.href = '/onboard'; return; }
 
-    // Nav
     document.getElementById('navName').textContent = me.name || me.email || '';
     document.getElementById('navAv').textContent = (me.name || me.email || 'U')[0].toUpperCase();
 
-    // Greeting
     const hr = new Date().getHours();
     const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
     document.getElementById('greeting').textContent = `${greet}, ${(me.name||'').split(' ')[0] || 'there'}! ${hr<12?'🌅':hr<17?'☀️':'🌙'}`;
     document.getElementById('greetingSub').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
-    // Trial banner
-    if (sub && sub.status === 'trial') {
-      const end = new Date(sub.trial_end);
-      const days = Math.ceil((end - new Date()) / 86400000);
-      document.getElementById('trialTitle').textContent = `Free Trial — ${days} day${days!==1?'s':''} left`;
-      document.getElementById('trialSub').textContent = `Trial ends ${end.toLocaleDateString('en-IN',{day:'numeric',month:'long'})}. Upgrade to keep receiving plans.`;
-      document.getElementById('trialBanner').style.display = 'flex';
+    // Status banner
+    if (sub) {
+      const banner = document.getElementById('trialBanner');
+      const title  = document.getElementById('trialTitle');
+      const subTxt = document.getElementById('trialSub');
+      const cta    = document.getElementById('trialCta');
+      if (sub.status === 'trial') {
+        const days = Math.max(0, Math.ceil((new Date(sub.trial_end) - new Date()) / 86400000));
+        title.textContent = `Free Trial — ${days} day${days!==1?'s':''} left`;
+        subTxt.textContent = `Trial ends ${new Date(sub.trial_end).toLocaleDateString('en-IN',{day:'numeric',month:'long'})}. Upgrade to keep receiving plans.`;
+        cta.textContent = 'Upgrade Plan'; cta.href = '/billing';
+        banner.style.display = 'flex';
+      } else if (sub.status === 'expired' || sub.status === 'cancelled') {
+        banner.style.background = 'linear-gradient(135deg,#5A5550,#3A3028)';
+        title.textContent = sub.status === 'expired' ? 'Trial Expired' : 'Subscription Cancelled';
+        subTxt.textContent = 'Reactivate your plan to keep receiving personalised meal plans.';
+        cta.textContent = 'Reactivate'; cta.href = '/billing';
+        banner.style.display = 'flex';
+      } else if (sub.status === 'paused') {
+        banner.style.background = 'linear-gradient(135deg,#D4960A,#a87407)';
+        title.textContent = 'Plan Paused';
+        subTxt.textContent = `Your subscription is paused. Menus won't be generated until you resume.`;
+        cta.textContent = 'Resume Plan'; cta.href = '/billing';
+        banner.style.display = 'flex';
+      }
     }
 
-    // Profile cards
     document.getElementById('profileCards').innerHTML = `
       <div class="info-card">
         <div class="label">Daily Target</div>
@@ -208,8 +260,8 @@ async function loadMenu() {
         <div class="icon">📭</div>
         <h3>No plan for today yet</h3>
         <p>Your meal plan is generated each night and delivered by email at 6 AM.<br>
-        Check back tomorrow morning or request one now.</p>
-        <button class="btn-sm btn-primary" onclick="requestMenu()" style="padding:12px 24px">Generate Now</button>
+        If you're on the Pro plan you can generate one now.</p>
+        <button class="btn-sm btn-primary" onclick="requestMenu(this)" style="padding:12px 24px">Generate Now</button>
       </div>`; return;
     }
     const m = await r.json();
@@ -227,85 +279,114 @@ async function loadMenu() {
         <div class="mac"><div class="v">${m.total_fat_g||0}g</div><div class="l">fat</div></div>
       </div>
       <div class="slots">
-        ${filled.map(s=>`
-          <div class="slot">
+        ${SLOT_DEF.map(s => m[s.key] ? `
+          <div class="slot" id="slot-${s.key}">
             <div class="slot-icon">${s.icon}</div>
             <div class="slot-info">
               <div class="slot-name">${m[s.key].name}</div>
               <div class="slot-time">${s.label} · ${s.time}</div>
             </div>
             <div class="slot-kcal">${m[s.key].calories} kcal</div>
-          </div>`).join('')}
+            <button class="skip-btn" title="Skip ${s.label}" onclick="skipSlot('${s.key}',this)">✕</button>
+          </div>` : '').join('')}
       </div>
       <div class="menu-footer">
         ${pdfUrl
-          ? `<button class="btn-sm btn-primary" onclick="openPDF('${pdfUrl}')" style="flex:2;padding:11px">📄 View PDF</button>`
-          : `<button class="btn-sm btn-ghost" onclick="buildPDF('${m.id}')" style="flex:2;padding:11px">🔨 Build PDF</button>`}
-        <button class="btn-sm btn-ghost" onclick="requestMenu()" style="flex:1;padding:11px">↻ Regenerate</button>
+          ? `<button class="btn-sm btn-primary" id="pdfViewBtn" style="flex:2;padding:11px">📄 View PDF</button>`
+          : `<span class="btn-sm btn-ghost" style="flex:2;padding:11px;text-align:center;cursor:default;color:var(--muted)">PDF generating…</span>`}
+        <button class="btn-sm btn-ghost" onclick="openGroceryList('${m.menu_date}')" style="flex:1;padding:11px">🛒 Grocery</button>
+        <button class="btn-sm btn-ghost" onclick="requestMenu(this)" style="flex:1;padding:11px">↻ Regen</button>
       </div>`;
+    if (pdfUrl) {
+      document.getElementById('pdfViewBtn')?.addEventListener('click', () => openPDF(pdfUrl));
+    }
   } catch(e) { card.innerHTML = `<div class="empty-menu"><p>Could not load today's plan.</p></div>`; }
 }
 
-async function requestMenu() {
-  document.getElementById('menuCard').innerHTML = '<div class="spinner"></div>';
-  try {
-    const adminRes = await fetch(`${API}/admin/login`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({phone:'+917878787878', password:'5d55491e'})
-    });
-
-    // Use user's own token for trigger (user must be admin or we use a different approach)
-    // For pilot: trigger via the user's token directly
-    const meRes = await api('/users/me');
-    const me = await meRes.json();
-
-    // Use user token for trigger (admin route accepts admin users)
-    const triggerRes = await fetch(`${API}/admin/trigger/menu/${me.id}`, {
-      method:'POST', headers:{'Authorization':'Bearer '+token}
-    });
-
-    if (triggerRes.ok) {
-      const t = await triggerRes.json();
-      pollTask(t.task_id);
-    } else {
-      await loadMenu();
-    }
-  } catch(e) { await loadMenu(); }
+async function skipSlot(slot, btn) {
+  btn.disabled = true;
+  const r = await api(`/menu/today/${slot}/skip`, { method: 'PATCH' });
+  if (r.ok) {
+    document.getElementById('slot-' + slot)?.remove();
+    showToast(`${slot.replace('_',' ')} skipped`);
+  } else {
+    btn.disabled = false;
+    showToast('Could not skip slot', '#c0392b');
+  }
 }
 
-async function pollTask(taskId) {
-  for (let i = 0; i < 30; i++) {
-    await new Promise(r => setTimeout(r, 2000));
+async function requestMenu(btn) {
+  const card = document.getElementById('menuCard');
+  if (btn) { btn.textContent = 'Generating…'; btn.disabled = true; }
+  try {
+    const r = await api('/menu/regenerate', { method: 'POST', body: JSON.stringify({}) });
+    if (r.status === 403) {
+      showToast('Menu regeneration requires Pro plan. Your plan will be generated tonight.');
+      if (btn) { btn.textContent = 'Generate Now'; btn.disabled = false; }
+      return;
+    }
+    if (r.status === 423) {
+      showToast('Generation already in progress — check back in 2 minutes.');
+      if (btn) { btn.textContent = 'Generate Now'; btn.disabled = false; }
+      return;
+    }
+    if (!r.ok) {
+      showToast('Could not start generation. Try again.');
+      if (btn) { btn.textContent = 'Generate Now'; btn.disabled = false; }
+      return;
+    }
+    const t = await r.json();
+    card.innerHTML = `<div class="empty-menu"><div class="spinner"></div><p style="color:var(--muted);font-size:.88rem;margin-top:8px">Generating your plan…</p></div>`;
+    await pollRegen(t.task_id);
+  } catch(e) {
+    if (btn) { btn.textContent = 'Generate Now'; btn.disabled = false; }
+  }
+}
+
+async function pollRegen(taskId) {
+  for (let i = 0; i < 40; i++) {
+    await new Promise(r => setTimeout(r, 3000));
     try {
-      const r = await fetch(`${API}/admin/status/task/${taskId}`, {
-        headers:{ Authorization:'Bearer '+token }
-      });
+      const r = await api(`/menu/regenerate/${taskId}`);
       const s = await r.json();
-      if (s.status === 'SUCCESS' || s.status === 'FAILURE') { await loadMenu(); return; }
+      if (s.status === 'done') { await loadMenu(); return; }
+      if (s.status === 'failed') {
+        showToast('Generation failed. Please try again.', '#c0392b');
+        await loadMenu(); return;
+      }
     } catch(e) {}
   }
   await loadMenu();
 }
 
-async function buildPDF(menuId) {
+async function openGroceryList(menuDate) {
   try {
-    await fetch(`${API}/admin/trigger/pdf/${menuId}`, {
-      method:'POST', headers:{ Authorization:'Bearer '+token }
-    });
-    setTimeout(loadMenu, 4000);
-  } catch(e) {}
+    const r = await api(`/menu/${menuDate}/grocery-list`);
+    if (!r.ok) { showToast('No grocery list available'); return; }
+    const data = await r.json();
+    const win = window.open('', '_blank', 'width=480,height=640');
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+      <title>Grocery List — ${menuDate}</title>
+      <style>body{font-family:sans-serif;padding:24px;max-width:400px}
+      h2{margin-bottom:4px}p{color:#777;font-size:.85rem;margin-bottom:16px}
+      ul{list-style:none;padding:0}li{padding:8px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between}
+      .qty{font-weight:700;color:#E8593C}</style></head><body>
+      <h2>🛒 Grocery List</h2>
+      <p>${menuDate} · ${data.recipe_count} meals · ${data.member_count} person(s)</p>
+      <ul>${(data.items||[]).map(i=>`<li><span>${i.name}</span><span class="qty">${i.qty} ${i.unit}</span></li>`).join('')}</ul>
+      <button onclick="window.print()" style="margin-top:16px;padding:8px 16px;background:#E8593C;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨 Print</button>
+      </body></html>`);
+    win.document.close();
+  } catch(e) { showToast('Could not load grocery list', '#c0392b'); }
 }
 
 function openPDF(url) {
-  const pubUrl = url.includes('localhost') || url.includes('minio')
-    ? url : url;
-  document.getElementById('pdfFrame').src = pubUrl;
-  document.getElementById('pdfDl').href = pubUrl;
+  document.getElementById('pdfOpenBtn').href = url;
+  document.getElementById('pdfDlBtn').href = url;
   document.getElementById('pdfOverlay').style.display = 'flex';
 }
 function closePDF() {
   document.getElementById('pdfOverlay').style.display = 'none';
-  document.getElementById('pdfFrame').src = '';
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closePDF(); });
 

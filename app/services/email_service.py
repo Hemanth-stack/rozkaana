@@ -263,4 +263,81 @@ class EmailService:
         return await self._send(to, subject, html)
 
 
+    async def send_subscription_upgraded(self, to: str, name: str, plan: str, next_billing: str) -> bool:
+        plan_label = {"solo_basic": "Starter", "solo_pro": "Pro", "family": "Family"}.get(plan, plan)
+        subject = f"✅ You're now on the {plan_label} plan — Rozkaana"
+        html = f"""<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="font-family:'Segoe UI',Arial,sans-serif;background:#FAF7F2;margin:0;padding:0">
+<div style="max-width:520px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">
+  <div style="background:#2E7D52;padding:28px 36px;text-align:center">
+    <h1 style="color:#fff;font-size:20px;margin:0">✅ Plan Upgraded!</h1>
+    <p style="color:rgba(255,255,255,.8);font-size:13px;margin:6px 0 0">Welcome to {plan_label}</p>
+  </div>
+  <div style="padding:32px 36px">
+    <p style="font-size:15px;color:#3A3028">Hi <strong>{name}</strong>,</p>
+    <p style="font-size:14px;color:#3A3028;line-height:1.7">You're now on the <strong>{plan_label} plan</strong>. Your personalised meal plans will continue without interruption.</p>
+    <div style="background:#FAF7F2;border-radius:10px;padding:14px 18px;margin:20px 0;font-size:.85rem;color:#3A3028">
+      <strong>Next billing:</strong> {next_billing}
+    </div>
+    <p style="font-size:13px;color:#7A6E65">Visit <a href="https://rozkaana.in/billing" style="color:#E8593C">rozkaana.in/billing</a> to manage your subscription.</p>
+  </div>
+  <div style="background:#FAF7F2;padding:20px 36px;text-align:center;font-size:11px;color:#7A6E65;border-top:1px solid #E8DDD0">© 2026 Rozkaana · Made in India</div>
+</div></body></html>"""
+        return await self._send(to, subject, html)
+
+    async def send_subscription_cancelled(self, to: str, name: str, active_until: str) -> bool:
+        subject = "Your Rozkaana subscription has been cancelled"
+        html = f"""<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="font-family:'Segoe UI',Arial,sans-serif;background:#FAF7F2;margin:0;padding:0">
+<div style="max-width:520px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">
+  <div style="background:#1A1612;padding:28px 36px;text-align:center">
+    <h1 style="color:#fff;font-size:20px;margin:0">Subscription Cancelled</h1>
+    <p style="color:rgba(255,255,255,.6);font-size:13px;margin:6px 0 0">We're sorry to see you go</p>
+  </div>
+  <div style="padding:32px 36px">
+    <p style="font-size:15px;color:#3A3028">Hi <strong>{name}</strong>,</p>
+    <p style="font-size:14px;color:#3A3028;line-height:1.7">Your subscription has been cancelled. You'll continue to receive meal plans until <strong>{active_until}</strong>.</p>
+    <div style="text-align:center;margin:24px 0">
+      <a href="https://rozkaana.in/billing" style="display:inline-block;background:#E8593C;color:#fff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:700;font-size:14px">Reactivate Plan</a>
+    </div>
+  </div>
+  <div style="background:#FAF7F2;padding:20px 36px;text-align:center;font-size:11px;color:#7A6E65;border-top:1px solid #E8DDD0">© 2026 Rozkaana · Made in India</div>
+</div></body></html>"""
+        return await self._send(to, subject, html)
+
+    async def send_household_invite(self, to: str, invited_by: str, invite_url: str) -> bool:
+        subject = f"{invited_by} invited you to join Rozkaana"
+        html = f"""<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="font-family:'Segoe UI',Arial,sans-serif;background:#FAF7F2;margin:0;padding:0">
+<div style="max-width:520px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">
+  <div style="background:#E8593C;padding:28px 36px;text-align:center">
+    <h1 style="color:#fff;font-size:20px;margin:0">🍱 You're Invited!</h1>
+    <p style="color:rgba(255,255,255,.8);font-size:13px;margin:6px 0 0">Join a Rozkaana household plan</p>
+  </div>
+  <div style="padding:32px 36px">
+    <p style="font-size:14px;color:#3A3028;line-height:1.7"><strong>{invited_by}</strong> has invited you to join their Rozkaana household meal plan. You'll get personalised daily meals while sharing recipes with your household.</p>
+    <div style="text-align:center;margin:28px 0">
+      <a href="{invite_url}" style="display:inline-block;background:#E8593C;color:#fff;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:15px">Join Household →</a>
+    </div>
+    <p style="font-size:12px;color:#7A6E65;text-align:center">This invite expires in 48 hours.</p>
+  </div>
+  <div style="background:#FAF7F2;padding:20px 36px;text-align:center;font-size:11px;color:#7A6E65;border-top:1px solid #E8DDD0">© 2026 Rozkaana · Made in India</div>
+</div></body></html>"""
+        return await self._send(to, subject, html)
+
+    async def send_account_deleted(self, to: str, name: str) -> bool:
+        subject = "Your Rozkaana account has been deleted"
+        html = f"""<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="font-family:'Segoe UI',Arial,sans-serif;background:#FAF7F2;margin:0;padding:0">
+<div style="max-width:520px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">
+  <div style="padding:32px 36px">
+    <h2 style="color:#1A1612;margin-bottom:12px">Account Deleted</h2>
+    <p style="font-size:14px;color:#3A3028;line-height:1.7">Hi <strong>{name}</strong>, your Rozkaana account and all associated data have been deleted. We're sorry to see you go.</p>
+    <p style="font-size:13px;color:#7A6E65;margin-top:16px">If this was a mistake, please contact us at <a href="mailto:noreply@rozkaana.in" style="color:#E8593C">noreply@rozkaana.in</a> within 7 days and we may be able to restore it.</p>
+  </div>
+  <div style="background:#FAF7F2;padding:20px 36px;text-align:center;font-size:11px;color:#7A6E65;border-top:1px solid #E8DDD0">© 2026 Rozkaana · Made in India</div>
+</div></body></html>"""
+        return await self._send(to, subject, html)
+
+
 email_service = EmailService()

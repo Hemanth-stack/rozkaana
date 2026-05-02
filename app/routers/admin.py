@@ -1,7 +1,7 @@
 import uuid
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel
 from sqlalchemy import and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +17,7 @@ from app.models.user import User
 from app.schemas.admin import (
     CreateRecipeRequest, DashboardStats, GenerateBatchRequest,
     GenerateBatchResponse, MenuAdminItem, MenuAdminListResponse,
-    PipelineStatus, PipelineStep, RecipeListResponse, UserListResponse,
+    PipelineStatus, PipelineStep, RecipeListResponse, UserAdminProfile, UserListResponse,
 )
 from app.schemas.recipe import RecipeOut, RecipeUpdate
 from app.services.recipe_ai_generator import generate_recipe_batch
@@ -26,8 +26,9 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 
 
 class AdminLoginRequest(BaseModel):
-    phone: str
-    password: str  # simple admin password for pilot
+    email: str = ""
+    phone: str = ""
+    password: str
 
 
 class AdminTokenResponse(BaseModel):
@@ -38,25 +39,97 @@ class AdminTokenResponse(BaseModel):
 
 @router.post("/login", response_model=AdminTokenResponse)
 async def admin_login(
+    http_request: Request,
     request: AdminLoginRequest,
     db: AsyncSession = Depends(get_db),
 ):
     from app.config import settings
-    result = await db.execute(
-        select(User).where(User.phone == request.phone, User.is_admin == True)  # noqa
-    )
+    from app.utils.rate_limiter import limiter
+    # Manual rate limit check (decorator can't be used with mixed Request/Depends signature)
+    if request.email:
+        result = await db.execute(
+            select(User).where(User.email == request.email.lower(), User.is_admin == True)  # noqa
+        )
+    else:
+        result = await db.execute(
+            select(User).where(User.phone == request.phone, User.is_admin == True)  # noqa
+        )
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    # Simple password check using phone-based secret (pilot mode)
-    expected = settings.JWT_SECRET_KEY[:8]
-    if request.password != expected:
+
+    # Bcrypt check (primary); falls back to legacy JWT[:8] if hash not configured yet
+    if settings.ADMIN_PASSWORD_HASH:
+        from passlib.hash import bcrypt as _bcrypt
+        try:
+            ok = _bcrypt.verify(request.password, settings.ADMIN_PASSWORD_HASH)
+        except Exception:
+            ok = False
+    else:
+        ok = request.password == settings.JWT_SECRET_KEY[:8]
+
+    if not ok:
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
     data = {"sub": str(user.id)}
     return AdminTokenResponse(
         access_token=create_access_token(data),
         refresh_token=create_refresh_token(data),
     )
+
+
+@router.post("/recipes/run-seed", status_code=202)
+async def run_recipe_seed(
+    verify: bool = True,
+    current_user: User = Depends(get_current_admin),
+):
+    """Trigger full recipe GENERATION_MATRIX as a background Celery task (~45-60 min)."""
+    from app.tasks.seed_tasks import run_recipe_seed as _seed_task
+    task = _seed_task.delay(verify=verify)
+    return {
+        "task_id": task.id,
+        "message": "Seed started. Poll /admin/status/task/{task_id} for progress.",
+        "estimated_recipes": "~2200",
+        "estimated_time_minutes": "45-60",
+    }
+
+
+@router.get("/recipes/stats")
+async def recipe_stats(
+    current_user: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Recipe bank coverage: count per meal_type × cuisine × eating_mode × is_verified."""
+    from sqlalchemy import text
+    sql = text("""
+        SELECT meal_type, cuisine_region,
+               unnest(eating_mode_tags) AS eating_mode,
+               is_verified, COUNT(*) AS count
+        FROM recipes
+        WHERE is_active = true
+        GROUP BY meal_type, cuisine_region, eating_mode, is_verified
+        ORDER BY meal_type, cuisine_region, eating_mode, is_verified
+    """)
+    rows = (await db.execute(sql)).mappings().all()
+
+    total = (await db.execute(
+        select(func.count()).select_from(Recipe).where(Recipe.is_active == True)  # noqa
+    )).scalar() or 0
+    verified = (await db.execute(
+        select(func.count()).select_from(Recipe).where(
+            Recipe.is_active == True, Recipe.is_verified == True  # noqa
+        )
+    )).scalar() or 0
+
+    matrix = [dict(r) for r in rows]
+    gaps = [r for r in matrix if r["is_verified"] and r["count"] < 5]
+
+    return {
+        "total_active": total,
+        "total_verified": verified,
+        "matrix": matrix,
+        "coverage_gaps": gaps,
+    }
 
 
 @router.get("/recipes", response_model=RecipeListResponse)
@@ -208,20 +281,61 @@ async def generate_batch(
 async def list_users(
     page: int = 1,
     limit: int = 20,
+    search: str | None = None,
     plan_type: str | None = None,
     current_user: User = Depends(get_current_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    count_result = await db.execute(select(func.count()).select_from(User))
-    total = count_result.scalar() or 0
+    filters = []
+    if search:
+        from sqlalchemy import or_
+        filters.append(or_(
+            User.name.ilike(f"%{search}%"),
+            User.email.ilike(f"%{search}%"),
+        ))
 
-    result = await db.execute(
-        select(User).order_by(User.created_at.desc())
-        .offset((page - 1) * limit)
-        .limit(limit)
-    )
-    users = result.scalars().all()
-    return UserListResponse(users=users, total=total, page=page, limit=limit)
+    count_q = select(func.count()).select_from(User)
+    if filters:
+        from sqlalchemy import and_
+        count_q = count_q.where(and_(*filters))
+    total = (await db.execute(count_q)).scalar() or 0
+
+    q = select(User).order_by(User.created_at.desc()).offset((page - 1) * limit).limit(limit)
+    if filters:
+        from sqlalchemy import and_
+        q = q.where(and_(*filters))
+    users = (await db.execute(q)).scalars().all()
+
+    user_ids = [u.id for u in users]
+    sub_map: dict = {}
+    if user_ids:
+        sub_rows = (await db.execute(
+            select(Subscription).where(Subscription.user_id.in_(user_ids))
+        )).scalars().all()
+        sub_map = {s.user_id: s for s in sub_rows}
+
+    items = []
+    for u in users:
+        sub = sub_map.get(u.id)
+        items.append(UserAdminProfile(
+            id=u.id, name=u.name, email=u.email, phone=u.phone,
+            eating_mode=u.eating_mode, goal=u.goal, bmi=u.bmi,
+            health_tags=u.health_tags or [],
+            is_active=u.is_active, is_admin=u.is_admin,
+            onboarding_complete=u.onboarding_complete,
+            wa_opted_in=u.wa_opted_in or False,
+            created_at=u.created_at,
+            plan_type=sub.plan_type if sub else None,
+            sub_status=sub.status if sub else None,
+            sub_period_end=sub.current_period_end if sub else None,
+            trial_end=sub.trial_end if sub else None,
+        ))
+
+    # Filter by plan after joining (small dataset, fine for pilot)
+    if plan_type:
+        items = [i for i in items if i.plan_type == plan_type]
+
+    return UserListResponse(users=items, total=total, page=page, limit=limit)
 
 
 @router.get("/users/{user_id}")
@@ -295,6 +409,13 @@ async def dashboard_stats(
         )
     ).scalar() or 0
 
+    emails_sent = (
+        await db.execute(
+            select(func.count()).select_from(DailyMenu)
+            .where(and_(DailyMenu.menu_date == today, DailyMenu.wa_sent_at.isnot(None)))
+        )
+    ).scalar() or 0
+
     active_sub_rows = (
         await db.execute(
             select(Subscription.plan_type).where(Subscription.status == "active")
@@ -315,6 +436,7 @@ async def dashboard_stats(
         pdfs_built_today=pdfs_today,
         wa_delivered_today=wa_delivered,
         wa_failed_today=wa_failed,
+        emails_sent_today=emails_sent,
         mrr=mrr,
         plan_distribution=plan_distribution,
     )
@@ -362,7 +484,7 @@ async def pipeline_today(
     steps = [
         PipelineStep(name="Menu Generation", count=active_subs, completed=menus_gen, failed=active_subs - menus_gen, status="done" if menus_gen >= active_subs else "partial"),
         PipelineStep(name="PDF Build", count=menus_gen, completed=pdfs_built, failed=menus_gen - pdfs_built, status="done" if pdfs_built >= menus_gen else "partial"),
-        PipelineStep(name="WhatsApp Delivery", count=pdfs_built, completed=wa_sent, failed=wa_failed, status="done" if wa_sent >= pdfs_built else "partial"),
+        PipelineStep(name="Email Delivery", count=pdfs_built, completed=wa_sent, failed=wa_failed, status="done" if wa_sent >= pdfs_built else "partial"),
     ]
     return PipelineStatus(date=today, steps=steps)
 
@@ -501,19 +623,157 @@ async def retry_wa(
         raise HTTPException(status_code=404, detail="Menu not found")
     from app.tasks.wa_tasks import send_single_whatsapp
     task = send_single_whatsapp.delay(menu_id)
-    return {"task_id": task.id, "message": "WhatsApp retry queued"}
+    return {"task_id": task.id, "message": "Retry queued"}
+
+
+@router.post("/menus/{menu_id}/retry-email", status_code=202)
+async def retry_email(
+    menu_id: str,
+    current_user: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    menu = await db.get(DailyMenu, uuid.UUID(menu_id))
+    if not menu:
+        raise HTTPException(status_code=404, detail="Menu not found")
+    from app.tasks.email_tasks import send_menu_email
+    task = send_menu_email.delay(menu_id)
+    return {"task_id": task.id, "message": "Email retry queued"}
 
 
 @router.get("/logs")
 async def get_logs(
-    log_date: str | None = None,
     level: str | None = None,
-    page: int = 1,
-    limit: int = 100,
+    limit: int = 200,
     current_user: User = Depends(get_current_admin),
 ):
+    import asyncio
+    import re
+
+    log_path = "/tmp/rozkaana-api.log"
+    pattern = re.compile(
+        r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})[,.]?\d*\s+(\w+)\s+(\S+):\s+(.*)$"
+    )
+    level_map = {"WARNING": "WARN", "ERROR": "ERR", "CRITICAL": "ERR"}
+
+    def _read():
+        try:
+            with open(log_path) as f:
+                lines = f.readlines()
+            return lines[-limit:] if len(lines) > limit else lines
+        except FileNotFoundError:
+            return []
+
+    lines = await asyncio.get_event_loop().run_in_executor(None, _read)
+    logs = []
+    for line in lines:
+        line = line.rstrip()
+        if not line:
+            continue
+        m = pattern.match(line)
+        if m:
+            ts, lvl, svc, msg = m.groups()
+            lvl = level_map.get(lvl.upper(), lvl.upper()[:4])
+            if level and lvl != level.upper()[:4]:
+                continue
+            logs.append({"ts": ts, "level": lvl, "service": svc.split(".")[-1], "message": msg})
+        else:
+            logs.append({"ts": "—", "level": "INFO", "service": "app", "message": line})
+
+    return {"logs": logs, "total": len(logs)}
+
+
+@router.get("/system/health")
+async def system_health(
+    current_user: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    import asyncio
+    import time
+    from datetime import datetime
+
+    components: dict = {}
+
+    # Database
+    t0 = time.time()
+    try:
+        from sqlalchemy import text as _text
+        await db.execute(_text("SELECT 1"))
+        components["database"] = {"status": "ok", "latency_ms": round((time.time()-t0)*1000, 1)}
+    except Exception as e:
+        components["database"] = {"status": "down", "detail": str(e)}
+
+    # Redis
+    t0 = time.time()
+    try:
+        from app.utils.redis_client import get_redis as _get_redis
+        import redis.asyncio as _aioredis
+        from app.config import settings as _s
+        r = _aioredis.from_url(_s.REDIS_URL)
+        await r.ping()
+        await r.aclose()
+        components["redis"] = {"status": "ok", "latency_ms": round((time.time()-t0)*1000, 1)}
+    except Exception as e:
+        components["redis"] = {"status": "down", "detail": str(e)}
+
+    # MinIO
+    t0 = time.time()
+    try:
+        from app.utils.minio_client import _client, settings as _ms
+        await asyncio.get_event_loop().run_in_executor(None, _client.list_buckets)
+        components["minio"] = {"status": "ok", "latency_ms": round((time.time()-t0)*1000, 1)}
+    except Exception as e:
+        components["minio"] = {"status": "degraded", "detail": str(e)}
+
+    # Celery workers
+    t0 = time.time()
+    try:
+        from app.tasks.celery_app import celery_app as _celery
+        def _ping():
+            return _celery.control.inspect(timeout=3.0).ping()
+        ping = await asyncio.get_event_loop().run_in_executor(None, _ping)
+        worker_count = len(ping) if ping else 0
+        components["celery"] = {
+            "status": "ok" if worker_count > 0 else "degraded",
+            "latency_ms": round((time.time()-t0)*1000, 1),
+            "detail": f"{worker_count} worker(s) responding",
+        }
+    except Exception as e:
+        components["celery"] = {"status": "down", "detail": str(e)}
+
+    overall = (
+        "ok" if all(c["status"] == "ok" for c in components.values())
+        else "down" if any(c["status"] == "down" for c in components.values())
+        else "degraded"
+    )
+    return {"overall": overall, "components": components, "checked_at": datetime.utcnow().isoformat()}
+
+
+@router.get("/celery/stats")
+async def celery_stats(current_user: User = Depends(get_current_admin)):
+    import asyncio
+
+    def _inspect():
+        from app.tasks.celery_app import celery_app as _celery
+        i = _celery.control.inspect(timeout=5.0)
+        return i.active() or {}, i.reserved() or {}
+
+    active, reserved = await asyncio.get_event_loop().run_in_executor(None, _inspect)
+
+    queue_depths: dict = {}
+    try:
+        from app.config import settings as _s
+        import redis.asyncio as _aioredis
+        r = _aioredis.from_url(_s.REDIS_URL.replace("/0", "/1"))  # broker db
+        queue_depths["celery"] = await r.llen("celery")
+        await r.aclose()
+    except Exception:
+        pass
+
     return {
-        "logs": [],
-        "total": 0,
-        "message": "Structured logging via systemd journal. Use: journalctl -u rozkaana-api --since today",
+        "workers": list(active.keys()),
+        "active_tasks": {w: [t.get("name") for t in tasks] for w, tasks in active.items()},
+        "reserved_tasks": {w: [t.get("name") for t in tasks] for w, tasks in reserved.items()},
+        "queue_depths": queue_depths,
+        "total_active": sum(len(t) for t in active.values()),
+        "total_reserved": sum(len(t) for t in reserved.values()),
     }

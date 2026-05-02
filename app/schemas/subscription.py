@@ -21,13 +21,25 @@ class SubscriptionResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class UpgradeRequest(BaseModel):
+class CheckoutRequest(BaseModel):
     plan_type: str
 
 
-class UpgradeResponse(BaseModel):
-    payment_link: str
-    rzp_subscription_id: str
+class CheckoutResponse(BaseModel):
+    order_id: str
+    amount: int
+    currency: str
+    key_id: str
+    user_name: str
+    user_email: str
+    plan_type: str
+    plan_label: str
+
+
+class VerifyPaymentRequest(BaseModel):
+    razorpay_payment_id: str
+    razorpay_order_id: str
+    razorpay_signature: str
 
 
 class PauseResponse(BaseModel):
