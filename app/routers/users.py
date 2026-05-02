@@ -13,7 +13,6 @@ from app.schemas.user import (
 from app.services.bmi_service import calculate_and_store_bmi
 from app.services.macro_scorer import calculate_targets
 from app.services.subscription_service import create_trial
-from app.services.whatsapp_service import wa_service
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -158,11 +157,12 @@ async def complete_onboarding(
 
     sub = await create_trial(current_user.id, "solo_basic", db)
 
-    if current_user.wa_phone and current_user.wa_opted_in:
-        await wa_service.send_template(
-            current_user.wa_phone,
-            "rozkaana_trial_start",
-            {"name": current_user.name, "trial_end": str(sub.trial_end)},
+    if current_user.email and current_user.email_verified:
+        from app.services.email_service import email_service
+        await email_service.send_trial_start(
+            current_user.email,
+            current_user.name or "there",
+            str(sub.trial_end),
         )
 
     await db.refresh(current_user)

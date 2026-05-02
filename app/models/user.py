@@ -32,6 +32,9 @@ class User(Base):
     daily_fat_target_g = Column(Numeric(5, 1), nullable=True)
     household_id = Column(UUID(as_uuid=True), ForeignKey("households.id"), nullable=True)
     is_household_head = Column(Boolean, default=False, server_default="false")
+    email = Column(String(254), nullable=True, index=True)
+    email_verified = Column(Boolean, default=False, server_default="false")
+    # kept for future WhatsApp re-integration
     wa_phone = Column(String(15), nullable=True)
     wa_opted_in = Column(Boolean, default=False, server_default="false")
     onboarding_complete = Column(Boolean, default=False, server_default="false")

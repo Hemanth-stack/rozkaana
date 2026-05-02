@@ -17,21 +17,40 @@ class Settings(BaseSettings):
     MINIO_SECRET_KEY: str = "minioadmin123"
     MINIO_BUCKET_NAME: str = "rozkaana-pdfs"
     MINIO_SECURE: bool = False
-    WATI_API_BASE_URL: str = "https://live-mt-server.wati.io/000000"
-    WATI_ACCESS_TOKEN: str = "Bearer token"
-    WATI_WEBHOOK_SECRET: str = "webhook-secret"
+    # SMTP Email (Zoho Mail)
+    SMTP_HOST: str = "smtp.zoho.in"
+    SMTP_PORT: int = 587
+    # noreply@rozkaana.in — used for OTP, trial, and system emails
+    SMTP_USER: str = "noreply@rozkaana.in"
+    SMTP_PASSWORD: str = "your-zoho-password"
+    SMTP_FROM_NAME: str = "Rozkaana"
+    SMTP_FROM_EMAIL: str = "noreply@rozkaana.in"
+    # menu@rozkaana.in — used for daily meal plan delivery
+    SMTP_MENU_USER: str = "menu@rozkaana.in"
+    SMTP_MENU_PASSWORD: str = "your-zoho-menu-password"
+
+    # Razorpay (payments)
     RAZORPAY_KEY_ID: str = "rzp_test_xxxx"
     RAZORPAY_KEY_SECRET: str = "secret"
     RAZORPAY_WEBHOOK_SECRET: str = "rzp-webhook-secret"
-    MSG91_AUTH_KEY: str = "msg91-auth-key"
-    MSG91_TEMPLATE_ID: str = "template-id"
-    MSG91_SENDER_ID: str = "ROZKAN"
+
+    # WATI (kept for future WhatsApp re-integration)
+    WATI_API_BASE_URL: str = "https://live-mt-server.wati.io/000000"
+    WATI_ACCESS_TOKEN: str = "Bearer placeholder"
+    WATI_WEBHOOK_SECRET: str = "webhook-secret"
+
+    # Google OAuth
+    GOOGLE_CLIENT_ID: str = "your-google-client-id"
+    GOOGLE_CLIENT_SECRET: str = "your-google-client-secret"
+    GOOGLE_REDIRECT_URI: str = "https://api.rozkaana.in/api/v1/auth/google/callback"
+    FRONTEND_URL: str = "https://rozkaana.in"
+
     CLAUDE_API_KEY: str = "sk-ant-placeholder"
-    APP_BASE_URL: str = "http://localhost:7078"
+    APP_BASE_URL: str = "https://api.rozkaana.in"
     PDF_PRESIGNED_URL_EXPIRE_HOURS: int = 12
     MENU_GEN_HOUR_UTC: int = 18
     PDF_BUILD_HOUR_UTC: int = 22
-    WA_SEND_HOUR_UTC: int = 0
+    EMAIL_SEND_HOUR_UTC: int = 0
 
     class Config:
         env_file = ".env"

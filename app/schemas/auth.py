@@ -1,28 +1,27 @@
 import re
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, EmailStr
 
 
 class SendOTPRequest(BaseModel):
-    phone: str
+    email: str
 
-    @field_validator("phone")
+    @field_validator("email")
     @classmethod
-    def validate_phone(cls, v: str) -> str:
-        v = v.strip()
-        if not re.match(r"^\+91[6-9]\d{9}$", v):
-            raise ValueError("Phone must be E.164 Indian format: +91XXXXXXXXXX")
+    def validate_email(cls, v: str) -> str:
+        v = v.strip().lower()
+        if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", v):
+            raise ValueError("Enter a valid email address")
         return v
 
 
 class SendOTPResponse(BaseModel):
     session_id: str
-    message: str = "OTP sent successfully"
-    # Only populated when MSG91 is not configured (dev/pilot mode)
+    message: str = "OTP sent to your email"
     dev_otp: str | None = None
 
 
 class VerifyOTPRequest(BaseModel):
-    phone: str
+    email: str
     otp: str
     session_id: str
 

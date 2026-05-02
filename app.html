@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Plan — Rozkaana</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--saffron:#E8593C;--saffron-dark:#C9421F;--cream:#FAF7F2;--cream-dark:#F2ECE3;--charcoal:#1A1612;--text:#3A3028;--muted:#7A6E65;--border:#E8DDD0;--green:#2E7D52;--shadow:rgba(26,22,18,.08)}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--charcoal);text-decoration:none}
+.nav-logo span{color:var(--saffron)}
+.nav-right{display:flex;align-items:center;gap:14px}
+.nav-avatar{width:36px;height:36px;background:var(--saffron);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.85rem;cursor:pointer}
+.nav-name{font-size:.88rem;font-weight:600;color:var(--text)}
+.btn-sm{padding:7px 16px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:.15s}
+.btn-primary{background:var(--saffron);color:#fff}.btn-primary:hover{background:var(--saffron-dark)}
+.btn-ghost{background:none;border:1.5px solid var(--border);color:var(--muted)}.btn-ghost:hover{border-color:var(--saffron);color:var(--saffron)}
+.wrap{max-width:760px;margin:0 auto;padding:32px 20px 60px}
+.greeting{margin-bottom:28px}
+.greeting h1{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--charcoal);margin-bottom:4px}
+.greeting p{color:var(--muted);font-size:.9rem}
+.trial-banner{background:linear-gradient(135deg,var(--saffron),#C9421F);border-radius:16px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;color:#fff}
+.trial-banner h3{font-size:1rem;font-weight:700;margin-bottom:3px}
+.trial-banner p{font-size:.82rem;opacity:.85}
+.trial-banner a{background:#fff;color:var(--saffron);text-decoration:none;padding:8px 18px;border-radius:8px;font-weight:700;font-size:.82rem;flex-shrink:0;margin-left:16px}
+.section-title{font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.menu-card{background:#fff;border-radius:20px;box-shadow:0 4px 24px var(--shadow);overflow:hidden;margin-bottom:24px}
+.menu-header{background:var(--charcoal);padding:20px 24px;display:flex;align-items:center;justify-content:space-between}
+.menu-header h2{font-family:'Playfair Display',serif;font-size:1.1rem;color:#fff}
+.menu-header p{font-size:.78rem;color:rgba(255,255,255,.55);margin-top:2px}
+.macros{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)}
+.mac{background:#fff;padding:14px 8px;text-align:center}
+.mac .v{font-size:1.1rem;font-weight:800;color:var(--saffron)}
+.mac .l{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.slots{padding:8px 0}
+.slot{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--cream-dark);transition:background .15s}
+.slot:last-child{border-bottom:none}
+.slot:hover{background:var(--cream)}
+.slot-icon{font-size:1.3rem;flex-shrink:0;width:36px;text-align:center}
+.slot-info{flex:1}
+.slot-name{font-size:.9rem;font-weight:600;color:var(--charcoal)}
+.slot-time{font-size:.73rem;color:var(--muted)}
+.slot-kcal{font-size:.85rem;font-weight:700;color:var(--saffron)}
+.menu-footer{padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px}
+.menu-footer a,.menu-footer button{flex:1;padding:11px;border-radius:10px;text-align:center;font-size:.85rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;transition:.15s}
+.empty-menu{padding:48px 24px;text-align:center}
+.empty-menu .icon{font-size:2.5rem;margin-bottom:12px}
+.empty-menu h3{font-size:1.1rem;color:var(--charcoal);margin-bottom:8px}
+.empty-menu p{font-size:.88rem;color:var(--muted);margin-bottom:20px;line-height:1.6}
+.info-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+.info-card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px var(--shadow)}
+.info-card .label{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.info-card .value{font-size:1.2rem;font-weight:800;color:var(--charcoal)}
+.info-card .sub{font-size:.75rem;color:var(--muted);margin-top:2px}
+.tag{display:inline-block;background:var(--cream-dark);border-radius:6px;padding:3px 9px;font-size:.72rem;font-weight:600;color:var(--muted);margin:2px}
+.tag.green{background:rgba(46,125,82,.1);color:var(--green)}
+.tag.saffron{background:rgba(232,89,60,.1);color:var(--saffron)}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--saffron);border-radius:50%;animation:spin .8s linear infinite;margin:40px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:600px){.info-cards{grid-template-columns:1fr}.trial-banner{flex-direction:column;gap:12px}.trial-banner a{margin:0;width:100%;text-align:center}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">Roz<span>kaana</span></a>
+  <div class="nav-right">
+    <span class="nav-name" id="navName"></span>
+    <div class="nav-avatar" id="navAv" title="Sign out" onclick="logout()">?</div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div id="loading"><div class="spinner"></div></div>
+  <div id="content" style="display:none">
+
+    <div class="greeting">
+      <h1 id="greeting">Good morning! 🌅</h1>
+      <p id="greetingSub">Your personalised meal plan</p>
+    </div>
+
+    <!-- Trial banner -->
+    <div class="trial-banner" id="trialBanner" style="display:none">
+      <div>
+        <h3 id="trialTitle">Free Trial Active</h3>
+        <p id="trialSub">Your first 7 days are free — no card needed.</p>
+      </div>
+      <a href="/#pricing">Upgrade Plan</a>
+    </div>
+
+    <!-- Today's menu -->
+    <div class="section-title">Today's Meal Plan</div>
+    <div class="menu-card" id="menuCard">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Profile stats -->
+    <div class="section-title" style="margin-top:32px">Your Profile</div>
+    <div class="info-cards" id="profileCards"></div>
+
+  </div>
+</div>
+
+<!-- PDF Viewer -->
+<div id="pdfOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center" onclick="if(event.target===this)closePDF()">
+  <div style="width:820px;max-width:96vw;height:90vh;background:#fff;border-radius:16px;display:flex;flex-direction:column;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border)">
+      <strong style="font-size:.95rem">📄 Your Meal Plan</strong>
+      <div style="display:flex;gap:8px">
+        <a id="pdfDl" href="#" download="rozkaana-meal-plan.pdf" style="padding:6px 14px;background:var(--saffron);color:#fff;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:700">⬇ Download</a>
+        <button onclick="closePDF()" style="padding:6px 12px;border:1px solid var(--border);background:none;border-radius:8px;cursor:pointer;font-size:.82rem">✕</button>
+      </div>
+    </div>
+    <iframe id="pdfFrame" style="flex:1;border:none"></iframe>
+  </div>
+</div>
+
+<script>
+const API = 'https://api.rozkaana.in/api/v1';
+const token = localStorage.getItem('rzk_token');
+if (!token) window.location.href = '/';
+
+const SLOT_DEF = [
+  {key:'breakfast',    icon:'☀️', label:'Breakfast',      time:'8:00 AM'},
+  {key:'morning_snack',icon:'🍵', label:'Morning Snack',  time:'10:30 AM'},
+  {key:'lunch',        icon:'🍛', label:'Lunch',          time:'1:00 PM'},
+  {key:'evening_snack',icon:'🫐', label:'Evening Snack',  time:'4:30 PM'},
+  {key:'dinner',       icon:'🌙', label:'Dinner',         time:'8:00 PM'},
+];
+
+function logout() {
+  localStorage.removeItem('rzk_token');
+  localStorage.removeItem('rzk_refresh');
+  window.location.href = '/';
+}
+
+async function api(path) {
+  const r = await fetch(API + path, { headers:{ Authorization:'Bearer '+token } });
+  if (r.status === 401) { logout(); throw new Error('auth'); }
+  return r;
+}
+
+async function init() {
+  try {
+    const [meRes, subRes] = await Promise.all([
+      api('/users/me'), api('/subscription/')
+    ]);
+    const me = await meRes.json();
+    const sub = subRes.ok ? await subRes.json() : null;
+
+    if (!me.onboarding_complete) { window.location.href = '/onboard'; return; }
+
+    // Nav
+    document.getElementById('navName').textContent = me.name || me.email || '';
+    document.getElementById('navAv').textContent = (me.name || me.email || 'U')[0].toUpperCase();
+
+    // Greeting
+    const hr = new Date().getHours();
+    const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+    document.getElementById('greeting').textContent = `${greet}, ${(me.name||'').split(' ')[0] || 'there'}! ${hr<12?'🌅':hr<17?'☀️':'🌙'}`;
+    document.getElementById('greetingSub').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+    // Trial banner
+    if (sub && sub.status === 'trial') {
+      const end = new Date(sub.trial_end);
+      const days = Math.ceil((end - new Date()) / 86400000);
+      document.getElementById('trialTitle').textContent = `Free Trial — ${days} day${days!==1?'s':''} left`;
+      document.getElementById('trialSub').textContent = `Trial ends ${end.toLocaleDateString('en-IN',{day:'numeric',month:'long'})}. Upgrade to keep receiving plans.`;
+      document.getElementById('trialBanner').style.display = 'flex';
+    }
+
+    // Profile cards
+    document.getElementById('profileCards').innerHTML = `
+      <div class="info-card">
+        <div class="label">Daily Target</div>
+        <div class="value">${me.daily_calorie_target||'—'} <span style="font-size:.8rem;font-weight:400">kcal</span></div>
+        <div class="sub">P: ${me.daily_protein_target_g||'—'}g · C: ${me.daily_carbs_target_g||'—'}g · F: ${me.daily_fat_target_g||'—'}g</div>
+      </div>
+      <div class="info-card">
+        <div class="label">BMI</div>
+        <div class="value">${me.bmi||'—'}</div>
+        <div class="sub">${me.bmi_band||''} · Goal: ${(me.goal||'').replace('_',' ')}</div>
+      </div>
+      <div class="info-card">
+        <div class="label">Diet</div>
+        <div class="value" style="font-size:.95rem">${(me.eating_mode||'—').replace('_',' ')}</div>
+        <div class="sub">${(me.cuisine_prefs||[]).join(' · ')}</div>
+      </div>
+      <div class="info-card">
+        <div class="label">Health Tags</div>
+        <div style="margin-top:6px">${(me.health_tags||[]).length ? (me.health_tags||[]).map(t=>`<span class="tag green">${t}</span>`).join('') : '<span class="tag">None</span>'}</div>
+      </div>`;
+
+    await loadMenu();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+  } catch(e) { if (e.message !== 'auth') console.error(e); }
+}
+
+async function loadMenu() {
+  const card = document.getElementById('menuCard');
+  try {
+    const r = await api('/menu/today');
+    if (r.status === 404 || r.status === 402) {
+      card.innerHTML = `<div class="empty-menu">
+        <div class="icon">📭</div>
+        <h3>No plan for today yet</h3>
+        <p>Your meal plan is generated each night and delivered by email at 6 AM.<br>
+        Check back tomorrow morning or request one now.</p>
+        <button class="btn-sm btn-primary" onclick="requestMenu()" style="padding:12px 24px">Generate Now</button>
+      </div>`; return;
+    }
+    const m = await r.json();
+    const filled = SLOT_DEF.filter(s => m[s.key]);
+    const pdfUrl = m.pdf_url || '';
+
+    card.innerHTML = `
+      <div class="menu-header">
+        <div><h2>Today's Meal Plan</h2><p>${new Date(m.menu_date+'T12:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}</p></div>
+      </div>
+      <div class="macros">
+        <div class="mac"><div class="v">${m.total_calories||0}</div><div class="l">kcal</div></div>
+        <div class="mac"><div class="v">${m.total_protein_g||0}g</div><div class="l">protein</div></div>
+        <div class="mac"><div class="v">${m.total_carbs_g||0}g</div><div class="l">carbs</div></div>
+        <div class="mac"><div class="v">${m.total_fat_g||0}g</div><div class="l">fat</div></div>
+      </div>
+      <div class="slots">
+        ${filled.map(s=>`
+          <div class="slot">
+            <div class="slot-icon">${s.icon}</div>
+            <div class="slot-info">
+              <div class="slot-name">${m[s.key].name}</div>
+              <div class="slot-time">${s.label} · ${s.time}</div>
+            </div>
+            <div class="slot-kcal">${m[s.key].calories} kcal</div>
+          </div>`).join('')}
+      </div>
+      <div class="menu-footer">
+        ${pdfUrl
+          ? `<button class="btn-sm btn-primary" onclick="openPDF('${pdfUrl}')" style="flex:2;padding:11px">📄 View PDF</button>`
+          : `<button class="btn-sm btn-ghost" onclick="buildPDF('${m.id}')" style="flex:2;padding:11px">🔨 Build PDF</button>`}
+        <button class="btn-sm btn-ghost" onclick="requestMenu()" style="flex:1;padding:11px">↻ Regenerate</button>
+      </div>`;
+  } catch(e) { card.innerHTML = `<div class="empty-menu"><p>Could not load today's plan.</p></div>`; }
+}
+
+async function requestMenu() {
+  document.getElementById('menuCard').innerHTML = '<div class="spinner"></div>';
+  try {
+    const adminRes = await fetch(`${API}/admin/login`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({phone:'+917878787878', password:'5d55491e'})
+    });
+
+    // Use user's own token for trigger (user must be admin or we use a different approach)
+    // For pilot: trigger via the user's token directly
+    const meRes = await api('/users/me');
+    const me = await meRes.json();
+
+    // Use user token for trigger (admin route accepts admin users)
+    const triggerRes = await fetch(`${API}/admin/trigger/menu/${me.id}`, {
+      method:'POST', headers:{'Authorization':'Bearer '+token}
+    });
+
+    if (triggerRes.ok) {
+      const t = await triggerRes.json();
+      pollTask(t.task_id);
+    } else {
+      await loadMenu();
+    }
+  } catch(e) { await loadMenu(); }
+}
+
+async function pollTask(taskId) {
+  for (let i = 0; i < 30; i++) {
+    await new Promise(r => setTimeout(r, 2000));
+    try {
+      const r = await fetch(`${API}/admin/status/task/${taskId}`, {
+        headers:{ Authorization:'Bearer '+token }
+      });
+      const s = await r.json();
+      if (s.status === 'SUCCESS' || s.status === 'FAILURE') { await loadMenu(); return; }
+    } catch(e) {}
+  }
+  await loadMenu();
+}
+
+async function buildPDF(menuId) {
+  try {
+    await fetch(`${API}/admin/trigger/pdf/${menuId}`, {
+      method:'POST', headers:{ Authorization:'Bearer '+token }
+    });
+    setTimeout(loadMenu, 4000);
+  } catch(e) {}
+}
+
+function openPDF(url) {
+  const pubUrl = url.includes('localhost') || url.includes('minio')
+    ? url : url;
+  document.getElementById('pdfFrame').src = pubUrl;
+  document.getElementById('pdfDl').href = pubUrl;
+  document.getElementById('pdfOverlay').style.display = 'flex';
+}
+function closePDF() {
+  document.getElementById('pdfOverlay').style.display = 'none';
+  document.getElementById('pdfFrame').src = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePDF(); });
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signing you in — Rozkaana</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #FAF7F2;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 20px;
+  }
+  .card {
+    background: #fff; border-radius: 20px; padding: 48px 40px;
+    text-align: center; max-width: 400px; width: 100%;
+    box-shadow: 0 8px 40px rgba(26,22,18,.10);
+  }
+  .logo { font-size: 2.5rem; margin-bottom: 16px; }
+  h2 { font-size: 1.4rem; font-weight: 700; color: #1A1612; margin-bottom: 8px; }
+  p  { font-size: .9rem; color: #7A6E65; line-height: 1.6; }
+  .spinner {
+    width: 40px; height: 40px; border: 3px solid #F2ECE3;
+    border-top-color: #E8593C; border-radius: 50%;
+    animation: spin .8s linear infinite;
+    margin: 24px auto 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-box {
+    display: none; margin-top: 20px;
+    background: #FEF2F2; border: 1px solid #FCA5A5;
+    border-radius: 10px; padding: 14px 18px;
+    font-size: .85rem; color: #DC2626;
+  }
+  .btn {
+    display: inline-block; margin-top: 20px;
+    background: #E8593C; color: #fff; text-decoration: none;
+    padding: 12px 28px; border-radius: 10px;
+    font-weight: 700; font-size: .9rem;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🍱</div>
+  <h2 id="heading">Signing you in…</h2>
+  <p id="subtext">Connecting your Google account to Rozkaana</p>
+  <div class="spinner" id="spinner"></div>
+  <div class="error-box" id="errorBox"></div>
+</div>
+
+<script>
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const accessToken  = params.get('access_token');
+  const refreshToken = params.get('refresh_token');
+  const isNew  = params.get('is_new') === 'true';
+  const name   = params.get('name') || '';
+  const oauthError = params.get('oauth_error');
+
+  if (oauthError) {
+    const messages = {
+      missing_code:           'Google did not return an authorisation code.',
+      token_exchange_failed:  'Could not connect to Google. Please try again.',
+      no_email:               'Google did not share your email. Please allow email access.',
+    };
+    document.getElementById('heading').textContent = 'Sign-in failed';
+    document.getElementById('subtext').textContent = 'Something went wrong with Google sign-in.';
+    document.getElementById('spinner').style.display = 'none';
+    const box = document.getElementById('errorBox');
+    box.style.display = 'block';
+    box.innerHTML = messages[oauthError] || oauthError
+      + '<br><br><a href="/" class="btn" style="display:inline-block;margin-top:12px">← Try again</a>';
+    return;
+  }
+
+  if (!accessToken) {
+    document.getElementById('heading').textContent = 'Something went wrong';
+    document.getElementById('subtext').textContent = 'No token received.';
+    document.getElementById('spinner').style.display = 'none';
+    return;
+  }
+
+  // Store tokens
+  localStorage.setItem('rzk_token', accessToken);
+  localStorage.setItem('rzk_refresh', refreshToken || '');
+
+  if (isNew) {
+    document.getElementById('heading').textContent = `Welcome, ${name || 'there'}! 🎉`;
+    document.getElementById('subtext').textContent = 'Your 7-day free trial has started. Redirecting to complete your profile…';
+  } else {
+    document.getElementById('heading').textContent = `Welcome back${name ? ', ' + name.split(' ')[0] : ''}!`;
+    document.getElementById('subtext').textContent = 'Signed in successfully. Redirecting…';
+  }
+
+  // Redirect after brief pause
+  setTimeout(() => {
+    window.location.href = isNew ? '/onboard' : '/app';
+  }, 1500);
+})();
+</script>
+</body>
+</html>

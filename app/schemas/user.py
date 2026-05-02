@@ -25,6 +25,8 @@ class UserProfile(BaseModel):
     daily_protein_target_g: Optional[float]
     daily_carbs_target_g: Optional[float]
     daily_fat_target_g: Optional[float]
+    email: Optional[str] = None
+    email_verified: Optional[bool] = False
     household_id: Optional[UUID]
     is_household_head: Optional[bool] = False
     wa_phone: Optional[str]

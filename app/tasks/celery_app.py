@@ -10,7 +10,7 @@ celery_app = Celery(
     include=[
         "app.tasks.menu_tasks",
         "app.tasks.pdf_tasks",
-        "app.tasks.wa_tasks",
+        "app.tasks.email_tasks",
     ],
 )
 
@@ -29,9 +29,9 @@ celery_app.conf.beat_schedule = {
         "task": "app.tasks.pdf_tasks.build_all_pdfs",
         "schedule": crontab(hour=settings.PDF_BUILD_HOUR_UTC, minute=0),
     },
-    "send-whatsapp-messages": {
-        "task": "app.tasks.wa_tasks.send_all_whatsapp",
-        "schedule": crontab(hour=settings.WA_SEND_HOUR_UTC, minute=0),
+    "send-menu-emails": {
+        "task": "app.tasks.email_tasks.send_all_emails",
+        "schedule": crontab(hour=settings.EMAIL_SEND_HOUR_UTC, minute=0),
     },
     "expire-subscriptions": {
         "task": "app.tasks.menu_tasks.expire_subscriptions",
@@ -42,10 +42,9 @@ celery_app.conf.beat_schedule = {
         "schedule": crontab(minute=0),
     },
     "send-trial-expiry-warnings": {
-        "task": "app.tasks.wa_tasks.send_trial_expiry_warnings",
+        "task": "app.tasks.email_tasks.send_trial_expiry_warnings",
         "schedule": crontab(hour=4, minute=30),
     },
 }
 
-# Legacy alias
 app = celery_app

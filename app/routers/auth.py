@@ -19,9 +19,8 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 class DevLoginRequest(BaseModel):
-    phone: str
+    email: str
     name: str | None = None
-    wa_phone: str | None = None
 
 
 @router.post("/send-otp", response_model=SendOTPResponse)
@@ -30,7 +29,7 @@ async def send_otp_endpoint(
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
 ):
-    session_id, dev_otp = await send_otp(request.phone, db, redis)
+    session_id, dev_otp = await send_otp(request.email, db, redis)
     return SendOTPResponse(session_id=session_id, dev_otp=dev_otp)
 
 
@@ -40,17 +39,13 @@ async def verify_otp_endpoint(
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
 ):
-    is_new, user = await verify_otp(request.phone, request.otp, request.session_id, db)
+    is_new, user = await verify_otp(request.email, request.otp, request.session_id, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="OTP verification failed")
-
     data = {"sub": str(user.id)}
-    access_token = create_access_token(data)
-    refresh_token = create_refresh_token(data)
-
     return TokenResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
+        access_token=create_access_token(data),
+        refresh_token=create_refresh_token(data),
         is_new_user=is_new,
     )
 
@@ -60,21 +55,28 @@ async def dev_login(
     request: DevLoginRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    """Dev-only: skip OTP, get a token instantly. Disabled when MSG91 is configured."""
-    from app.services.otp_service import _msg91_configured
-    if _msg91_configured():
-        raise HTTPException(status_code=403, detail="Dev login disabled in production")
+    """Dev-only: skip OTP. Automatically disabled when SMTP is configured."""
+    from app.services.otp_service import _smtp_configured
+    if _smtp_configured():
+        raise HTTPException(status_code=403, detail="Dev login disabled — use /auth/send-otp")
 
     from app.models.user import User
-    result = await db.execute(select(User).where(User.phone == request.phone))
+    from app.models.subscription import Subscription
+    from app.services.subscription_service import create_trial
+
+    email = request.email.strip().lower()
+    result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
     is_new = user is None
+
     if is_new:
+        import hashlib
+        phone_placeholder = "e" + hashlib.md5(email.encode()).hexdigest()[:13]
         user = User(
-            phone=request.phone,
+            phone=phone_placeholder,
+            email=email,
             name=request.name,
-            wa_phone=request.wa_phone or request.phone,
-            wa_opted_in=bool(request.wa_phone),
+            email_verified=True,
             onboarding_complete=False,
             is_admin=False,
             is_household_head=False,
@@ -86,19 +88,15 @@ async def dev_login(
     else:
         if request.name and not user.name:
             user.name = request.name
-        if request.wa_phone and not user.wa_phone:
-            user.wa_phone = request.wa_phone
-            user.wa_opted_in = True
+        user.email_verified = True
         await db.flush()
         await db.refresh(user)
 
-    # Ensure onboarding + trial exist for dev users
+    # Ensure onboarding + trial
     if not user.onboarding_complete:
         user.onboarding_complete = True
         await db.flush()
 
-    from app.models.subscription import Subscription
-    from app.services.subscription_service import create_trial
     sub = (await db.execute(select(Subscription).where(Subscription.user_id == user.id))).scalar_one_or_none()
     if not sub:
         await create_trial(user.id, "solo_pro", db)
@@ -116,5 +114,4 @@ async def refresh_token_endpoint(request: RefreshRequest):
     payload = decode_token(request.refresh_token)
     if payload.get("type") != "refresh":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
-    new_access = create_access_token({"sub": payload["sub"]})
-    return RefreshResponse(access_token=new_access)
+    return RefreshResponse(access_token=create_access_token({"sub": payload["sub"]}))

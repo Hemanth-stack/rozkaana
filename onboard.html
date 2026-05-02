@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Set Up Your Profile — Rozkaana</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--saffron:#E8593C;--saffron-dark:#C9421F;--cream:#FAF7F2;--cream-dark:#F2ECE3;--charcoal:#1A1612;--text:#3A3028;--muted:#7A6E65;--border:#E8DDD0;--green:#2E7D52}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:60px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--charcoal);text-decoration:none}
+.nav-logo span{color:var(--saffron)}
+.nav-user{font-size:.85rem;color:var(--muted)}
+.container{max-width:600px;margin:40px auto;padding:0 20px 60px}
+.progress-bar{display:flex;gap:8px;margin-bottom:36px}
+.step-dot{flex:1;height:4px;border-radius:2px;background:var(--border);transition:background .3s}
+.step-dot.done{background:var(--green)}
+.step-dot.active{background:var(--saffron)}
+.card{background:#fff;border-radius:20px;padding:36px;box-shadow:0 4px 24px rgba(26,22,18,.07)}
+.step-label{font-size:.72rem;font-weight:700;color:var(--saffron);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+h2{font-family:'Playfair Display',serif;font-size:1.7rem;color:var(--charcoal);margin-bottom:8px}
+.sub{font-size:.9rem;color:var(--muted);margin-bottom:28px;line-height:1.6}
+.field{margin-bottom:18px}
+label{display:block;font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:6px}
+input,select{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.93rem;color:var(--text);background:var(--cream);outline:none;transition:border-color .2s}
+input:focus,select:focus{border-color:var(--saffron)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chip-group{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:.85rem;font-weight:500;color:var(--muted);cursor:pointer;transition:.2s;user-select:none}
+.chip:hover{border-color:var(--saffron);color:var(--saffron)}
+.chip.selected{border-color:var(--saffron);background:rgba(232,89,60,.07);color:var(--saffron);font-weight:700}
+.btn{width:100%;padding:14px;background:var(--saffron);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;margin-top:24px;transition:.2s}
+.btn:hover{background:var(--saffron-dark)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-back{width:100%;padding:12px;background:none;border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;color:var(--muted);cursor:pointer;margin-top:10px;transition:.2s}
+.btn-back:hover{border-color:var(--saffron);color:var(--saffron)}
+.bmi-box{display:none;background:var(--cream-dark);border-radius:10px;padding:12px 16px;margin-top:16px;font-size:.85rem}
+.bmi-val{font-size:1.3rem;font-weight:800;color:var(--saffron)}
+.err{font-size:.78rem;color:#dc2626;margin-top:6px;display:none}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">Roz<span>kaana</span></a>
+  <span class="nav-user" id="navUser"></span>
+</nav>
+
+<div class="container">
+  <div class="progress-bar">
+    <div class="step-dot active" id="dot0"></div>
+    <div class="step-dot" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+  </div>
+
+  <!-- Step 0: Basic info -->
+  <div class="card" id="step0">
+    <div class="step-label">Step 1 of 4</div>
+    <h2>Tell us about yourself</h2>
+    <p class="sub">We use this to calculate your daily calorie and macro targets accurately.</p>
+    <div class="field"><label>Your Name</label><input id="name" placeholder="Hemanth Kumar"></div>
+    <div class="row">
+      <div class="field"><label>Age</label><input id="age" type="number" placeholder="25" min="10" max="80"></div>
+      <div class="field">
+        <label>Gender</label>
+        <select id="gender"><option value="">Select</option><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option></select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Weight (kg)</label><input id="weight" type="number" placeholder="70" step="0.1"></div>
+      <div class="field"><label>Height (cm)</label><input id="height" type="number" placeholder="170"></div>
+    </div>
+    <div class="bmi-box" id="bmiBox">
+      Your BMI: <span class="bmi-val" id="bmiVal">—</span> <span id="bmiLabel"></span>
+    </div>
+    <div class="err" id="err0">Please fill in all fields.</div>
+    <button class="btn" onclick="next(0)">Continue →</button>
+  </div>
+
+  <!-- Step 1: Goals -->
+  <div class="card" id="step1" style="display:none">
+    <div class="step-label">Step 2 of 4</div>
+    <h2>What's your goal?</h2>
+    <p class="sub">We'll adjust your calorie targets and meal types accordingly.</p>
+    <div class="chip-group" id="goalGroup">
+      <div class="chip" data-val="weight_loss" onclick="pickOne(this,'goalGroup')">⬇ Weight Loss</div>
+      <div class="chip" data-val="maintenance" onclick="pickOne(this,'goalGroup')">⚖ Maintenance</div>
+      <div class="chip" data-val="muscle_gain" onclick="pickOne(this,'goalGroup')">💪 Muscle Gain</div>
+    </div>
+    <div style="margin-top:28px">
+      <label style="display:block;margin-bottom:10px">Any health conditions? (optional)</label>
+      <div class="chip-group" id="healthGroup">
+        <div class="chip" data-val="diabetes_t2" onclick="pickMany(this)">🩺 Diabetes T2</div>
+        <div class="chip" data-val="hypertension" onclick="pickMany(this)">❤️ High BP</div>
+        <div class="chip" data-val="pcos" onclick="pickMany(this)">🔬 PCOS</div>
+        <div class="chip" data-val="thyroid" onclick="pickMany(this)">🦋 Thyroid</div>
+      </div>
+    </div>
+    <div class="err" id="err1">Please select a goal.</div>
+    <button class="btn" onclick="next(1)">Continue →</button>
+    <button class="btn-back" onclick="back(1)">← Back</button>
+  </div>
+
+  <!-- Step 2: Eating preferences -->
+  <div class="card" id="step2" style="display:none">
+    <div class="step-label">Step 3 of 4</div>
+    <h2>Your food preferences</h2>
+    <p class="sub">We'll only show you recipes that match your eating style.</p>
+    <label style="display:block;margin-bottom:10px">Dietary preference</label>
+    <div class="chip-group" id="modeGroup">
+      <div class="chip" data-val="pure_veg" onclick="pickOne(this,'modeGroup')">🥦 Pure Veg</div>
+      <div class="chip" data-val="conditional_nv" onclick="pickOne(this,'modeGroup')">🥚 Conditional NV</div>
+      <div class="chip" data-val="full_nv" onclick="pickOne(this,'modeGroup')">🍗 Non-Veg</div>
+      <div class="chip" data-val="jain" onclick="pickOne(this,'modeGroup')">🕊 Jain</div>
+      <div class="chip" data-val="sattvic" onclick="pickOne(this,'modeGroup')">🌿 Sattvic</div>
+    </div>
+    <div style="margin-top:24px">
+      <label style="display:block;margin-bottom:10px">Preferred cuisines (pick up to 3)</label>
+      <div class="chip-group" id="cuisineGroup">
+        <div class="chip" data-val="north_indian" onclick="pickMax(this,'cuisineGroup',3)">🫓 North Indian</div>
+        <div class="chip" data-val="south_indian" onclick="pickMax(this,'cuisineGroup',3)">🍚 South Indian</div>
+        <div class="chip" data-val="bengali" onclick="pickMax(this,'cuisineGroup',3)">🐟 Bengali</div>
+        <div class="chip" data-val="gujarati" onclick="pickMax(this,'cuisineGroup',3)">🥘 Gujarati</div>
+        <div class="chip" data-val="maharashtrian" onclick="pickMax(this,'cuisineGroup',3)">🥙 Maharashtrian</div>
+        <div class="chip" data-val="punjabi" onclick="pickMax(this,'cuisineGroup',3)">🧆 Punjabi</div>
+        <div class="chip" data-val="hyderabadi" onclick="pickMax(this,'cuisineGroup',3)">🍖 Hyderabadi</div>
+        <div class="chip" data-val="kerala" onclick="pickMax(this,'cuisineGroup',3)">🥥 Kerala</div>
+      </div>
+    </div>
+    <div class="err" id="err2">Please select a dietary preference and at least one cuisine.</div>
+    <button class="btn" onclick="next(2)">Continue →</button>
+    <button class="btn-back" onclick="back(2)">← Back</button>
+  </div>
+
+  <!-- Step 3: Confirm -->
+  <div class="card" id="step3" style="display:none">
+    <div class="step-label">Step 4 of 4</div>
+    <h2>You're all set! 🎉</h2>
+    <p class="sub">Here's a summary of your profile. Your first personalised meal plan will arrive in your inbox tomorrow at 6 AM.</p>
+    <div id="summary" style="background:var(--cream-dark);border-radius:12px;padding:20px;margin:20px 0;font-size:.9rem;line-height:2"></div>
+    <button class="btn" id="finishBtn" onclick="finish()">Start My Free Trial →</button>
+  </div>
+</div>
+
+<script>
+const API = 'https://api.rozkaana.in/api/v1';
+const token = localStorage.getItem('rzk_token');
+let profile = {};
+
+if (!token) { window.location.href = '/'; }
+
+// Show user name in nav
+fetch(`${API}/users/me`, { headers: { Authorization: 'Bearer ' + token } })
+  .then(r => r.json()).then(d => {
+    document.getElementById('navUser').textContent = d.name || d.email || '';
+    if (d.name) document.getElementById('name').value = d.name;
+    // If already onboarded send to app
+    if (d.onboarding_complete) window.location.href = '/app';
+  });
+
+// ── Progress dots ──────────────────────────────────────────────────────────
+function setDots(active) {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('dot' + i);
+    d.className = 'step-dot ' + (i < active ? 'done' : i === active ? 'active' : '');
+  }
+}
+
+// ── Chip helpers ───────────────────────────────────────────────────────────
+function pickOne(el, groupId) {
+  document.querySelectorAll('#' + groupId + ' .chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function pickMany(el) { el.classList.toggle('selected'); }
+function pickMax(el, groupId, max) {
+  const selected = document.querySelectorAll('#' + groupId + ' .chip.selected');
+  if (!el.classList.contains('selected') && selected.length >= max) return;
+  el.classList.toggle('selected');
+}
+function getSelected(groupId) {
+  return [...document.querySelectorAll('#' + groupId + ' .chip.selected')].map(c => c.dataset.val);
+}
+
+// ── BMI preview ────────────────────────────────────────────────────────────
+['weight','height'].forEach(id => document.getElementById(id).addEventListener('input', updateBMI));
+function updateBMI() {
+  const w = +document.getElementById('weight').value;
+  const h = +document.getElementById('height').value / 100;
+  if (w > 0 && h > 0) {
+    const bmi = (w / (h * h)).toFixed(1);
+    const band = bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Overweight' : 'Obese';
+    document.getElementById('bmiVal').textContent = bmi;
+    document.getElementById('bmiLabel').textContent = '· ' + band;
+    document.getElementById('bmiBox').style.display = 'block';
+  }
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+function next(step) {
+  const err = document.getElementById('err' + step);
+  err.style.display = 'none';
+
+  if (step === 0) {
+    const name = document.getElementById('name').value.trim();
+    const age  = +document.getElementById('age').value;
+    const gender = document.getElementById('gender').value;
+    const w = +document.getElementById('weight').value;
+    const h = +document.getElementById('height').value;
+    if (!name || !age || !gender || !w || !h) { err.style.display = 'block'; return; }
+    profile.name = name; profile.age = age; profile.gender = gender;
+    profile.weight_kg = w; profile.height_cm = h;
+  }
+  if (step === 1) {
+    const goal = getSelected('goalGroup')[0];
+    if (!goal) { err.style.display = 'block'; return; }
+    profile.goal = goal;
+    profile.health_tags = getSelected('healthGroup');
+  }
+  if (step === 2) {
+    const mode = getSelected('modeGroup')[0];
+    const cuisines = getSelected('cuisineGroup');
+    if (!mode || cuisines.length === 0) { err.style.display = 'block'; return; }
+    profile.eating_mode = mode; profile.cuisine_prefs = cuisines;
+    buildSummary();
+  }
+
+  document.getElementById('step' + step).style.display = 'none';
+  document.getElementById('step' + (step + 1)).style.display = 'block';
+  setDots(step + 1);
+  window.scrollTo(0, 0);
+}
+
+function back(step) {
+  document.getElementById('step' + step).style.display = 'none';
+  document.getElementById('step' + (step - 1)).style.display = 'block';
+  setDots(step - 1);
+  window.scrollTo(0, 0);
+}
+
+function buildSummary() {
+  const goalLabel = {weight_loss:'Weight Loss ⬇',maintenance:'Maintenance ⚖',muscle_gain:'Muscle Gain 💪'}[profile.goal]||profile.goal;
+  const modeLabel = {pure_veg:'Pure Veg 🥦',conditional_nv:'Conditional NV 🥚',full_nv:'Non-Veg 🍗',jain:'Jain 🕊',sattvic:'Sattvic 🌿'}[profile.eating_mode]||profile.eating_mode;
+  document.getElementById('summary').innerHTML = `
+    <div><strong>Name</strong> — ${profile.name}</div>
+    <div><strong>Age / Gender</strong> — ${profile.age} / ${profile.gender}</div>
+    <div><strong>Weight / Height</strong> — ${profile.weight_kg} kg / ${profile.height_cm} cm</div>
+    <div><strong>Goal</strong> — ${goalLabel}</div>
+    <div><strong>Diet</strong> — ${modeLabel}</div>
+    <div><strong>Cuisines</strong> — ${profile.cuisine_prefs.join(', ')}</div>
+    ${profile.health_tags.length ? '<div><strong>Health</strong> — '+profile.health_tags.join(', ')+'</div>' : ''}
+  `;
+}
+
+// ── Finish: save to API + onboard ──────────────────────────────────────────
+async function finish() {
+  const btn = document.getElementById('finishBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const h = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+
+  try {
+    await fetch(`${API}/users/me/basic`, { method:'PUT', headers:h,
+      body: JSON.stringify({ name:profile.name, age:profile.age, gender:profile.gender,
+        weight_kg:profile.weight_kg, height_cm:profile.height_cm }) });
+
+    await fetch(`${API}/users/me/goal`, { method:'PUT', headers:h,
+      body: JSON.stringify({ goal: profile.goal }) });
+
+    await fetch(`${API}/users/me/health`, { method:'PUT', headers:h,
+      body: JSON.stringify({ health_tags: profile.health_tags, allergy_tags: [] }) });
+
+    await fetch(`${API}/users/me/eating`, { method:'PUT', headers:h,
+      body: JSON.stringify({ eating_mode: profile.eating_mode, nv_days: [],
+        cuisine_prefs: profile.cuisine_prefs }) });
+
+    await fetch(`${API}/users/me/onboarding-complete`, { method:'POST', headers:h });
+
+    btn.textContent = 'Done! Redirecting…';
+    setTimeout(() => { window.location.href = '/app'; }, 1200);
+  } catch(e) {
+    btn.disabled = false; btn.textContent = 'Start My Free Trial →';
+    alert('Something went wrong. Please try again.');
+  }
+}
+</script>
+</body>
+</html>

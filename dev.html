@@ -159,15 +159,26 @@ html, body { height:100%; overflow:hidden; background:var(--bg); color:var(--tex
   </div>
 
   <div class="login-form" id="loginForm">
+    <!-- Google OAuth -->
+    <a href="https://api.rozkaana.in/api/v1/auth/google"
+      style="display:flex;align-items:center;justify-content:center;gap:8px;
+             background:#fff;border:1px solid #dadce0;border-radius:8px;
+             padding:8px 12px;font-size:.83rem;font-weight:600;color:#3c4043;
+             text-decoration:none;margin-bottom:10px;transition:.15s"
+      onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
+      <svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </a>
+    <div style="text-align:center;font-size:.68rem;color:var(--text-dim);margin-bottom:8px">— or dev login —</div>
     <div class="form-group">
-      <label class="form-label">Phone (or name)</label>
-      <input class="inp" id="loginPhone" placeholder="+91XXXXXXXXXX" value="+91">
+      <label class="form-label">Email Address</label>
+      <input class="inp" id="loginEmail" placeholder="you@email.com">
     </div>
     <div class="form-group">
       <label class="form-label">Display Name</label>
       <input class="inp" id="loginName" placeholder="Hemanth">
     </div>
-    <button class="btn" style="width:100%;margin-top:4px" onclick="devLogin()">Sign In (No OTP)</button>
+    <button class="btn" style="width:100%;margin-top:4px" onclick="devLogin()">Dev Login (No OTP)</button>
   </div>
 
   <div id="userPanel" style="display:none;flex:1;display:none;flex-direction:column;overflow:hidden">
@@ -365,17 +376,17 @@ async function checkAPI() {
 
 // ── AUTH ────────────────────────────────────────────────────────────────────
 async function devLogin() {
-  const phone = document.getElementById('loginPhone').value.trim();
+  const email = document.getElementById('loginEmail').value.trim();
   const name  = document.getElementById('loginName').value.trim() || 'Dev User';
-  if (!phone.match(/^\+91[6-9]\d{9}$/)) {
-    botMsg('❌ Phone must be +91 followed by 10 digits (e.g. +919876543210)'); return;
+  if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+    botMsg('❌ Enter a valid email address (e.g. you@gmail.com)'); return;
   }
-  log('info', 'auth', `Dev login: ${phone}`);
+  log('info', 'auth', `Dev login: ${email}`);
   showTyping();
   try {
     const r = await fetch(`${API}/auth/dev-login`, {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({phone, name})
+      body: JSON.stringify({email, name})
     });
     const d = await r.json();
     if (!r.ok) { botMsg(`❌ ${d.detail}`); log('err','auth',d.detail); hideTyping(); return; }
@@ -443,9 +454,9 @@ function showUserPanel() {
   document.getElementById('cmdInput').disabled = false;
   document.getElementById('sendBtn').disabled = false;
   document.getElementById('quickCmds').style.display = 'flex';
-  document.getElementById('chatSub').textContent = `Testing as ${currentUser?.phone || '—'}`;
+  document.getElementById('chatSub').textContent = `Testing as ${currentUser?.email || currentUser?.phone || '—'}`;
   document.getElementById('userName').textContent = currentUser?.name || 'Unknown';
-  document.getElementById('userPhone').textContent = currentUser?.phone || '—';
+  document.getElementById('userPhone').textContent = currentUser?.email || currentUser?.phone || '—';
   document.getElementById('userAv').textContent = (currentUser?.name || 'U')[0].toUpperCase();
   renderUserTags();
   updateStats();
@@ -792,15 +803,14 @@ async function showSubscription() {
 
 // ── HELPERS ──────────────────────────────────────────────────────────────────
 let adminToken = null;
+// Admin token reuses current user token if they are admin; otherwise prompts
 async function getAdminToken() {
   if (adminToken) return adminToken;
-  const r = await fetch(`${API}/admin/login`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({phone:'+917878787878', password:'5d55491e'})
-  });
-  const d = await r.json();
-  adminToken = d.access_token;
-  return adminToken;
+  // If current logged-in user is admin, use their token directly
+  if (token && currentUser?.is_admin) { adminToken = token; return adminToken; }
+  // Otherwise use the user's own token for admin triggers (trigger endpoints allow admins)
+  if (token) { adminToken = token; return adminToken; }
+  return null;
 }
 
 async function apiFetch(path, opts={}) {
