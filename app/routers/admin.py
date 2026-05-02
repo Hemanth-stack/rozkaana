@@ -134,26 +134,39 @@ async def recipe_stats(
 
 @router.get("/recipes", response_model=RecipeListResponse)
 async def list_recipes(
-    is_verified: bool = False,
+    is_verified: str | None = None,   # "true" | "false" | None (all)
     meal_type: str | None = None,
     cuisine_region: str | None = None,
+    eating_mode: str | None = None,
+    search: str | None = None,
     page: int = 1,
-    limit: int = 20,
+    limit: int = 50,
     current_user: User = Depends(get_current_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    filters = [Recipe.is_verified == is_verified, Recipe.is_active == True]  # noqa: E712
+    filters = [Recipe.is_active == True]  # noqa: E712
+    if is_verified is not None:
+        filters.append(Recipe.is_verified == (is_verified.lower() == "true"))
     if meal_type:
         filters.append(Recipe.meal_type == meal_type)
     if cuisine_region:
         filters.append(Recipe.cuisine_region == cuisine_region)
+    if eating_mode:
+        from sqlalchemy import cast
+        from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
+        from sqlalchemy import String
+        filters.append(
+            Recipe.eating_mode_tags.op("@>")(cast([eating_mode], PG_ARRAY(String)))
+        )
+    if search:
+        filters.append(Recipe.name.ilike(f"%{search}%"))
 
     count_result = await db.execute(select(func.count()).select_from(Recipe).where(and_(*filters)))
     total = count_result.scalar() or 0
 
     result = await db.execute(
         select(Recipe).where(and_(*filters))
-        .order_by(Recipe.created_at.desc())
+        .order_by(Recipe.meal_type, Recipe.cuisine_region, Recipe.name)
         .offset((page - 1) * limit)
         .limit(limit)
     )
@@ -253,6 +266,16 @@ async def generate_batch(
     current_user: User = Depends(get_current_admin),
     db: AsyncSession = Depends(get_db),
 ):
+    # Fetch existing names for this meal_type+cuisine so Claude avoids repeating them
+    from sqlalchemy import func as _func
+    existing_rows = (await db.execute(
+        select(Recipe.name)
+        .where(Recipe.meal_type == request.meal_type,
+               Recipe.cuisine_region == request.cuisine_region,
+               Recipe.is_active == True)  # noqa
+    )).scalars().all()
+    existing_names = list(existing_rows)
+
     recipes_data = await generate_recipe_batch(
         meal_type=request.meal_type,
         cuisine_region=request.cuisine_region,
@@ -260,11 +283,17 @@ async def generate_batch(
         health_tags=request.health_tags,
         count=request.count,
         model=request.model,
+        existing_names=existing_names,
     )
     inserted = []
     for data in recipes_data:
+        # Force meal_type to the requested slot — Claude sometimes overrides it
+        # with the culturally "correct" type (e.g. marks idli as "breakfast" even
+        # when requested for "lunch"), which causes wrong dishes in wrong slots.
+        filtered = {k: v for k, v in data.items() if hasattr(Recipe, k) and k != "meal_type"}
         recipe = Recipe(
-            **{k: v for k, v in data.items() if hasattr(Recipe, k)},
+            **filtered,
+            meal_type=request.meal_type,
             is_verified=False,
             is_active=True,
             source="ai_generated",

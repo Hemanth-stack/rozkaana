@@ -1,14 +1,17 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app.utils.rate_limiter import limiter
 from app.routers import auth, users, household, menu, subscription, webhook, admin
 from app.routers import google_auth
+
+logger = logging.getLogger(__name__)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,6 +44,30 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error("Unhandled exception on %s %s: %s", request.method, request.url.path, exc, exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An unexpected error occurred. Please try again."},
+    )
+
+
+MAX_REQUEST_BODY = 2 * 1024 * 1024  # 2 MB
+
+
+@app.middleware("http")
+async def limit_request_body(request: Request, call_next):
+    # Note: checks Content-Length header only — chunked-encoded requests without
+    # this header bypass the check. Adequate for API clients; nginx should be
+    # configured with client_max_body_size for a hard limit.
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > MAX_REQUEST_BODY:
+        return JSONResponse(status_code=413, content={"detail": "Request body too large (max 2MB)"})
+    return await call_next(request)
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://rozkaana.in", "https://api.rozkaana.in"],
@@ -66,12 +93,13 @@ async def health_check():
 
 @app.get("/files/{file_path:path}")
 async def serve_file(file_path: str):
-    """Serve files from MinIO — used by WATI for PDF delivery."""
+    """Serve PDFs from MinIO via API proxy (MinIO is internal-only)."""
     from fastapi.responses import StreamingResponse
-    from app.utils.minio_client import _client, settings as _s
+    from app.utils.minio_client import _client
+    from app.config import settings
     import io
     try:
-        resp = _client.get_object(_s.MINIO_BUCKET_NAME, file_path)
+        resp = _client.get_object(settings.MINIO_BUCKET_NAME, file_path)
         data = resp.read()
         return StreamingResponse(
             io.BytesIO(data),

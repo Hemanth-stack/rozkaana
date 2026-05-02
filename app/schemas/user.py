@@ -1,8 +1,18 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
+
+
+VALID_GENDERS = {"male", "female", "other"}
+VALID_GOALS = {"weight_loss", "maintenance", "muscle_gain"}
+VALID_EATING_MODES = {"jain", "sattvic", "pure_veg", "conditional_nv", "full_nv"}
+VALID_CUISINES = {
+    "north_indian", "south_indian", "bengali", "gujarati", "maharashtrian",
+    "punjabi", "hyderabadi", "rajasthani", "kerala", "goan", "sattvic",
+    "chinese", "italian", "continental",
+}
 
 
 class UserProfile(BaseModel):
@@ -40,11 +50,18 @@ class UserProfile(BaseModel):
 
 
 class UpdateBasicRequest(BaseModel):
-    name: Optional[str] = None
-    age: Optional[int] = None
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    age: Optional[int] = Field(None, ge=1, le=120)
     gender: Optional[str] = None
-    weight_kg: Optional[float] = None
-    height_cm: Optional[float] = None
+    weight_kg: Optional[float] = Field(None, ge=20.0, le=500.0)
+    height_cm: Optional[float] = Field(None, ge=50.0, le=300.0)
+
+    @field_validator("gender")
+    @classmethod
+    def validate_gender(cls, v):
+        if v is not None and v.lower() not in VALID_GENDERS:
+            raise ValueError(f"gender must be one of: {VALID_GENDERS}")
+        return v.lower() if v else v
 
 
 class UpdateHealthRequest(BaseModel):
@@ -57,15 +74,80 @@ class UpdateEatingRequest(BaseModel):
     nv_days: Optional[list[str]] = None
     cuisine_prefs: Optional[list[str]] = None
 
+    @field_validator("eating_mode")
+    @classmethod
+    def validate_eating_mode(cls, v):
+        if v is not None and v not in VALID_EATING_MODES:
+            raise ValueError(f"eating_mode must be one of: {VALID_EATING_MODES}")
+        return v
+
+    @field_validator("cuisine_prefs")
+    @classmethod
+    def validate_cuisine_prefs(cls, v):
+        if v:
+            invalid = [c for c in v if c not in VALID_CUISINES]
+            if invalid:
+                raise ValueError(f"Invalid cuisines: {invalid}. Valid: {sorted(VALID_CUISINES)}")
+        return v
+
 
 class UpdateGoalRequest(BaseModel):
     goal: str
 
+    @field_validator("goal")
+    @classmethod
+    def validate_goal(cls, v):
+        if v not in VALID_GOALS:
+            raise ValueError(f"goal must be one of: {VALID_GOALS}")
+        return v
+
 
 class UpdateWhatsAppRequest(BaseModel):
-    wa_phone: str
+    wa_phone: str = Field(..., min_length=10, max_length=15)
 
 
-# Legacy alias
+class NutritionSignalRequest(BaseModel):
+    energy_level: Optional[int] = Field(None, ge=1, le=10)
+    hunger_rating: Optional[int] = Field(None, ge=1, le=10)
+    digestion_comfort: Optional[int] = Field(None, ge=1, le=10)
+    sleep_quality: Optional[int] = Field(None, ge=1, le=10)
+    sleep_hours: Optional[float] = Field(None, ge=0.0, le=24.0)
+    mood: Optional[str] = Field(None, max_length=20)
+    focus_level: Optional[int] = Field(None, ge=1, le=10)
+    blood_sugar_dip: Optional[bool] = None
+    muscle_cramps: Optional[bool] = None
+    hair_loss_noticed: Optional[bool] = None
+    weight_kg: Optional[float] = Field(None, ge=20.0, le=500.0)
+    blood_glucose_mg_dl: Optional[int] = Field(None, ge=50, le=600)
+    followed_menu: Optional[bool] = None
+    skipped_slots: Optional[list[str]] = None
+    notes: Optional[str] = Field(None, max_length=500)
+
+
+class NutritionSignalResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    signal_date: date
+    energy_level: Optional[int] = None
+    hunger_rating: Optional[int] = None
+    digestion_comfort: Optional[int] = None
+    sleep_quality: Optional[int] = None
+    sleep_hours: Optional[float] = None
+    mood: Optional[str] = None
+    focus_level: Optional[int] = None
+    blood_sugar_dip: Optional[bool] = None
+    muscle_cramps: Optional[bool] = None
+    hair_loss_noticed: Optional[bool] = None
+    weight_kg: Optional[float] = None
+    blood_glucose_mg_dl: Optional[int] = None
+    followed_menu: Optional[bool] = None
+    skipped_slots: Optional[list[str]] = None
+    notes: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+    model_config = {"from_attributes": True}
+
+
+# Legacy aliases
 UserCreate = UpdateBasicRequest
 User = UserProfile

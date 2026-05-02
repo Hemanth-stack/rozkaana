@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -7,6 +9,7 @@ from app.dependencies import get_current_user
 from app.models.subscription import Subscription
 from app.models.user import User
 from app.schemas.user import (
+    NutritionSignalRequest, NutritionSignalResponse,
     UpdateBasicRequest, UpdateEatingRequest, UpdateGoalRequest,
     UpdateHealthRequest, UpdateWhatsAppRequest, UserProfile,
 )
@@ -182,3 +185,127 @@ async def complete_onboarding(
 
     await db.refresh(current_user)
     return current_user
+
+
+# ── NUTRITION SIGNALS ──────────────────────────────────────────────────────────
+
+@router.post("/me/signals", response_model=NutritionSignalResponse, status_code=201)
+async def log_nutrition_signal(
+    request: NutritionSignalRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Log today's nutrition signals (energy, sleep, digestion, biometrics). Upserts by date."""
+    from app.models.user_nutrition_signal import UserNutritionSignal
+    today = date.today()
+
+    result = await db.execute(
+        select(UserNutritionSignal).where(
+            UserNutritionSignal.user_id == current_user.id,
+            UserNutritionSignal.signal_date == today,
+        )
+    )
+    signal = result.scalar_one_or_none()
+    data = request.model_dump(exclude_none=True)
+
+    if signal:
+        for k, v in data.items():
+            setattr(signal, k, v)
+    else:
+        signal = UserNutritionSignal(user_id=current_user.id, signal_date=today, **data)
+        db.add(signal)
+
+    await db.flush()
+    await db.refresh(signal)
+    return signal
+
+
+@router.get("/me/signals", response_model=list[NutritionSignalResponse])
+async def get_nutrition_signals(
+    days: int = 7,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get recent nutrition signals (1-30 days)."""
+    from app.models.user_nutrition_signal import UserNutritionSignal
+    from datetime import timedelta
+    cutoff = date.today() - timedelta(days=min(days, 30))
+    result = await db.execute(
+        select(UserNutritionSignal).where(
+            UserNutritionSignal.user_id == current_user.id,
+            UserNutritionSignal.signal_date >= cutoff,
+        ).order_by(UserNutritionSignal.signal_date.desc())
+    )
+    return result.scalars().all()
+
+
+@router.get("/me/signals/deficiency-hints")
+async def get_deficiency_hints(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Detect nutritional deficiency patterns from 30 days of logged signals."""
+    from app.models.user_nutrition_signal import UserNutritionSignal
+    from datetime import timedelta
+    cutoff = date.today() - timedelta(days=30)
+    result = await db.execute(
+        select(UserNutritionSignal).where(
+            UserNutritionSignal.user_id == current_user.id,
+            UserNutritionSignal.signal_date >= cutoff,
+        )
+    )
+    signals = result.scalars().all()
+    if not signals:
+        return {"hints": [], "days_of_data": 0, "analysis_period_days": 30}
+
+    n = len(signals)
+    hints = []
+
+    hair_loss = sum(1 for s in signals if s.hair_loss_noticed)
+    if hair_loss >= max(3, n * 0.2):
+        hints.append({
+            "symptom": "hair_loss",
+            "likely_deficiencies": ["iron", "zinc", "selenium", "protein"],
+            "foods": ["pumpkin seeds", "eggs", "spinach", "lentils"],
+            "severity": "high" if hair_loss >= n * 0.5 else "moderate",
+        })
+
+    cramps = sum(1 for s in signals if s.muscle_cramps)
+    if cramps >= max(2, n * 0.15):
+        hints.append({
+            "symptom": "muscle_cramps",
+            "likely_deficiencies": ["magnesium", "potassium", "calcium"],
+            "foods": ["bananas", "spinach", "almonds", "sweet potato"],
+            "severity": "moderate",
+        })
+
+    low_energy = sum(1 for s in signals if s.energy_level and s.energy_level < 4)
+    if low_energy >= max(5, n * 0.3):
+        hints.append({
+            "symptom": "persistent_low_energy",
+            "likely_deficiencies": ["iron", "vitamin_b12", "folate", "vitamin_d"],
+            "foods": ["fortified milk", "leafy greens", "legumes", "eggs"],
+            "severity": "high",
+            "action": "Consider blood test: B12, iron, vitamin D",
+        })
+
+    sugar_dips = sum(1 for s in signals if s.blood_sugar_dip)
+    if sugar_dips >= max(3, n * 0.2):
+        hints.append({
+            "symptom": "blood_sugar_crashes",
+            "likely_cause": "High-GI meals or insufficient protein",
+            "recommendations": ["Protein at every meal", "Avoid refined carbs", "Eat every 3-4h"],
+            "severity": "moderate",
+        })
+
+    poor_sleep = sum(1 for s in signals if s.sleep_quality and s.sleep_quality < 4)
+    if poor_sleep >= max(5, n * 0.3):
+        hints.append({
+            "symptom": "poor_sleep",
+            "likely_causes": ["magnesium deficiency", "high carbs at night"],
+            "foods": ["pumpkin seeds", "banana", "warm milk"],
+            "recommendations": ["No heavy meals 3h before bed", "Increase magnesium-rich foods"],
+            "severity": "moderate",
+        })
+
+    return {"hints": hints, "days_of_data": n, "analysis_period_days": 30}

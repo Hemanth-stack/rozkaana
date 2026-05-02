@@ -8,11 +8,14 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
+from redis.asyncio import Redis
+
 from app.config import settings
 from app.database import get_db
 from app.models.subscription import Subscription
 from app.models.user import User
 from app.services.subscription_service import create_trial
+from app.utils.redis_client import get_redis
 from app.utils.security import create_access_token, create_refresh_token
 
 logger = logging.getLogger(__name__)
@@ -25,9 +28,15 @@ SCOPES = "openid email profile"
 
 
 @router.get("/google")
-async def google_login(request: Request):
+async def google_login(request: Request, redis: Redis = Depends(get_redis)):
     """Redirect user to Google OAuth consent screen."""
     state = secrets.token_urlsafe(16)
+    # Store state in Redis to prevent CSRF (10-min TTL)
+    try:
+        await redis.set(f"oauth_state:{state}", "1", ex=600)
+    except Exception:
+        pass  # degrade gracefully — state check in callback also degrades
+
     params = {
         "client_id": settings.GOOGLE_CLIENT_ID,
         "redirect_uri": settings.GOOGLE_REDIRECT_URI,
@@ -47,6 +56,7 @@ async def google_callback(
     state: str | None = None,
     error: str | None = None,
     db: AsyncSession = Depends(get_db),
+    redis: Redis = Depends(get_redis),
 ):
     """Handle Google OAuth callback, create/find user, redirect to frontend with JWT."""
     if error:
@@ -59,6 +69,17 @@ async def google_callback(
         return RedirectResponse(
             url=f"{settings.FRONTEND_URL}/?oauth_error=missing_code"
         )
+
+    # Validate state to prevent CSRF attacks
+    if state:
+        try:
+            stored = await redis.get(f"oauth_state:{state}")
+            await redis.delete(f"oauth_state:{state}")
+            if not stored:
+                logger.warning("OAuth callback: invalid or expired state token")
+                return RedirectResponse(url=f"{settings.FRONTEND_URL}/?oauth_error=invalid_state")
+        except Exception as e:
+            logger.warning("OAuth state check failed (Redis unavailable): %s", e)
 
     # Exchange code for tokens
     try:

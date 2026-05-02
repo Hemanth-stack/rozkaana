@@ -271,6 +271,7 @@
   <div class="nav-section">
     <div class="nav-section-label">Content</div>
     <button class="nav-item" onclick="showPage('recipes',this)"><span class="icon">🍛</span> Recipes <span class="badge amber" id="recipeBadge">—</span></button>
+    <button class="nav-item" onclick="showPage('recipedb',this)"><span class="icon">🗄️</span> Recipe DB <span class="badge teal" id="recipeDbBadge">—</span></button>
     <button class="nav-item" onclick="showPage('aigenerate',this)"><span class="icon">🤖</span> AI Generate</button>
   </div>
   <div class="nav-section">
@@ -368,6 +369,93 @@
         <button class="btn-sm" id="prevRecipeBtn" onclick="recipePage--; loadRecipes()">← Prev</button>
         <span style="font-size:.78rem;color:var(--text-muted);align-self:center" id="recipePageInfo">Page 1</span>
         <button class="btn-sm" id="nextRecipeBtn" onclick="recipePage++; loadRecipes()">Next →</button>
+      </div>
+    </div>
+
+    <!-- ══ RECIPE DATABASE ══ -->
+    <div class="page" id="page-recipedb">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+        <div>
+          <div class="section-title" style="margin-bottom:2px">Full Recipe Database</div>
+          <p style="font-size:.75rem;color:var(--text-muted)" id="recipeDbSubtitle">Loading…</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input class="form-input" id="dbSearch" placeholder="Search name…" style="width:160px"
+                 oninput="dbSearchDebounce()">
+          <select class="form-select" id="dbMealType" style="width:130px" onchange="dbPage=1;loadRecipeDb()">
+            <option value="">All Slots</option>
+            <option value="breakfast">Breakfast</option>
+            <option value="morning_snack">Morning Snack</option>
+            <option value="lunch">Lunch</option>
+            <option value="evening_snack">Evening Snack</option>
+            <option value="dinner">Dinner</option>
+          </select>
+          <select class="form-select" id="dbCuisine" style="width:140px" onchange="dbPage=1;loadRecipeDb()">
+            <option value="">All Cuisines</option>
+            <option value="north_indian">North Indian</option>
+            <option value="south_indian">South Indian</option>
+            <option value="bengali">Bengali</option>
+            <option value="gujarati">Gujarati</option>
+            <option value="maharashtrian">Maharashtrian</option>
+            <option value="punjabi">Punjabi</option>
+            <option value="hyderabadi">Hyderabadi</option>
+            <option value="rajasthani">Rajasthani</option>
+            <option value="kerala">Kerala</option>
+            <option value="goan">Goan</option>
+            <option value="sattvic">Sattvic</option>
+          </select>
+          <select class="form-select" id="dbVerified" style="width:120px" onchange="dbPage=1;loadRecipeDb()">
+            <option value="">All Status</option>
+            <option value="true">Verified</option>
+            <option value="false">Unverified</option>
+          </select>
+          <button class="btn-sm verify" style="padding:6px 14px;flex:none" onclick="exportRecipeDb()">⬇ Export JSON</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="table-wrap">
+          <table id="recipeDbTable">
+            <thead>
+              <tr>
+                <th style="width:30%">Name</th>
+                <th>Slot</th>
+                <th>Cuisine</th>
+                <th>Mode</th>
+                <th style="text-align:right">kcal</th>
+                <th style="text-align:right">P</th>
+                <th style="text-align:right">C</th>
+                <th style="text-align:right">F</th>
+                <th>GI</th>
+                <th>Na</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="recipeDbBody"><tr><td colspan="12" class="loading"> </td></tr></tbody>
+          </table>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-top:1px solid var(--border)">
+          <span style="font-size:.75rem;color:var(--text-muted)" id="recipeDbPageInfo">—</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn-sm" id="dbPrevBtn" onclick="dbPage--;loadRecipeDb()">← Prev</button>
+            <button class="btn-sm" id="dbNextBtn" onclick="dbPage++;loadRecipeDb()">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Raw JSON drawer -->
+      <div id="rawDrawerBg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200" onclick="closeRawDrawer()"></div>
+      <div id="rawDrawer" style="display:none;position:fixed;top:0;right:0;width:560px;max-width:100vw;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:201;overflow-y:auto;padding:0;flex-direction:column">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1">
+          <strong id="rawDrawerTitle" style="font-size:.9rem;color:var(--text)">Recipe Detail</strong>
+          <div style="display:flex;gap:8px">
+            <button class="btn-sm verify" id="rawVerifyBtn" style="padding:5px 12px">✓ Verify</button>
+            <button class="btn-sm reject" id="rawRejectBtn" style="padding:5px 12px">✗ Reject</button>
+            <button onclick="closeRawDrawer()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.1rem;padding:4px 8px">✕</button>
+          </div>
+        </div>
+        <pre id="rawJson" style="margin:0;padding:20px;font-family:var(--mono);font-size:.72rem;color:var(--text-muted);white-space:pre-wrap;word-break:break-word;line-height:1.7"></pre>
       </div>
     </div>
 
@@ -598,6 +686,7 @@ const META = {
   subscriptions: ['Subscriptions', 'Revenue, churn, and subscription status'],
   logs:          ['System Logs', 'Real-time log stream'],
   health:        ['System Health', 'Component status and Celery worker health'],
+  recipedb:      ['Recipe Database', 'Full raw recipe bank — all slots, cuisines, macros'],
 };
 
 function showPage(id, el) {
@@ -612,6 +701,7 @@ function showPage(id, el) {
     dashboard: loadDashboard, pipeline: loadPipeline,
     recipes: () => { loadRecipes(); loadRecipeStats(); }, users: loadUsers,
     subscriptions: loadSubscriptions, logs: loadLogs, health: loadHealth,
+    recipedb: loadRecipeDb,
   };
   if (loaders[id]) loaders[id]();
 }
@@ -624,6 +714,7 @@ function refreshPage() {
     dashboard: loadDashboard, pipeline: loadPipeline,
     recipes: () => { loadRecipes(); loadRecipeStats(); }, users: loadUsers,
     subscriptions: loadSubscriptions, logs: loadLogs, health: loadHealth,
+    recipedb: loadRecipeDb,
   };
   if (loaders[id]) loaders[id]();
 }
@@ -1167,7 +1258,7 @@ async function loadRecipeStats() {
 }
 
 async function triggerSeed(btn) {
-  if (!confirm('This will generate ~2200 new recipes using Claude AI. Cost: ~$15-20, Time: ~45-60 min. Continue?')) return;
+  if (!confirm('This will generate ~5800 new recipes using Claude AI. Cost: ~$35-45, Time: ~90 min. Continue?')) return;
   btn.textContent = 'Starting…'; btn.disabled = true;
   try {
     const r = await apiFetch('/admin/recipes/run-seed?verify=true', {method:'POST'});
@@ -1176,6 +1267,154 @@ async function triggerSeed(btn) {
     btn.style.color = 'var(--teal)';
   } catch(e) { btn.textContent = 'Error'; btn.disabled = false; }
 }
+
+// ── RECIPE DATABASE ────────────────────────────────────────────────────────────
+let dbPage = 1;
+const DB_LIMIT = 50;
+let currentRawRecipe = null;
+let dbSearchTimer;
+
+function dbSearchDebounce() {
+  clearTimeout(dbSearchTimer);
+  dbSearchTimer = setTimeout(() => { dbPage = 1; loadRecipeDb(); }, 350);
+}
+
+async function loadRecipeDb() {
+  document.getElementById('recipeDbBody').innerHTML = `<tr><td colspan="12" class="loading"> </td></tr>`;
+  try {
+    const params = new URLSearchParams({ page: dbPage, limit: DB_LIMIT });
+    const mt = document.getElementById('dbMealType').value;
+    const cu = document.getElementById('dbCuisine').value;
+    const vf = document.getElementById('dbVerified').value;
+    const sr = document.getElementById('dbSearch').value.trim();
+    if (mt) params.set('meal_type', mt);
+    if (cu) params.set('cuisine_region', cu);
+    if (vf !== '') params.set('is_verified', vf);
+    if (sr) params.set('search', sr);
+
+    const r = await apiFetch(`/admin/recipes?${params}`);
+    const data = await r.json();
+    const total = data.total || 0;
+    const pages = Math.max(1, Math.ceil(total / DB_LIMIT));
+
+    document.getElementById('recipeDbSubtitle').textContent =
+      `${total.toLocaleString('en-IN')} recipes  ·  page ${dbPage} of ${pages}`;
+    document.getElementById('recipeDbBadge').textContent = total;
+    document.getElementById('recipeDbPageInfo').textContent =
+      `${(dbPage-1)*DB_LIMIT+1}–${Math.min(dbPage*DB_LIMIT,total)} of ${total.toLocaleString('en-IN')}`;
+    document.getElementById('dbPrevBtn').disabled = dbPage <= 1;
+    document.getElementById('dbNextBtn').disabled = dbPage >= pages;
+
+    const slotColor = {
+      breakfast:'var(--amber)', morning_snack:'var(--blue)',
+      lunch:'var(--teal)', evening_snack:'var(--saffron)', dinner:'var(--text-dim)',
+    };
+    const rows = (data.recipes || []).map(rec => {
+      const modes = (rec.eating_mode_tags || []).join(', ');
+      const verified = rec.is_verified
+        ? '<span class="badge b-teal">✓</span>'
+        : '<span class="badge b-amber">pending</span>';
+      const gi = rec.glycemic_index != null ? rec.glycemic_index : '—';
+      const na = rec.sodium_mg != null ? Math.round(rec.sodium_mg) : '—';
+      const color = slotColor[rec.meal_type] || 'var(--text-muted)';
+      return `<tr style="cursor:pointer" onclick="openRawDrawer(${JSON.stringify(JSON.stringify(rec)).slice(1,-1)})">
+        <td style="color:var(--text);font-weight:600;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${rec.name}">${rec.name}</td>
+        <td><span style="color:${color};font-size:.72rem;font-weight:700">${rec.meal_type}</span></td>
+        <td style="font-size:.72rem">${rec.cuisine_region}</td>
+        <td style="font-size:.68rem;color:var(--text-muted)">${modes}</td>
+        <td style="font-family:var(--mono);text-align:right">${rec.calories}</td>
+        <td style="font-family:var(--mono);text-align:right;color:var(--teal)">${rec.protein_g}g</td>
+        <td style="font-family:var(--mono);text-align:right">${rec.carbs_g}g</td>
+        <td style="font-family:var(--mono);text-align:right">${rec.fat_g}g</td>
+        <td style="font-family:var(--mono);text-align:right;font-size:.72rem">${gi}</td>
+        <td style="font-family:var(--mono);text-align:right;font-size:.72rem">${na}</td>
+        <td>${verified}</td>
+        <td>
+          ${!rec.is_verified
+            ? `<button class="btn-sm verify" style="padding:3px 8px;font-size:.68rem" onclick="event.stopPropagation();quickVerify('${rec.id}',this)">✓</button>`
+            : `<button class="btn-sm reject" style="padding:3px 8px;font-size:.68rem" onclick="event.stopPropagation();quickReject('${rec.id}',this)">✗</button>`}
+        </td>
+      </tr>`;
+    }).join('');
+    document.getElementById('recipeDbBody').innerHTML =
+      rows || `<tr><td colspan="12" class="empty">No recipes found</td></tr>`;
+  } catch(e) {
+    document.getElementById('recipeDbBody').innerHTML =
+      `<tr><td colspan="12" class="empty">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function openRawDrawer(recJson) {
+  const rec = JSON.parse(recJson);
+  currentRawRecipe = rec;
+  document.getElementById('rawDrawerTitle').textContent = rec.name;
+  document.getElementById('rawJson').textContent = JSON.stringify(rec, null, 2);
+
+  const vBtn = document.getElementById('rawVerifyBtn');
+  const rBtn = document.getElementById('rawRejectBtn');
+  if (rec.is_verified) {
+    vBtn.style.display = 'none';
+    rBtn.style.display = '';
+  } else {
+    vBtn.style.display = '';
+    rBtn.style.display = 'none';
+  }
+  vBtn.onclick = () => rawVerify(rec.id, true);
+  rBtn.onclick = () => rawVerify(rec.id, false);
+
+  document.getElementById('rawDrawerBg').style.display = 'block';
+  document.getElementById('rawDrawer').style.display = 'flex';
+}
+
+async function rawVerify(id, verify) {
+  const endpoint = verify ? `/admin/recipes/${id}/verify` : `/admin/recipes/${id}/reject`;
+  await apiFetch(endpoint, { method: 'PATCH' });
+  closeRawDrawer();
+  loadRecipeDb();
+}
+
+async function quickVerify(id, btn) {
+  btn.textContent = '…'; btn.disabled = true;
+  await apiFetch(`/admin/recipes/${id}/verify`, { method: 'PATCH' });
+  loadRecipeDb();
+}
+
+async function quickReject(id, btn) {
+  btn.textContent = '…'; btn.disabled = true;
+  await apiFetch(`/admin/recipes/${id}/reject`, { method: 'PATCH' });
+  loadRecipeDb();
+}
+
+function closeRawDrawer() {
+  document.getElementById('rawDrawerBg').style.display = 'none';
+  document.getElementById('rawDrawer').style.display = 'none';
+  currentRawRecipe = null;
+}
+
+async function exportRecipeDb() {
+  const params = new URLSearchParams({ page: 1, limit: 9999 });
+  const mt = document.getElementById('dbMealType').value;
+  const cu = document.getElementById('dbCuisine').value;
+  const vf = document.getElementById('dbVerified').value;
+  if (mt) params.set('meal_type', mt);
+  if (cu) params.set('cuisine_region', cu);
+  if (vf !== '') params.set('is_verified', vf);
+  try {
+    const r = await apiFetch(`/admin/recipes?${params}`);
+    const data = await r.json();
+    const blob = new Blob([JSON.stringify(data.recipes, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `rozkaana-recipes-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+  } catch(e) { alert('Export failed: ' + e.message); }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('rawDrawer').style.display !== 'none') {
+    closeRawDrawer();
+  }
+});
 </script>
 </body>
 </html>

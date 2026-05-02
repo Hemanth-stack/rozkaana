@@ -61,7 +61,7 @@ async def generate_menu(
         candidates[slot] = await _query_candidates(db, slot, ctx, excluded.get(slot, set()), cuisine_pool)
 
     selected = _select_by_macro(candidates, ctx)
-    selected = _apply_variety_rules(selected, candidates)
+    selected = _apply_variety_rules(selected, candidates, calorie_target=ctx["macro_targets"]["calories"])
 
     await _update_history(redis, owner_id, selected)
 
@@ -209,6 +209,24 @@ async def _query_candidates(
     for allergen in ctx["allergy_tags"]:
         base_filters.append(arr_contains(Recipe.allergy_free_tags, [f"{allergen}_free"]))
 
+    # Condition-specific micronutrient filters (only applied when data exists)
+    health_tags = ctx["health_tags"]
+    if "hypertension" in health_tags:
+        # Keep sodium <= 600mg per meal (target <1500mg/day for DASH)
+        base_filters.append(
+            or_(Recipe.sodium_mg.is_(None), Recipe.sodium_mg <= 600)
+        )
+    if "diabetes_t2" in health_tags or "pcos" in health_tags:
+        # Low-GI meals only (GI <= 55 = low; null = unknown, allowed)
+        base_filters.append(
+            or_(Recipe.glycemic_index.is_(None), Recipe.glycemic_index <= 55)
+        )
+    if "kidney_disease" in health_tags:
+        # Very low potassium (<400mg/meal) for kidney patients
+        base_filters.append(
+            or_(Recipe.potassium_mg.is_(None), Recipe.potassium_mg <= 400)
+        )
+
     results: list[Recipe] = []
     seen_ids: set = set()
 
@@ -254,26 +272,41 @@ def _select_by_macro(candidates: dict[str, list[Recipe]], ctx: dict) -> dict[str
     return selected
 
 
+def _get_ingredient_names(recipe: Recipe) -> set[str]:
+    """All ingredient names from the recipe's ingredient list (not just main_ingredient)."""
+    names: set[str] = set()
+    if recipe.main_ingredient:
+        names.add(recipe.main_ingredient.lower().strip())
+    for ing in (recipe.ingredients or []):
+        n = (ing.get("name") or "").lower().strip()
+        if n:
+            names.add(n)
+    return names
+
+
+def _ingredient_overlap(r1: Recipe, r2: Recipe) -> int:
+    """Number of shared ingredients between two recipes."""
+    if not r1 or not r2:
+        return 0
+    return len(_get_ingredient_names(r1) & _get_ingredient_names(r2))
+
+
 def _apply_variety_rules(
     selected: dict[str, Recipe | None],
     candidates: dict[str, list[Recipe]],
+    calorie_target: float = 2000,
 ) -> dict[str, Recipe | None]:
+    # 1. Breakfast and lunch should not share main ingredient
     bf = selected.get("breakfast")
     lunch = selected.get("lunch")
     if bf and lunch and bf.main_ingredient and lunch.main_ingredient:
         if bf.main_ingredient == lunch.main_ingredient:
             alts = [r for r in candidates["lunch"] if r.main_ingredient != bf.main_ingredient]
             if alts:
-                target_cal = 0
-                selected["lunch"] = sorted(alts, key=lambda r: _score_recipe(r, target_cal))[0]
+                lunch_target = calorie_target * SLOT_RATIOS["lunch"]
+                selected["lunch"] = sorted(alts, key=lambda r: _score_recipe(r, lunch_target))[0]
 
-    ms = selected.get("morning_snack")
-    es = selected.get("evening_snack")
-    if ms and es and ms.id == es.id:
-        alts = [r for r in candidates["evening_snack"] if r.id != ms.id]
-        if alts:
-            selected["evening_snack"] = alts[0]
-
+    # 2. Lunch and dinner should not share main ingredient
     lunch2 = selected.get("lunch")
     dinner = selected.get("dinner")
     if lunch2 and dinner and lunch2.main_ingredient and dinner.main_ingredient:
@@ -281,6 +314,28 @@ def _apply_variety_rules(
             alts = [r for r in candidates["dinner"] if r.main_ingredient != lunch2.main_ingredient]
             if alts:
                 selected["dinner"] = alts[0]
+
+    # 3. Snacks should not be identical to each other
+    ms = selected.get("morning_snack")
+    es = selected.get("evening_snack")
+    if ms and es and ms.id == es.id:
+        alts = [r for r in candidates["evening_snack"] if r.id != ms.id]
+        if alts:
+            selected["evening_snack"] = alts[0]
+
+    # 4. Avoid high ingredient overlap between any two adjacent meals
+    pairs = [("breakfast", "morning_snack"), ("morning_snack", "lunch"),
+             ("lunch", "evening_snack"), ("evening_snack", "dinner")]
+    for slot_a, slot_b in pairs:
+        ra, rb = selected.get(slot_a), selected.get(slot_b)
+        if ra and rb and _ingredient_overlap(ra, rb) >= 4:
+            # Too many shared ingredients — try an alternative for slot_b
+            alts = [
+                r for r in candidates.get(slot_b, [])
+                if r.id != rb.id and _ingredient_overlap(ra, r) < 4
+            ]
+            if alts:
+                selected[slot_b] = alts[0]
 
     return selected
 

@@ -117,7 +117,8 @@ async def dev_login(
 
 
 @router.post("/refresh", response_model=RefreshResponse)
-async def refresh_token_endpoint(request: RefreshRequest):
+@limiter.limit("30/hour")
+async def refresh_token_endpoint(http_request: Request, request: RefreshRequest):
     payload = decode_token(request.refresh_token)
     if payload.get("type") != "refresh":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")

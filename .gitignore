@@ -50,6 +50,8 @@ app/static/uploads/
 
 # Celery
 celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
 celerybeat.pid
 
 # Node (if any frontend tooling)

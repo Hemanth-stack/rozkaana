@@ -38,13 +38,22 @@ async def _fetch_recipe(db: AsyncSession, recipe_id) -> Recipe | None:
 
 
 async def _enrich_menu(menu: DailyMenu, db: AsyncSession) -> dict:
-    recipes = {
-        "breakfast_id": await _fetch_recipe(db, menu.breakfast_id),
-        "morning_snack_id": await _fetch_recipe(db, menu.morning_snack_id),
-        "lunch_id": await _fetch_recipe(db, menu.lunch_id),
-        "evening_snack_id": await _fetch_recipe(db, menu.evening_snack_id),
-        "dinner_id": await _fetch_recipe(db, menu.dinner_id),
+    # Batch fetch all recipes in a single query (fixes N+1)
+    slot_ids = {
+        "breakfast":     menu.breakfast_id,
+        "morning_snack": menu.morning_snack_id,
+        "lunch":         menu.lunch_id,
+        "evening_snack": menu.evening_snack_id,
+        "dinner":        menu.dinner_id,
     }
+    recipe_ids = [rid for rid in slot_ids.values() if rid is not None]
+    recipe_map: dict = {}
+    if recipe_ids:
+        result = await db.execute(select(Recipe).where(Recipe.id.in_(recipe_ids)))
+        for r in result.scalars().all():
+            recipe_map[r.id] = r
+
+    recipes = {slot: recipe_map.get(rid) for slot, rid in slot_ids.items()}
 
     pdf_url = None
     if menu.pdf_key:
@@ -58,11 +67,11 @@ async def _enrich_menu(menu: DailyMenu, db: AsyncSession) -> dict:
         "owner_id": menu.owner_id,
         "owner_type": menu.owner_type,
         "menu_date": menu.menu_date,
-        "breakfast": recipes["breakfast_id"],
-        "morning_snack": recipes["morning_snack_id"],
-        "lunch": recipes["lunch_id"],
-        "evening_snack": recipes["evening_snack_id"],
-        "dinner": recipes["dinner_id"],
+        "breakfast":     recipes["breakfast"],
+        "morning_snack": recipes["morning_snack"],
+        "lunch":         recipes["lunch"],
+        "evening_snack": recipes["evening_snack"],
+        "dinner":        recipes["dinner"],
         "total_calories": menu.total_calories,
         "total_protein_g": float(menu.total_protein_g or 0),
         "total_carbs_g": float(menu.total_carbs_g or 0),

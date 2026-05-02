@@ -25,6 +25,16 @@ class Recipe(Base):
     carbs_g = Column(Numeric(5, 2), nullable=False)
     fat_g = Column(Numeric(5, 2), nullable=False)
     fibre_g = Column(Numeric(5, 2), nullable=True)
+    sugar_g = Column(Numeric(5, 2), nullable=True)
+    # India-critical micronutrients — used for health-condition filtering
+    sodium_mg = Column(Numeric(7, 1), nullable=True)        # hypertension: keep <600mg/meal
+    potassium_mg = Column(Numeric(7, 1), nullable=True)     # hypertension: target high
+    iron_mg = Column(Numeric(6, 2), nullable=True)          # anemia / women
+    calcium_mg = Column(Numeric(7, 1), nullable=True)       # osteoporosis / dairy-free
+    vitamin_c_mg = Column(Numeric(6, 2), nullable=True)     # boosts iron absorption
+    vitamin_b12_mcg = Column(Numeric(5, 2), nullable=True)  # vegetarian deficiency risk
+    vitamin_d_mcg = Column(Numeric(5, 2), nullable=True)    # India deficiency epidemic
+    glycemic_index = Column(SmallInteger, nullable=True)    # diabetes / PCOS (0-100)
     serving_unit = Column(String(50), nullable=True)
     prep_time_mins = Column(SmallInteger, nullable=True)
     spice_level = Column(String(10), nullable=True)
