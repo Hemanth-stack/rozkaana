@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Household — Rozkaana</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--saffron:#E8593C;--saffron-dark:#C9421F;--cream:#FAF7F2;--cream-dark:#F2ECE3;--charcoal:#1A1612;--text:#3A3028;--muted:#7A6E65;--border:#E8DDD0;--green:#2E7D52;--shadow:rgba(26,22,18,.08)}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--charcoal);text-decoration:none}
+.nav-logo span{color:var(--saffron)}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-link{padding:7px 14px;border-radius:8px;font-size:.82rem;font-weight:600;color:var(--muted);text-decoration:none;transition:.15s}
+.nav-link:hover{color:var(--saffron);background:rgba(232,89,60,.06)}
+.nav-link.active{color:var(--saffron);background:rgba(232,89,60,.1)}
+.nav-right{display:flex;align-items:center;gap:14px}
+.nav-avatar{width:36px;height:36px;background:var(--saffron);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.85rem;cursor:pointer}
+@media(max-width:640px){.nav-links{display:none}}
+.wrap{max-width:700px;margin:0 auto;padding:32px 20px 60px}
+.page-title{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--charcoal);margin-bottom:6px}
+.page-sub{color:var(--muted);font-size:.9rem;margin-bottom:32px}
+.section-title{font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.card{background:#fff;border-radius:20px;box-shadow:0 4px 24px var(--shadow);padding:24px;margin-bottom:20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 22px;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:.15s}
+.btn-primary{background:var(--saffron);color:#fff}.btn-primary:hover{background:var(--saffron-dark)}
+.btn-ghost{background:none;border:1.5px solid var(--border);color:var(--muted)}.btn-ghost:hover{border-color:var(--saffron);color:var(--saffron)}
+.btn-danger{background:none;border:1.5px solid #ef4444;color:#ef4444}.btn-danger:hover{background:#fef2f2}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:6px}
+.field input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.92rem;color:var(--text);background:var(--cream);outline:none;transition:border-color .2s}
+.field input:focus{border-color:var(--saffron)}
+.member-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--cream-dark)}
+.member-row:last-child{border-bottom:none}
+.member-av{width:40px;height:40px;border-radius:50%;background:var(--saffron);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.9rem;flex-shrink:0}
+.member-info{flex:1}
+.member-name{font-size:.9rem;font-weight:600;color:var(--charcoal)}
+.member-meta{font-size:.75rem;color:var(--muted);margin-top:2px}
+.chip-group{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:.83rem;font-weight:500;color:var(--muted);cursor:pointer;transition:.2s;user-select:none}
+.chip:hover{border-color:var(--saffron);color:var(--saffron)}
+.chip.selected{border-color:var(--saffron);background:rgba(232,89,60,.07);color:var(--saffron);font-weight:700}
+.badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+.badge-head{background:rgba(232,89,60,.1);color:var(--saffron)}
+.badge-member{background:rgba(46,125,82,.1);color:var(--green)}
+.invite-box{background:var(--cream-dark);border-radius:12px;padding:16px 18px;margin-top:14px}
+.invite-url{font-size:.8rem;color:var(--muted);word-break:break-all;margin:8px 0;font-family:monospace}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--charcoal);color:#fff;padding:12px 24px;border-radius:12px;font-size:.88rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--saffron);border-radius:50%;animation:spin .8s linear infinite;margin:32px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:40px 24px}
+.empty-state .icon{font-size:2.5rem;margin-bottom:12px}
+.empty-state h3{font-size:1.1rem;color:var(--charcoal);margin-bottom:8px}
+.empty-state p{font-size:.88rem;color:var(--muted);line-height:1.6;margin-bottom:24px}
+.divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:.8rem;margin:20px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">Roz<span>kaana</span></a>
+  <div class="nav-links">
+    <a href="/app" class="nav-link">My Plan</a>
+    <a href="/household" class="nav-link active">Household</a>
+    <a href="/history" class="nav-link">History</a>
+    <a href="/billing" class="nav-link">Billing</a>
+    <a href="/settings" class="nav-link">Settings</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-avatar" id="navAv" title="Sign out" onclick="logout()">?</div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div id="loading"><div class="spinner"></div></div>
+  <div id="content" style="display:none">
+
+    <!-- ── HAS HOUSEHOLD ────────────────────────────────────── -->
+    <div id="householdView" style="display:none">
+      <h1 class="page-title" id="hhName">My Household</h1>
+      <p class="page-sub">Shared meal plan for your family</p>
+
+      <!-- Members -->
+      <div class="section-title">Members</div>
+      <div class="card">
+        <div id="membersList"></div>
+        <!-- Head-only: invite button -->
+        <div id="inviteSection" style="display:none;margin-top:16px">
+          <button class="btn btn-ghost" onclick="generateInvite(this)">➕ Invite Member</button>
+          <div class="invite-box" id="inviteBox" style="display:none">
+            <div style="font-size:.82rem;font-weight:600;color:var(--charcoal)">Share this invite link (valid 48h)</div>
+            <div class="invite-url" id="inviteUrl"></div>
+            <button class="btn btn-ghost" style="padding:7px 14px;font-size:.78rem" onclick="copyInvite()">📋 Copy Link</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shared cuisine prefs (head only) -->
+      <div id="prefSection" style="display:none">
+        <div class="section-title" style="margin-top:8px">Shared Cuisine Preferences</div>
+        <div class="card">
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px">These cuisines are used when generating your household meal plan.</p>
+          <div class="chip-group" id="hhCuisineGroup">
+            <div class="chip" data-val="north_indian" onclick="pickMax(this,'hhCuisineGroup',3)">🫓 North Indian</div>
+            <div class="chip" data-val="south_indian" onclick="pickMax(this,'hhCuisineGroup',3)">🍚 South Indian</div>
+            <div class="chip" data-val="bengali" onclick="pickMax(this,'hhCuisineGroup',3)">🐟 Bengali</div>
+            <div class="chip" data-val="gujarati" onclick="pickMax(this,'hhCuisineGroup',3)">🥘 Gujarati</div>
+            <div class="chip" data-val="maharashtrian" onclick="pickMax(this,'hhCuisineGroup',3)">🥙 Maharashtrian</div>
+            <div class="chip" data-val="punjabi" onclick="pickMax(this,'hhCuisineGroup',3)">🧆 Punjabi</div>
+            <div class="chip" data-val="hyderabadi" onclick="pickMax(this,'hhCuisineGroup',3)">🍖 Hyderabadi</div>
+            <div class="chip" data-val="kerala" onclick="pickMax(this,'hhCuisineGroup',3)">🥥 Kerala</div>
+            <div class="chip" data-val="rajasthani" onclick="pickMax(this,'hhCuisineGroup',3)">🏜 Rajasthani</div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:18px" onclick="saveCuisinePrefs(this)">Save Preferences</button>
+        </div>
+      </div>
+
+      <!-- Shared mode info -->
+      <div class="section-title" style="margin-top:8px">Shared Eating Mode</div>
+      <div class="card" style="padding:16px 20px">
+        <p style="font-size:.88rem;color:var(--text)">
+          Your household uses <strong id="hhMode">—</strong> mode —
+          the most restrictive diet across all members. All meal plans respect this.
+        </p>
+      </div>
+
+      <!-- Leave / danger -->
+      <div style="margin-top:12px" id="leaveSection">
+        <button class="btn btn-danger" onclick="confirmLeave()">Leave Household</button>
+      </div>
+    </div>
+
+    <!-- ── NO HOUSEHOLD ────────────────────────────────────── -->
+    <div id="noHouseholdView" style="display:none">
+      <div class="empty-state">
+        <div class="icon">🏠</div>
+        <h3>No household yet</h3>
+        <p>Create a household to share a meal plan with your family, or join one using an invite link.</p>
+      </div>
+
+      <!-- Create -->
+      <div class="card">
+        <div class="section-title">Create a Household</div>
+        <div class="field">
+          <label>Household Name</label>
+          <input id="hhNameInput" placeholder="e.g. The Sharma Family">
+        </div>
+        <div class="field">
+          <label>Cuisine Preferences (up to 3)</label>
+          <div class="chip-group" id="createCuisineGroup">
+            <div class="chip" data-val="north_indian" onclick="pickMax(this,'createCuisineGroup',3)">🫓 North Indian</div>
+            <div class="chip" data-val="south_indian" onclick="pickMax(this,'createCuisineGroup',3)">🍚 South Indian</div>
+            <div class="chip" data-val="bengali" onclick="pickMax(this,'createCuisineGroup',3)">🐟 Bengali</div>
+            <div class="chip" data-val="gujarati" onclick="pickMax(this,'createCuisineGroup',3)">🥘 Gujarati</div>
+            <div class="chip" data-val="maharashtrian" onclick="pickMax(this,'createCuisineGroup',3)">🥙 Maharashtrian</div>
+            <div class="chip" data-val="punjabi" onclick="pickMax(this,'createCuisineGroup',3)">🧆 Punjabi</div>
+            <div class="chip" data-val="hyderabadi" onclick="pickMax(this,'createCuisineGroup',3)">🍖 Hyderabadi</div>
+            <div class="chip" data-val="kerala" onclick="pickMax(this,'createCuisineGroup',3)">🥥 Kerala</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="createHousehold(this)">Create Household</button>
+      </div>
+
+      <div class="divider">or join an existing one</div>
+
+      <!-- Join via token -->
+      <div class="card">
+        <div class="section-title">Join with Invite Link</div>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px">Paste the invite token or full invite URL you received.</p>
+        <div class="field">
+          <label>Invite Token / URL</label>
+          <input id="joinTokenInput" placeholder="Paste token or https://…/join/xxxxxxxx">
+        </div>
+        <button class="btn btn-primary" style="width:100%" onclick="joinHousehold(this)">Join Household</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Confirm leave modal -->
+<div id="leaveModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center" onclick="if(event.target===this)document.getElementById('leaveModal').style.display='none'">
+  <div style="background:#fff;border-radius:20px;padding:32px 28px;width:340px;max-width:92vw">
+    <h3 style="font-size:1.1rem;font-weight:700;color:var(--charcoal);margin-bottom:10px">Leave Household?</h3>
+    <p style="font-size:.88rem;color:var(--muted);line-height:1.6;margin-bottom:24px">You'll be removed from the household and your meal plan will revert to individual mode.</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="document.getElementById('leaveModal').style.display='none'">Cancel</button>
+      <button class="btn btn-danger" style="flex:1" onclick="leaveHousehold(this)">Leave</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'https://api.rozkaana.in/api/v1';
+const token = localStorage.getItem('rzk_token');
+if (!token) window.location.href = '/';
+
+let myId = null;
+let isHead = false;
+
+function logout() { localStorage.removeItem('rzk_token'); localStorage.removeItem('rzk_refresh'); window.location.href = '/'; }
+
+function showToast(msg, color = '#1A1612') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.background = color;
+  t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+function api(path, opts = {}) {
+  return fetch(API + path, {
+    ...opts,
+    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers || {}) },
+  });
+}
+
+function pickMax(el, g, max) {
+  const sel = document.querySelectorAll('#'+g+' .chip.selected');
+  if (!el.classList.contains('selected') && sel.length >= max) return;
+  el.classList.toggle('selected');
+}
+function getSelected(g) { return [...document.querySelectorAll('#'+g+' .chip.selected')].map(c=>c.dataset.val); }
+function setSelected(g, vals) {
+  document.querySelectorAll('#'+g+' .chip').forEach(c => c.classList.toggle('selected', vals.includes(c.dataset.val)));
+}
+
+async function init() {
+  const meRes = await api('/users/me');
+  const me = await meRes.json();
+  if (!me.onboarding_complete) { window.location.href = '/onboard'; return; }
+  myId = me.id;
+  isHead = me.is_household_head;
+  document.getElementById('navAv').textContent = (me.name || 'U')[0].toUpperCase();
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+
+  if (me.household_id) {
+    await loadHousehold();
+  } else {
+    document.getElementById('noHouseholdView').style.display = 'block';
+  }
+}
+
+async function loadHousehold() {
+  const r = await api('/household/');
+  if (!r.ok) { document.getElementById('noHouseholdView').style.display = 'block'; return; }
+  const hh = await r.json();
+
+  document.getElementById('hhName').textContent = hh.name;
+  document.getElementById('hhMode').textContent = (hh.shared_eating_mode || '').replace(/_/g, ' ');
+  document.getElementById('householdView').style.display = 'block';
+
+  // Members list
+  const list = document.getElementById('membersList');
+  list.innerHTML = (hh.members || []).map(m => `
+    <div class="member-row">
+      <div class="member-av">${(m.name || m.email || '?')[0].toUpperCase()}</div>
+      <div class="member-info">
+        <div class="member-name">${m.name || m.email || 'Unknown'}</div>
+        <div class="member-meta">${m.eating_mode?.replace(/_/g,' ') || ''} · ${(m.health_tags||[]).join(', ')||'No conditions'}</div>
+      </div>
+      <span class="badge ${m.id === hh.head_user_id ? 'badge-head' : 'badge-member'}">${m.id === hh.head_user_id ? 'Head' : 'Member'}</span>
+      ${isHead && m.id !== hh.head_user_id ? `<button class="btn btn-danger" style="padding:6px 12px;font-size:.75rem" onclick="removeMember('${m.id}','${m.name||m.email||'this member'}')">Remove</button>` : ''}
+    </div>`).join('');
+
+  if (isHead) {
+    document.getElementById('inviteSection').style.display = 'block';
+    document.getElementById('prefSection').style.display = 'block';
+    document.getElementById('leaveSection').style.display = 'none';
+    setSelected('hhCuisineGroup', hh.cuisine_prefs || []);
+  }
+}
+
+async function createHousehold(btn) {
+  const name = document.getElementById('hhNameInput').value.trim();
+  if (!name) { showToast('Enter a household name', '#c0392b'); return; }
+  btn.disabled = true; btn.textContent = 'Creating…';
+  const r = await api('/household/', { method: 'POST', body: JSON.stringify({
+    name, cuisine_prefs: getSelected('createCuisineGroup')
+  })});
+  if (r.ok) {
+    showToast('Household created!', '#2E7D52');
+    document.getElementById('noHouseholdView').style.display = 'none';
+    await loadHousehold();
+  } else {
+    const err = await r.json().catch(() => ({}));
+    showToast(err.detail || 'Could not create household', '#c0392b');
+    btn.disabled = false; btn.textContent = 'Create Household';
+  }
+}
+
+async function joinHousehold(btn) {
+  let raw = document.getElementById('joinTokenInput').value.trim();
+  // Extract token from URL if full URL pasted
+  const m = raw.match(/\/join\/([a-f0-9-]{36})/i);
+  const tokenStr = m ? m[1] : raw;
+  if (!tokenStr) { showToast('Paste a valid invite link or token', '#c0392b'); return; }
+  btn.disabled = true; btn.textContent = 'Joining…';
+  const r = await api(`/household/join/${tokenStr}`, { method: 'POST' });
+  if (r.ok) {
+    showToast('Joined household!', '#2E7D52');
+    document.getElementById('noHouseholdView').style.display = 'none';
+    await loadHousehold();
+  } else {
+    const err = await r.json().catch(() => ({}));
+    showToast(err.detail || 'Invite invalid or expired', '#c0392b');
+    btn.disabled = false; btn.textContent = 'Join Household';
+  }
+}
+
+async function generateInvite(btn) {
+  btn.disabled = true; btn.textContent = 'Generating…';
+  const r = await api('/household/invite', { method: 'POST' });
+  btn.disabled = false; btn.textContent = '➕ Invite Member';
+  if (r.ok) {
+    const d = await r.json();
+    document.getElementById('inviteUrl').textContent = d.invite_url;
+    document.getElementById('inviteBox').style.display = 'block';
+  } else {
+    showToast('Could not generate invite', '#c0392b');
+  }
+}
+
+function copyInvite() {
+  const url = document.getElementById('inviteUrl').textContent;
+  navigator.clipboard.writeText(url).then(() => showToast('Link copied!', '#2E7D52'));
+}
+
+async function saveCuisinePrefs(btn) {
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const r = await api('/household/preferences', { method: 'PUT', body: JSON.stringify({
+    cuisine_prefs: getSelected('hhCuisineGroup')
+  })});
+  btn.disabled = false; btn.textContent = 'Save Preferences';
+  showToast(r.ok ? 'Preferences saved ✓' : 'Could not save', r.ok ? '#2E7D52' : '#c0392b');
+}
+
+async function removeMember(userId, name) {
+  if (!confirm(`Remove ${name} from your household?`)) return;
+  const r = await api(`/household/member/${userId}`, { method: 'DELETE' });
+  if (r.ok || r.status === 204) {
+    showToast(`${name} removed`, '#2E7D52');
+    await loadHousehold();
+  } else {
+    showToast('Could not remove member', '#c0392b');
+  }
+}
+
+function confirmLeave() { document.getElementById('leaveModal').style.display = 'flex'; }
+
+async function leaveHousehold(btn) {
+  btn.disabled = true; btn.textContent = 'Leaving…';
+  const r = await api('/household/leave', { method: 'POST' });
+  if (r.ok || r.status === 204) {
+    showToast('You have left the household', '#2E7D52');
+    document.getElementById('leaveModal').style.display = 'none';
+    document.getElementById('householdView').style.display = 'none';
+    document.getElementById('noHouseholdView').style.display = 'block';
+  } else {
+    const err = await r.json().catch(() => ({}));
+    showToast(err.detail || 'Could not leave', '#c0392b');
+    btn.disabled = false; btn.textContent = 'Leave';
+  }
+}
+
+init();
+</script>
+</body>
+</html>

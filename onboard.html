@@ -95,7 +95,22 @@ input:focus,select:focus{border-color:var(--saffron)}
         <div class="chip" data-val="diabetes_t2" onclick="pickMany(this)">🩺 Diabetes T2</div>
         <div class="chip" data-val="hypertension" onclick="pickMany(this)">❤️ High BP</div>
         <div class="chip" data-val="pcos" onclick="pickMany(this)">🔬 PCOS</div>
-        <div class="chip" data-val="thyroid" onclick="pickMany(this)">🦋 Thyroid</div>
+        <div class="chip" data-val="thyroid_hypo" onclick="pickMany(this)">🦋 Thyroid</div>
+        <div class="chip" data-val="anemia" onclick="pickMany(this)">🩸 Anemia</div>
+        <div class="chip" data-val="high_cholesterol" onclick="pickMany(this)">🫀 High Cholesterol</div>
+        <div class="chip" data-val="kidney_disease" onclick="pickMany(this)">💊 Kidney Disease</div>
+      </div>
+    </div>
+    <div style="margin-top:24px">
+      <label style="display:block;margin-bottom:10px">Any food allergies? (optional)</label>
+      <div class="chip-group" id="allergyGroup">
+        <div class="chip" data-val="gluten" onclick="pickMany(this)">🌾 Gluten</div>
+        <div class="chip" data-val="dairy" onclick="pickMany(this)">🥛 Dairy</div>
+        <div class="chip" data-val="nuts" onclick="pickMany(this)">🥜 Nuts</div>
+        <div class="chip" data-val="shellfish" onclick="pickMany(this)">🦐 Shellfish</div>
+        <div class="chip" data-val="sesame" onclick="pickMany(this)">🫙 Sesame</div>
+        <div class="chip" data-val="soy" onclick="pickMany(this)">🫘 Soy</div>
+        <div class="chip" data-val="egg" onclick="pickMany(this)">🥚 Egg</div>
       </div>
     </div>
     <div class="err" id="err1">Please select a goal.</div>
@@ -115,6 +130,19 @@ input:focus,select:focus{border-color:var(--saffron)}
       <div class="chip" data-val="full_nv" onclick="pickOne(this,'modeGroup')">🍗 Non-Veg</div>
       <div class="chip" data-val="jain" onclick="pickOne(this,'modeGroup')">🕊 Jain</div>
       <div class="chip" data-val="sattvic" onclick="pickOne(this,'modeGroup')">🌿 Sattvic</div>
+    </div>
+    <!-- nv_days — only shown for conditional_nv -->
+    <div style="margin-top:24px;display:none" id="nvDaysSection">
+      <label style="display:block;margin-bottom:10px">Which days do you eat non-veg?</label>
+      <div class="chip-group" id="nvDaysGroup">
+        <div class="chip" data-val="monday"    onclick="pickMany(this)">Mon</div>
+        <div class="chip" data-val="tuesday"   onclick="pickMany(this)">Tue</div>
+        <div class="chip" data-val="wednesday" onclick="pickMany(this)">Wed</div>
+        <div class="chip" data-val="thursday"  onclick="pickMany(this)">Thu</div>
+        <div class="chip" data-val="friday"    onclick="pickMany(this)">Fri</div>
+        <div class="chip" data-val="saturday"  onclick="pickMany(this)">Sat</div>
+        <div class="chip" data-val="sunday"    onclick="pickMany(this)">Sun</div>
+      </div>
     </div>
     <div style="margin-top:24px">
       <label style="display:block;margin-bottom:10px">Preferred cuisines (pick up to 3)</label>
@@ -178,6 +206,12 @@ function pickMax(el, groupId, max) {
   const selected = document.querySelectorAll('#' + groupId + ' .chip.selected');
   if (!el.classList.contains('selected') && selected.length >= max) return;
   el.classList.toggle('selected');
+  // Show nv_days section when conditional_nv is selected in modeGroup
+  if (groupId === 'modeGroup') {
+    const mode = el.dataset.val;
+    const nvSection = document.getElementById('nvDaysSection');
+    if (nvSection) nvSection.style.display = mode === 'conditional_nv' && el.classList.contains('selected') ? 'block' : 'none';
+  }
 }
 function getSelected(groupId) {
   return [...document.querySelectorAll('#' + groupId + ' .chip.selected')].map(c => c.dataset.val);
@@ -217,12 +251,15 @@ function next(step) {
     if (!goal) { err.style.display = 'block'; return; }
     profile.goal = goal;
     profile.health_tags = getSelected('healthGroup');
+    profile.allergy_tags = getSelected('allergyGroup');
   }
   if (step === 2) {
     const mode = getSelected('modeGroup')[0];
     const cuisines = getSelected('cuisineGroup');
     if (!mode || cuisines.length === 0) { err.style.display = 'block'; return; }
-    profile.eating_mode = mode; profile.cuisine_prefs = cuisines;
+    profile.eating_mode = mode;
+    profile.cuisine_prefs = cuisines;
+    profile.nv_days = mode === 'conditional_nv' ? getSelected('nvDaysGroup') : [];
     buildSummary();
   }
 
@@ -249,7 +286,9 @@ function buildSummary() {
     <div><strong>Goal</strong> — ${goalLabel}</div>
     <div><strong>Diet</strong> — ${modeLabel}</div>
     <div><strong>Cuisines</strong> — ${profile.cuisine_prefs.join(', ')}</div>
-    ${profile.health_tags.length ? '<div><strong>Health</strong> — '+profile.health_tags.join(', ')+'</div>' : ''}
+    ${profile.health_tags?.length ? '<div><strong>Health</strong> — '+profile.health_tags.join(', ')+'</div>' : ''}
+    ${profile.allergy_tags?.length ? '<div><strong>Allergies</strong> — '+profile.allergy_tags.join(', ')+'</div>' : ''}
+    ${profile.nv_days?.length ? '<div><strong>Non-veg days</strong> — '+profile.nv_days.join(', ')+'</div>' : ''}
   `;
 }
 
@@ -268,10 +307,10 @@ async function finish() {
       body: JSON.stringify({ goal: profile.goal }) });
 
     await fetch(`${API}/users/me/health`, { method:'PUT', headers:h,
-      body: JSON.stringify({ health_tags: profile.health_tags, allergy_tags: [] }) });
+      body: JSON.stringify({ health_tags: profile.health_tags || [], allergy_tags: profile.allergy_tags || [] }) });
 
     await fetch(`${API}/users/me/eating`, { method:'PUT', headers:h,
-      body: JSON.stringify({ eating_mode: profile.eating_mode, nv_days: [],
+      body: JSON.stringify({ eating_mode: profile.eating_mode, nv_days: profile.nv_days || [],
         cuisine_prefs: profile.cuisine_prefs }) });
 
     await fetch(`${API}/users/me/onboarding-complete`, { method:'POST', headers:h });

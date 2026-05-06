@@ -80,13 +80,15 @@ async def main():
                 names_by_slot.setdefault((meal_type, cuisine), []).append(data["name"])
 
                 try:
+                    raw_safe_tags = data.get("health_safe_tags") or []
+                    merged_safe_tags = list(set(raw_safe_tags + (health_tags or []) + ["general_healthy"]))
                     recipe = Recipe(
                         name=data["name"],
                         name_local=data.get("name_local"),
                         meal_type=meal_type,
                         cuisine_region=data.get("cuisine_region", cuisine),
                         eating_mode_tags=data.get("eating_mode_tags", [eating_mode]),
-                        health_safe_tags=data.get("health_safe_tags", []),
+                        health_safe_tags=merged_safe_tags,
                         allergy_free_tags=data.get("allergy_free_tags", []),
                         calories=int(data.get("calories", 0)),
                         protein_g=float(data.get("protein_g", 0)),

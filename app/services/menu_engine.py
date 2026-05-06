@@ -1,7 +1,10 @@
+import logging
 import time
 import uuid
 from datetime import date
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 from redis.asyncio import Redis
 from sqlalchemy import and_, cast, or_, text
@@ -248,6 +251,17 @@ async def _query_candidates(
                 results.append(r)
                 seen_ids.add(str(r.id))
 
+    if len(results) == 0:
+        logger.error(
+            "ZERO candidates slot=%s eating_mode=%s health_tags=%s cuisine_pool=%s — slot will be None",
+            slot, ctx["eating_mode"], ctx["health_tags"], cuisine_pool[:3],
+        )
+    elif len(results) < 3:
+        logger.warning(
+            "Low candidate pool slot=%s count=%d eating_mode=%s health_tags=%s",
+            slot, len(results), ctx["eating_mode"], ctx["health_tags"],
+        )
+
     return results
 
 
@@ -264,6 +278,7 @@ def _select_by_macro(candidates: dict[str, list[Recipe]], ctx: dict) -> dict[str
     selected: dict[str, Recipe | None] = {}
     for slot, recipes in candidates.items():
         if not recipes:
+            logger.error("No recipes available for slot=%s — DailyMenu will have a null slot", slot)
             selected[slot] = None
             continue
         target_cal = calorie_target * SLOT_RATIOS[slot]

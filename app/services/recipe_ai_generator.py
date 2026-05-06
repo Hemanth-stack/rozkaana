@@ -23,7 +23,16 @@ MEAL TYPE RULES — strictly follow these:
 - dinner: Evening main meal, 350-550 cal. Roti/rice with dal, sabzi, soup, lighter than lunch. No heavy biryani.
 
 Never put breakfast dishes (idli, dosa, upma, poha, paratha) in lunch or dinner slots.
-Never put full meals (biryani, thali) in snack slots."""
+Never put full meals (biryani, thali) in snack slots.
+
+HEALTH SAFE TAG RULES — strictly follow these:
+- Always include "general_healthy" in health_safe_tags.
+- If the recipe is generated for a specific health condition, you MUST include that exact
+  condition string in health_safe_tags. Use only these valid condition tags:
+  diabetes_t2, pcos, hypertension, high_cholesterol, thyroid_hypo, thyroid_hyper,
+  anemia, osteoporosis, kidney_disease, fatty_liver, weight_loss, high_protein
+- Do NOT invent tag names like "diabetes_friendly" or "heart_healthy" — use only the
+  exact strings listed above. Always include "general_healthy" alongside any condition tag."""
 
 # Base prompt template — existing_names block is appended dynamically
 _PROMPT_BASE = """Generate {count} unique Indian recipes for:
@@ -31,6 +40,7 @@ _PROMPT_BASE = """Generate {count} unique Indian recipes for:
 - Cuisine region: {cuisine_region}
 - Dietary mode: {eating_mode}
 - Health condition safe for: {health_tags}
+  → Every recipe MUST include these exact tag strings in health_safe_tags (alongside "general_healthy").
 {existing_block}
 Return a JSON object with key "recipes" containing an array. Each recipe must have:
 {{

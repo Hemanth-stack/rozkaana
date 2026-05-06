@@ -12,6 +12,7 @@ celery_app = Celery(
         "app.tasks.pdf_tasks",
         "app.tasks.email_tasks",
         "app.tasks.seed_tasks",
+        "app.tasks.signal_tasks",
     ],
 )
 
@@ -45,6 +46,16 @@ celery_app.conf.beat_schedule = {
     "send-trial-expiry-warnings": {
         "task": "app.tasks.email_tasks.send_trial_expiry_warnings",
         "schedule": crontab(hour=4, minute=30),
+    },
+    # Every ~3 days (Sun/Wed/Sat IST = Mon/Thu/Sun UTC at 04:30 UTC = 10:00 IST)
+    "signal-prompt-users": {
+        "task": "app.tasks.signal_tasks.prompt_users_for_signals",
+        "schedule": crontab(hour=4, minute=30, day_of_week="0,3,6"),
+    },
+    # 4h after prompt on the same days — gives users time to log before analysis runs
+    "signal-analyze-users": {
+        "task": "app.tasks.signal_tasks.analyze_all_users_signals",
+        "schedule": crontab(hour=8, minute=30, day_of_week="0,3,6"),
     },
 }
 

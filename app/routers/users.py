@@ -73,6 +73,12 @@ async def update_health(
         current_user.health_tags = request.health_tags
     if request.allergy_tags is not None:
         current_user.allergy_tags = request.allergy_tags
+    if current_user.weight_kg and current_user.height_cm and current_user.age:
+        targets = calculate_targets(current_user)
+        current_user.daily_calorie_target = targets["daily_calorie_target"]
+        current_user.daily_protein_target_g = targets["daily_protein_target_g"]
+        current_user.daily_carbs_target_g = targets["daily_carbs_target_g"]
+        current_user.daily_fat_target_g = targets["daily_fat_target_g"]
     await db.flush()
     await db.refresh(current_user)
     return current_user
@@ -171,6 +177,14 @@ async def complete_onboarding(
         )
 
     current_user.onboarding_complete = True
+
+    if current_user.weight_kg and current_user.height_cm and current_user.age:
+        targets = calculate_targets(current_user)
+        current_user.daily_calorie_target = targets["daily_calorie_target"]
+        current_user.daily_protein_target_g = targets["daily_protein_target_g"]
+        current_user.daily_carbs_target_g = targets["daily_carbs_target_g"]
+        current_user.daily_fat_target_g = targets["daily_fat_target_g"]
+
     await db.flush()
 
     sub = await create_trial(current_user.id, "solo_basic", db)
@@ -182,6 +196,13 @@ async def complete_onboarding(
             current_user.name or "there",
             str(sub.trial_end),
         )
+
+    from datetime import timedelta
+    from app.tasks.menu_tasks import generate_single_menu
+    next_date = str(date.today() + timedelta(days=1))
+    owner_id = str(current_user.household_id or current_user.id)
+    owner_type = "household" if current_user.household_id else "user"
+    generate_single_menu.delay(owner_id, owner_type, next_date, None)
 
     await db.refresh(current_user)
     return current_user

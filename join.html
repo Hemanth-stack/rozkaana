@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join Household — Rozkaana</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--saffron:#E8593C;--saffron-dark:#C9421F;--cream:#FAF7F2;--charcoal:#1A1612;--text:#3A3028;--muted:#7A6E65;--border:#E8DDD0;--green:#2E7D52}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--charcoal);margin-bottom:36px;text-decoration:none}
+.logo span{color:var(--saffron)}
+.card{background:#fff;border-radius:20px;padding:36px 32px;max-width:420px;width:100%;box-shadow:0 8px 32px rgba(26,22,18,.09);text-align:center}
+.icon{font-size:3rem;margin-bottom:16px}
+h1{font-family:'Playfair Display',serif;font-size:1.7rem;color:var(--charcoal);margin-bottom:10px}
+.sub{font-size:.9rem;color:var(--muted);margin-bottom:28px;line-height:1.6}
+.btn{display:block;width:100%;padding:14px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;border:none;margin-bottom:10px;transition:.2s}
+.btn-primary{background:var(--saffron);color:#fff}.btn-primary:hover{background:var(--saffron-dark)}
+.btn-ghost{background:none;border:1.5px solid var(--border);color:var(--muted)}.btn-ghost:hover{border-color:var(--saffron);color:var(--saffron)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.spinner{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--saffron);border-radius:50%;animation:spin .8s linear infinite;margin:20px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err{color:#dc2626;font-size:.85rem;margin-top:12px}
+.ok{color:var(--green);font-size:.85rem;margin-top:12px}
+</style>
+</head>
+<body>
+
+<a href="/" class="logo">Roz<span>kaana</span></a>
+
+<div class="card" id="card">
+  <div class="spinner"></div>
+</div>
+
+<script>
+const API = 'https://api.rozkaana.in/api/v1';
+const token = localStorage.getItem('rzk_token');
+
+// Extract token from URL path: /join/{uuid}
+const pathParts = window.location.pathname.split('/');
+const inviteToken = pathParts[pathParts.length - 1];
+
+async function apiCall(path, opts = {}) {
+  return fetch(API + path, {
+    ...opts,
+    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers||{}) },
+  });
+}
+
+async function init() {
+  const card = document.getElementById('card');
+
+  if (!inviteToken || inviteToken.length < 10) {
+    card.innerHTML = `<div class="icon">❌</div><h1>Invalid Link</h1><p class="sub">This invite link is not valid. Ask the household head for a fresh invite.</p><a href="/app" class="btn btn-primary" style="display:block;text-decoration:none">Go to My Plan</a>`;
+    return;
+  }
+
+  if (!token) {
+    // Not logged in — save token in sessionStorage and redirect to login
+    sessionStorage.setItem('pending_join_token', inviteToken);
+    card.innerHTML = `<div class="icon">🏠</div><h1>Join Household</h1><p class="sub">Sign in first to accept this household invite.</p><a href="/?join=${inviteToken}" class="btn btn-primary" style="display:block;text-decoration:none">Sign In to Join</a>`;
+    return;
+  }
+
+  // Check if user is already in a household
+  const meRes = await apiCall('/users/me');
+  const me = await meRes.json();
+
+  if (me.household_id) {
+    card.innerHTML = `<div class="icon">⚠️</div><h1>Already in a Household</h1><p class="sub">You're already part of a household. Leave it first before joining another.</p>
+      <a href="/household" class="btn btn-primary" style="display:block;text-decoration:none">Manage Household</a>`;
+    return;
+  }
+
+  card.innerHTML = `
+    <div class="icon">🏠</div>
+    <h1>You've been invited!</h1>
+    <p class="sub">You're invited to join a shared household meal plan on Rozkaana. Your menus will be tailored to the whole family.</p>
+    <button class="btn btn-primary" id="joinBtn" onclick="joinHousehold(this)">Accept Invite</button>
+    <a href="/app" class="btn btn-ghost" style="display:block;text-decoration:none;text-align:center;padding:13px">Not now</a>
+    <div id="msg"></div>`;
+}
+
+async function joinHousehold(btn) {
+  btn.disabled = true; btn.textContent = 'Joining…';
+  const msg = document.getElementById('msg');
+  try {
+    const r = await apiCall(`/household/join/${inviteToken}`, { method: 'POST' });
+    if (r.ok) {
+      msg.className = 'ok'; msg.textContent = '✓ Joined! Redirecting…';
+      setTimeout(() => { window.location.href = '/household'; }, 1500);
+    } else {
+      const err = await r.json().catch(() => ({}));
+      msg.className = 'err'; msg.textContent = err.detail || 'Could not join — invite may have expired.';
+      btn.disabled = false; btn.textContent = 'Try Again';
+    }
+  } catch(e) {
+    msg.className = 'err'; msg.textContent = 'Network error — please try again.';
+    btn.disabled = false; btn.textContent = 'Try Again';
+  }
+}
+
+init();
+</script>
+</body>
+</html>

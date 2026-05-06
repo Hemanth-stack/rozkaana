@@ -67,9 +67,34 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
 @keyframes spin{to{transform:rotate(360deg)}}
 .skip-btn{background:none;border:none;cursor:pointer;color:var(--border);font-size:.8rem;padding:2px 6px;border-radius:5px;transition:.15s;flex-shrink:0}
 .skip-btn:hover{color:var(--saffron);background:rgba(232,89,60,.08)}
+.slot-missing{opacity:.45}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--charcoal);color:#fff;padding:12px 24px;border-radius:12px;font-size:.88rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media(max-width:600px){.info-cards{grid-template-columns:1fr}.trial-banner{flex-direction:column;gap:12px}.trial-banner a{margin:0;width:100%;text-align:center}}
+/* ── Wellness section ────────────────────────────────────── */
+.wellness-card{background:#fff;border-radius:20px;box-shadow:0 4px 24px var(--shadow);padding:24px;margin-bottom:20px}
+.wellness-card h3{font-size:.95rem;font-weight:700;color:var(--charcoal);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.signal-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.signal-row label{font-size:.82rem;font-weight:600;color:var(--text);min-width:110px;flex-shrink:0}
+.signal-row input[type=range]{flex:1;accent-color:var(--saffron)}
+.signal-row .sig-val{font-size:.85rem;font-weight:700;color:var(--saffron);min-width:32px;text-align:right}
+.check-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--cream-dark);cursor:pointer}
+.check-row:last-child{border-bottom:none}
+.check-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--saffron);cursor:pointer;flex-shrink:0}
+.check-row label{font-size:.85rem;color:var(--text);cursor:pointer;flex:1}
+.logged-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(46,125,82,.1);color:var(--green);font-size:.8rem;font-weight:700;padding:6px 12px;border-radius:8px;margin-bottom:14px}
+.hint-item{padding:12px 0;border-bottom:1px solid var(--cream-dark)}
+.hint-item:last-child{border-bottom:none}
+.hint-item .symptom{font-size:.85rem;font-weight:700;color:var(--charcoal);margin-bottom:3px}
+.hint-item .detail{font-size:.78rem;color:var(--muted);line-height:1.5}
+.hint-item.high .symptom::before{content:"⚠ ";color:#D4960A}
+.hint-item.moderate .symptom::before{content:"ℹ ";color:#3498db}
+.sig-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.sig-table th{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:6px 4px;text-align:left;border-bottom:2px solid var(--border)}
+.sig-table td{padding:8px 4px;border-bottom:1px solid var(--cream-dark);color:var(--text)}
+.sig-table tr:last-child td{border-bottom:none}
+.sig-table .flag{color:#c0392b;font-size:.75rem}
+.sig-table .empty-row td{color:var(--border);font-style:italic}
 </style>
 </head>
 <body>
@@ -77,6 +102,7 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
   <a href="/" class="nav-logo">Roz<span>kaana</span></a>
   <div class="nav-links">
     <a href="/app" class="nav-link active">My Plan</a>
+    <a href="/household" class="nav-link">Household</a>
     <a href="/history" class="nav-link">History</a>
     <a href="/billing" class="nav-link">Billing</a>
     <a href="/settings" class="nav-link">Settings</a>
@@ -114,6 +140,42 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
     <!-- Profile stats -->
     <div class="section-title" style="margin-top:32px">Your Profile</div>
     <div class="info-cards" id="profileCards"></div>
+
+    <!-- Menu insights -->
+    <details style="margin-top:28px;margin-bottom:4px">
+      <summary style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px">
+        <span>▶</span> Why this menu?
+      </summary>
+      <div id="insightsCard" style="background:#fff;border-radius:16px;box-shadow:0 2px 12px var(--shadow);padding:18px;margin-top:10px;font-size:.82rem;line-height:1.8;color:var(--text)">
+        <div class="spinner" style="margin:12px auto"></div>
+      </div>
+    </details>
+    <script>
+    document.querySelector('details').addEventListener('toggle', async function(e) {
+      if (!e.target.open) return;
+      const card = document.getElementById('insightsCard');
+      if (card.dataset.loaded) return;
+      card.dataset.loaded = '1';
+      try {
+        const r = await api('/menu/today/insights');
+        if (!r.ok) { card.innerHTML = '<span style="color:var(--muted)">No insights available.</span>'; return; }
+        const d = await r.json();
+        const sig = d.signals_active || {};
+        const pool = d.candidate_pool || {};
+        card.innerHTML = `
+          <div style="margin-bottom:10px"><strong>Cuisine</strong>: ${d.cuisine_used||'—'} <span style="color:var(--muted);font-size:.75rem">(${d.cuisine_reason||''})</span></div>
+          <div style="margin-bottom:10px"><strong>Calorie target</strong>: ${d.calorie_target||'—'} kcal</div>
+          <div style="margin-bottom:10px"><strong>Active signals</strong>: eating mode <em>${sig.eating_mode||'—'}</em>${sig.is_festival?' · 🎉 Festival: '+sig.festival_name:''}${sig.is_nv_day?' · 🍗 NV day':''}</div>
+          ${sig.health_tags?.length ? `<div style="margin-bottom:10px"><strong>Health filters</strong>: ${sig.health_tags.join(', ')}</div>` : ''}
+          <div><strong>Recipe pool per slot</strong>: ${Object.entries(pool).map(([s,n])=>`${s.replace('_',' ')} (${n})`).join(' · ')}</div>
+          <div style="margin-top:10px;color:var(--muted);font-size:.75rem">Exclusions: ${Object.entries(d.exclusion_window_7d||{}).map(([s,n])=>`${s.replace('_',' ')} ${n} excluded`).join(' · ')}</div>`;
+      } catch(e) { card.innerHTML = '<span style="color:var(--muted)">Could not load insights.</span>'; }
+    });
+    </script>
+
+    <!-- Wellness check-in -->
+    <div class="section-title" style="margin-top:28px">Wellness Check-In</div>
+    <div id="wellnessSection"><div class="spinner"></div></div>
 
   </div>
 </div>
@@ -242,10 +304,21 @@ async function init() {
       </div>
       <div class="info-card">
         <div class="label">Health Tags</div>
-        <div style="margin-top:6px">${(me.health_tags||[]).length ? (me.health_tags||[]).map(t=>`<span class="tag green">${t}</span>`).join('') : '<span class="tag">None</span>'}</div>
-      </div>`;
+        <div style="margin-top:6px">${(me.health_tags||[]).length ? (me.health_tags||[]).map(t=>`<span class="tag green">${t.replace(/_/g,' ')}</span>`).join('') : '<span class="tag">None</span>'}</div>
+      </div>
+      ${(me.allergy_tags||[]).length ? `
+      <div class="info-card">
+        <div class="label">Allergies</div>
+        <div style="margin-top:6px">${(me.allergy_tags||[]).map(t=>`<span class="tag saffron">${t}</span>`).join('')}</div>
+      </div>` : ''}
+      ${(me.nv_days||[]).length ? `
+      <div class="info-card">
+        <div class="label">Non-Veg Days</div>
+        <div class="value" style="font-size:.85rem">${(me.nv_days||[]).map(d=>d.slice(0,3)).join(', ')}</div>
+      </div>` : ''}`;
 
     await loadMenu();
+    loadWellness(); // fire async, don't block main render
     document.getElementById('loading').style.display = 'none';
     document.getElementById('content').style.display = 'block';
   } catch(e) { if (e.message !== 'auth') console.error(e); }
@@ -288,7 +361,14 @@ async function loadMenu() {
             </div>
             <div class="slot-kcal">${m[s.key].calories} kcal</div>
             <button class="skip-btn" title="Skip ${s.label}" onclick="skipSlot('${s.key}',this)">✕</button>
-          </div>` : '').join('')}
+          </div>` : `
+          <div class="slot slot-missing">
+            <div class="slot-icon">${s.icon}</div>
+            <div class="slot-info">
+              <div class="slot-name">${s.label} — not available</div>
+              <div class="slot-time">Couldn't be filled for your profile · contact support</div>
+            </div>
+          </div>`).join('')}
       </div>
       <div class="menu-footer">
         ${pdfUrl
@@ -389,6 +469,148 @@ function closePDF() {
   document.getElementById('pdfOverlay').style.display = 'none';
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closePDF(); });
+
+// ── Wellness ──────────────────────────────────────────────────────────────────
+
+async function loadWellness() {
+  const sec = document.getElementById('wellnessSection');
+  try {
+    const [sigRes, hintRes] = await Promise.all([
+      api('/users/me/signals?days=7'),
+      api('/users/me/signals/deficiency-hints'),
+    ]);
+    const signals = sigRes.ok ? await sigRes.json() : [];
+    const hints   = hintRes.ok ? await hintRes.json() : { hints: [], days_of_data: 0 };
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayLog = signals.find(s => s.signal_date === todayStr);
+
+    // ── Signal logging form ─────────────────────────────────
+    const loggedBadge = todayLog
+      ? `<div class="logged-badge">✓ Logged today</div>`
+      : '';
+
+    const sliderRow = (id, label, val) => `
+      <div class="signal-row">
+        <label for="${id}">${label}</label>
+        <input type="range" id="${id}" min="1" max="10" value="${val||5}"
+               oninput="document.getElementById('v-${id}').textContent=this.value">
+        <span class="sig-val" id="v-${id}">${val||5}</span>
+      </div>`;
+
+    const checkRow = (id, label, checked) => `
+      <label class="check-row">
+        <input type="checkbox" id="${id}" ${checked ? 'checked' : ''}>
+        <span>${label}</span>
+      </label>`;
+
+    const formCard = `
+      <div class="wellness-card">
+        <h3>📊 Today's Wellness Check</h3>
+        ${loggedBadge}
+        ${sliderRow('wEnergy',    'Energy Level',    todayLog?.energy_level)}
+        ${sliderRow('wSleep',     'Sleep Quality',   todayLog?.sleep_quality)}
+        ${sliderRow('wDigestion', 'Digestion',       todayLog?.digestion_comfort)}
+        <div style="margin-top:16px;margin-bottom:4px">
+          ${checkRow('wHairLoss',   'Hair loss noticed today',      todayLog?.hair_loss_noticed)}
+          ${checkRow('wCramps',     'Muscle cramps',                todayLog?.muscle_cramps)}
+          ${checkRow('wBloodSugar', 'Blood sugar crash / shakiness',todayLog?.blood_sugar_dip)}
+        </div>
+        <button class="btn-sm btn-primary" style="width:100%;margin-top:18px;padding:12px"
+                onclick="logSignals(this)">
+          ${todayLog ? 'Update Today\'s Log' : 'Log Today\'s Signals'}
+        </button>
+      </div>`;
+
+    // ── Deficiency hints ────────────────────────────────────
+    let hintsCard = '';
+    if (hints.hints?.length && hints.days_of_data >= 5) {
+      const hintRows = hints.hints.map(h => `
+        <div class="hint-item ${h.severity||'moderate'}">
+          <div class="symptom">${h.symptom?.replace(/_/g,' ')}</div>
+          <div class="detail">
+            ${h.likely_deficiencies ? 'Likely: ' + h.likely_deficiencies.join(', ') + '<br>' : ''}
+            ${h.foods?.length       ? 'Foods: ' + h.foods.join(', ') + '<br>' : ''}
+            ${h.recommendations?.length ? h.recommendations.join(' · ') : ''}
+          </div>
+        </div>`).join('');
+      hintsCard = `
+        <div class="wellness-card">
+          <h3>🔍 Nutritional Insights
+            <span style="font-size:.72rem;font-weight:400;color:var(--muted)">
+              based on ${hints.days_of_data} days
+            </span>
+          </h3>
+          ${hintRows}
+        </div>`;
+    }
+
+    // ── 7-day signal history table ──────────────────────────
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      days.push(d.toISOString().slice(0, 10));
+    }
+    const sigMap = Object.fromEntries(signals.map(s => [s.signal_date, s]));
+
+    const historyRows = days.map(ds => {
+      const s = sigMap[ds];
+      const label = ds === todayStr ? 'Today' : new Date(ds+'T12:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+      if (!s) return `<tr class="empty-row"><td>${label}</td><td>—</td><td>—</td><td>—</td><td style="color:var(--border)">not logged</td></tr>`;
+      const flags = [
+        s.hair_loss_noticed ? '💇 Hair loss' : '',
+        s.muscle_cramps     ? '⚡ Cramps'    : '',
+        s.blood_sugar_dip   ? '🍬 Sugar dip' : '',
+      ].filter(Boolean).join(' ');
+      return `<tr>
+        <td>${label}</td>
+        <td>${s.energy_level||'—'}/10</td>
+        <td>${s.sleep_quality||'—'}/10</td>
+        <td>${s.digestion_comfort||'—'}/10</td>
+        <td class="flag">${flags||'—'}</td>
+      </tr>`;
+    }).join('');
+
+    const historyCard = `
+      <div class="wellness-card">
+        <h3>📅 Last 7 Days</h3>
+        <table class="sig-table">
+          <thead><tr><th>Date</th><th>Energy</th><th>Sleep</th><th>Digestion</th><th>Flags</th></tr></thead>
+          <tbody>${historyRows}</tbody>
+        </table>
+      </div>`;
+
+    sec.innerHTML = formCard + hintsCard + historyCard;
+  } catch(e) {
+    sec.innerHTML = `<div style="color:var(--muted);font-size:.85rem;padding:16px 0">Could not load wellness data.</div>`;
+  }
+}
+
+async function logSignals(btn) {
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  try {
+    const body = {
+      energy_level:       parseInt(document.getElementById('wEnergy').value),
+      sleep_quality:      parseInt(document.getElementById('wSleep').value),
+      digestion_comfort:  parseInt(document.getElementById('wDigestion').value),
+      hair_loss_noticed:  document.getElementById('wHairLoss').checked,
+      muscle_cramps:      document.getElementById('wCramps').checked,
+      blood_sugar_dip:    document.getElementById('wBloodSugar').checked,
+    };
+    const r = await api('/users/me/signals', { method: 'POST', body: JSON.stringify(body) });
+    if (r.ok) {
+      showToast('Wellness logged ✓', '#2E7D52');
+      await loadWellness(); // refresh the section
+    } else {
+      showToast('Could not save — please try again', '#c0392b');
+      btn.disabled = false; btn.textContent = 'Log Today\'s Signals';
+    }
+  } catch(e) {
+    showToast('Error saving signals', '#c0392b');
+    btn.disabled = false; btn.textContent = 'Log Today\'s Signals';
+  }
+}
 
 init();
 </script>

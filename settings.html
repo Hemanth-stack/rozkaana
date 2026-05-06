@@ -58,6 +58,7 @@ input:focus,select:focus{border-color:var(--saffron)}
   <a href="/" class="nav-logo">Roz<span>kaana</span></a>
   <ul class="nav-links">
     <li><a href="/app">My Plan</a></li>
+    <li><a href="/household">Household</a></li>
     <li><a href="/history">History</a></li>
     <li><a href="/billing">Billing</a></li>
     <li><a href="/settings" class="active">Settings</a></li>
@@ -110,13 +111,33 @@ input:focus,select:focus{border-color:var(--saffron)}
         <div class="chip" data-val="diabetes_t2" onclick="pickMany(this)">🩺 Diabetes T2</div>
         <div class="chip" data-val="hypertension" onclick="pickMany(this)">❤️ High BP</div>
         <div class="chip" data-val="pcos" onclick="pickMany(this)">🔬 PCOS</div>
-        <div class="chip" data-val="thyroid" onclick="pickMany(this)">🦋 Thyroid</div>
+        <div class="chip" data-val="thyroid_hypo" onclick="pickMany(this)">🦋 Thyroid</div>
+        <div class="chip" data-val="anemia" onclick="pickMany(this)">🩸 Anemia</div>
+        <div class="chip" data-val="high_cholesterol" onclick="pickMany(this)">🫀 High Cholesterol</div>
+        <div class="chip" data-val="kidney_disease" onclick="pickMany(this)">💊 Kidney Disease</div>
+        <div class="chip" data-val="fatty_liver" onclick="pickMany(this)">🫀 Fatty Liver</div>
+      </div>
+    </div>
+    <div class="field" style="margin-top:16px">
+      <label>Food Allergies</label>
+      <div class="chip-group" id="allergyGroup">
+        <div class="chip" data-val="gluten" onclick="pickMany(this)">🌾 Gluten</div>
+        <div class="chip" data-val="dairy" onclick="pickMany(this)">🥛 Dairy</div>
+        <div class="chip" data-val="nuts" onclick="pickMany(this)">🥜 Nuts</div>
+        <div class="chip" data-val="shellfish" onclick="pickMany(this)">🦐 Shellfish</div>
+        <div class="chip" data-val="sesame" onclick="pickMany(this)">🫙 Sesame</div>
+        <div class="chip" data-val="soy" onclick="pickMany(this)">🫘 Soy</div>
+        <div class="chip" data-val="egg" onclick="pickMany(this)">🥚 Egg</div>
       </div>
     </div>
     <div class="save-row">
       <button class="btn btn-primary" onclick="saveGoalHealth()">Save</button>
       <span class="saved-tag" id="savedGoal">✓ Saved</span>
     </div>
+    <p style="font-size:.75rem;color:var(--muted,#7A6E65);margin-top:14px;line-height:1.6">
+      💡 Your meal plan also adapts automatically when your wellness signals (logged daily in the app)
+      suggest a nutritional gap — no changes needed here.
+    </p>
   </div>
 
   <!-- Food Preferences -->
@@ -131,6 +152,18 @@ input:focus,select:focus{border-color:var(--saffron)}
         <option value="jain">Jain</option>
         <option value="sattvic">Sattvic</option>
       </select>
+    </div>
+    <div class="field" style="margin-top:14px" id="nvDaysField" style="display:none">
+      <label>Non-Veg Days</label>
+      <div class="chip-group" id="nvDaysGroup">
+        <div class="chip" data-val="monday"    onclick="pickMany(this)">Mon</div>
+        <div class="chip" data-val="tuesday"   onclick="pickMany(this)">Tue</div>
+        <div class="chip" data-val="wednesday" onclick="pickMany(this)">Wed</div>
+        <div class="chip" data-val="thursday"  onclick="pickMany(this)">Thu</div>
+        <div class="chip" data-val="friday"    onclick="pickMany(this)">Fri</div>
+        <div class="chip" data-val="saturday"  onclick="pickMany(this)">Sat</div>
+        <div class="chip" data-val="sunday"    onclick="pickMany(this)">Sun</div>
+      </div>
     </div>
     <div class="field" style="margin-top:14px">
       <label>Cuisine Preferences (up to 3)</label>
@@ -166,6 +199,20 @@ input:focus,select:focus{border-color:var(--saffron)}
     <div class="info-row">
       <span class="info-label">Member since</span>
       <span class="info-val" id="accSince">—</span>
+    </div>
+    <!-- WhatsApp opt-in -->
+    <div class="field" style="margin-top:20px">
+      <label>WhatsApp Notifications</label>
+      <p style="font-size:.78rem;color:var(--muted,#7A6E65);margin-bottom:10px;line-height:1.5">
+        Receive your daily meal plan on WhatsApp. Enter your number to opt in.
+      </p>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="waPhone" type="tel" placeholder="+91 98765 43210"
+               style="flex:1;padding:10px 14px;border:1.5px solid var(--border,#E8DDD0);border-radius:10px;font-family:inherit;font-size:.9rem">
+        <button class="btn btn-primary" style="width:auto;padding:10px 18px;margin-top:0"
+                onclick="saveWhatsApp(this)">Enable</button>
+      </div>
+      <div id="waStatus" style="font-size:.78rem;margin-top:8px;color:var(--green,#2E7D52);display:none"></div>
     </div>
     <div style="margin-top:16px">
       <button class="btn btn-ghost" onclick="logout()">Sign Out</button>
@@ -233,8 +280,20 @@ async function loadProfile() {
   if (d.gender) document.getElementById('gender').value = d.gender;
   if (d.goal) setSelected('goalGroup', [d.goal]);
   if (d.health_tags?.length) setSelected('healthGroup', d.health_tags);
-  if (d.eating_mode) document.getElementById('eatingMode').value = d.eating_mode;
+  if (d.allergy_tags?.length) setSelected('allergyGroup', d.allergy_tags);
+  if (d.eating_mode) {
+    document.getElementById('eatingMode').value = d.eating_mode;
+    toggleNvDays(d.eating_mode);
+  }
+  if (d.nv_days?.length) setSelected('nvDaysGroup', d.nv_days);
   if (d.cuisine_prefs?.length) setSelected('cuisineGroup', d.cuisine_prefs);
+
+  if (d.wa_phone) document.getElementById('waPhone').value = d.wa_phone;
+  if (d.wa_opted_in) {
+    const ws = document.getElementById('waStatus');
+    ws.textContent = '✓ WhatsApp notifications active';
+    ws.style.display = 'block';
+  }
 
   document.getElementById('accEmail').textContent = d.email || '—';
   document.getElementById('accMethod').textContent = d.email ? 'Google / Email OTP' : 'Email OTP';
@@ -255,24 +314,51 @@ async function saveBasic() {
   btn.disabled = false; showSaved('savedBasic');
 }
 
+function toggleNvDays(mode) {
+  const f = document.getElementById('nvDaysField');
+  if (f) f.style.display = mode === 'conditional_nv' ? 'block' : 'none';
+}
+document.getElementById('eatingMode').addEventListener('change', e => toggleNvDays(e.target.value));
+
 async function saveGoalHealth() {
   const btn = event.target; btn.disabled = true;
   const goal = getSelected('goalGroup')[0];
   if (goal) await fetch(API+'/users/me/goal', { method:'PUT', headers:h(), body: JSON.stringify({ goal }) });
   await fetch(API+'/users/me/health', { method:'PUT', headers:h(), body: JSON.stringify({
-    health_tags: getSelected('healthGroup'), allergy_tags: []
+    health_tags: getSelected('healthGroup'),
+    allergy_tags: getSelected('allergyGroup'),
   })});
   btn.disabled = false; showSaved('savedGoal');
 }
 
 async function saveEating() {
   const btn = event.target; btn.disabled = true;
+  const mode = document.getElementById('eatingMode').value;
   await fetch(API+'/users/me/eating', { method:'PUT', headers:h(), body: JSON.stringify({
-    eating_mode: document.getElementById('eatingMode').value,
-    nv_days: [],
+    eating_mode: mode,
+    nv_days: mode === 'conditional_nv' ? getSelected('nvDaysGroup') : [],
     cuisine_prefs: getSelected('cuisineGroup'),
   })});
   btn.disabled = false; showSaved('savedEating');
+}
+
+async function saveWhatsApp(btn) {
+  btn.disabled = true;
+  const phone = document.getElementById('waPhone').value.trim();
+  if (!phone) { btn.disabled = false; return; }
+  const r = await fetch(API+'/users/me/whatsapp', { method:'PUT', headers:h(),
+    body: JSON.stringify({ wa_phone: phone }) });
+  const ws = document.getElementById('waStatus');
+  if (r.ok) {
+    ws.textContent = '✓ WhatsApp notifications enabled';
+    ws.style.color = 'var(--green,#2E7D52)';
+    ws.style.display = 'block';
+  } else {
+    ws.textContent = '✗ Could not enable — check the number and try again';
+    ws.style.color = '#dc2626';
+    ws.style.display = 'block';
+  }
+  btn.disabled = false;
 }
 
 function logout() {
