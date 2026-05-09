@@ -68,7 +68,12 @@ h1{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--charcoal);m
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.success{background:var(--green)}
 .toast.error{background:#c0392b}
-@media(max-width:640px){.plans-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.plans-grid{grid-template-columns:1fr}.nav-links{display:none}.wrap{padding-bottom:90px}.toast{bottom:80px}}
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);z-index:50;padding:8px 0 calc(env(safe-area-inset-bottom,0px) + 4px)}
+.mob-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--muted);font-size:.62rem;font-weight:600;padding:5px 0;transition:color .15s}
+.mn-icon{font-size:1.2rem;line-height:1.2}
+.mob-nav-item.active{color:var(--saffron)}
+@media(max-width:640px){.mobile-nav{display:flex}}
 </style>
 </head>
 <body>
@@ -151,6 +156,14 @@ h1{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--charcoal);m
 </div>
 
 <div class="toast" id="toast"></div>
+
+<nav class="mobile-nav">
+  <a href="/app" class="mob-nav-item"><span class="mn-icon">🍽️</span><span>Plan</span></a>
+  <a href="/household" class="mob-nav-item"><span class="mn-icon">🏠</span><span>Family</span></a>
+  <a href="/history" class="mob-nav-item"><span class="mn-icon">📋</span><span>History</span></a>
+  <a href="/billing" class="mob-nav-item active"><span class="mn-icon">💳</span><span>Billing</span></a>
+  <a href="/settings" class="mob-nav-item"><span class="mn-icon">⚙️</span><span>Settings</span></a>
+</nav>
 
 <script>
 const API = 'https://api.rozkaana.in/api/v1';
@@ -311,8 +324,8 @@ async function verifyPayment(response) {
       method: 'POST', headers: h(),
       body: JSON.stringify({
         razorpay_payment_id: response.razorpay_payment_id,
-        razorpay_order_id:   response.razorpay_order_id,
-        razorpay_signature:  response.razorpay_signature,
+        razorpay_order_id: response.razorpay_order_id,
+        razorpay_signature: response.razorpay_signature,
       }),
     });
     if (r.ok) {

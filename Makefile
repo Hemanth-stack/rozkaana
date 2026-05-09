@@ -9,6 +9,8 @@ host:
 	docker-compose up -d postgres redis minio
 	@echo "Waiting for postgres to be healthy..."
 	@until docker inspect --format='{{.State.Health.Status}}' rozkaana_postgres_1 2>/dev/null | grep -q healthy; do sleep 2; done
+	@echo "Running database migrations..."
+	alembic upgrade head
 	@echo "Starting API on :7078..."
 	nohup uvicorn app.main:app --host 0.0.0.0 --port 7078 --workers 1 \
 		> /tmp/rozkaana-api.log 2>&1 &
@@ -34,6 +36,13 @@ host:
 		-v /opt/hemanth/rozkaana/settings.html:/usr/share/nginx/html/settings.html:ro \
 		-v /opt/hemanth/rozkaana/billing.html:/usr/share/nginx/html/billing.html:ro \
 		-v /opt/hemanth/rozkaana/history.html:/usr/share/nginx/html/history.html:ro \
+		-v /opt/hemanth/rozkaana/household.html:/usr/share/nginx/html/household.html:ro \
+		-v /opt/hemanth/rozkaana/join.html:/usr/share/nginx/html/join.html:ro \
+		-v /opt/hemanth/rozkaana/about.html:/usr/share/nginx/html/about.html:ro \
+		-v /opt/hemanth/rozkaana/help.html:/usr/share/nginx/html/help.html:ro \
+		-v /opt/hemanth/rozkaana/privacy.html:/usr/share/nginx/html/privacy.html:ro \
+		-v /opt/hemanth/rozkaana/terms.html:/usr/share/nginx/html/terms.html:ro \
+		-v /opt/hemanth/rozkaana/refund.html:/usr/share/nginx/html/refund.html:ro \
 		nginx:alpine
 	@sleep 2
 	@$(MAKE) status

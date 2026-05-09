@@ -16,8 +16,9 @@ celery_app = Celery(
     ],
 )
 
-celery_app.conf.timezone = "Asia/Kolkata"
 celery_app.conf.enable_utc = True
+# Timezone intentionally left as UTC (default) — all schedule hours below are UTC.
+# MENU_GEN_HOUR_UTC=18 → 23:30 IST, PDF_BUILD_HOUR_UTC=22 → 03:30 IST, EMAIL_SEND_HOUR_UTC=0 → 05:30 IST
 celery_app.conf.task_serializer = "json"
 celery_app.conf.result_serializer = "json"
 celery_app.conf.accept_content = ["json"]

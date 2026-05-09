@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Help Center — Rozkaana</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--saffron:#E8593C;--saffron-dark:#C9421F;--cream:#FAF7F2;--cream-dark:#F2ECE3;--charcoal:#1A1612;--text:#3A3028;--muted:#7A6E65;--border:#E8DDD0;--green:#2E7D52;--shadow:rgba(26,22,18,.08)}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);line-height:1.5}
+h1,h2,h3{font-family:'Playfair Display',serif}
+nav{background:rgba(250,247,242,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 5%;height:68px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--charcoal);text-decoration:none}
+.nav-logo span{color:var(--saffron)}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{text-decoration:none;color:var(--muted);font-weight:500;font-size:.92rem;transition:color .2s}
+.nav-links a:hover,.nav-links .nav-active{color:var(--saffron)}
+.btn{display:inline-flex;align-items:center;background:var(--saffron);color:#fff;border:none;border-radius:10px;padding:.65rem 1.4rem;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.9rem;cursor:pointer;text-decoration:none;transition:background .2s}
+.btn:hover{background:var(--saffron-dark)}
+@media(max-width:768px){.nav-links{display:none}}
+
+/* Hero */
+.hero{background:var(--charcoal);padding:64px 5% 56px;text-align:center}
+.hero h1{font-size:clamp(2rem,4vw,2.8rem);color:#fff;margin-bottom:.8rem}
+.hero p{font-size:1rem;color:rgba(255,255,255,.6);margin-bottom:2rem}
+.search-box{max-width:520px;margin:0 auto;display:flex;gap:0}
+.search-input{flex:1;padding:13px 18px;border:none;border-radius:10px 0 0 10px;font-family:'DM Sans',sans-serif;font-size:.95rem;background:#fff;color:var(--charcoal);outline:none}
+.search-btn{background:var(--saffron);color:#fff;border:none;border-radius:0 10px 10px 0;padding:13px 20px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.9rem}
+
+/* Categories */
+.categories{padding:60px 5%;max-width:1100px;margin:0 auto}
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-bottom:56px}
+.cat-card{background:#fff;border-radius:16px;padding:1.8rem;border:1px solid var(--border);text-decoration:none;color:var(--text);transition:transform .2s,box-shadow .2s,border-color .2s;display:flex;align-items:flex-start;gap:1rem}
+.cat-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px var(--shadow);border-color:var(--saffron)}
+.cat-icon{font-size:1.6rem;flex-shrink:0;margin-top:2px}
+.cat-title{font-size:.97rem;font-weight:700;color:var(--charcoal);margin-bottom:.3rem;font-family:'DM Sans',sans-serif}
+.cat-desc{font-size:.82rem;color:var(--muted);line-height:1.55}
+@media(max-width:768px){.cat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.cat-grid{grid-template-columns:1fr}}
+
+/* FAQ sections */
+.faq-section{margin-bottom:48px}
+.faq-section-title{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--saffron);margin-bottom:1.2rem;padding-bottom:.6rem;border-bottom:2px solid rgba(232,89,60,.15)}
+.faq-h2{font-size:1.6rem;color:var(--charcoal);margin-bottom:1.5rem}
+.faq-list{display:flex;flex-direction:column;gap:.65rem}
+.faq-item{background:#fff;border-radius:12px;border:1px solid var(--border);overflow:hidden}
+.faq-q{width:100%;text-align:left;background:none;border:none;padding:1rem 1.3rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:600;color:var(--charcoal);gap:1rem;transition:background .15s}
+.faq-q:hover{background:var(--cream)}
+.faq-q.open{color:var(--saffron)}
+.faq-toggle{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--saffron);transition:transform .3s,border-color .2s;font-size:.85rem;line-height:1}
+.faq-q.open .faq-toggle{transform:rotate(45deg);border-color:var(--saffron);background:rgba(232,89,60,.07)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s;padding:0 1.3rem;font-size:.87rem;color:var(--muted);line-height:1.75;overflow-wrap:break-word;word-break:break-word}
+.faq-a.open{max-height:400px;padding:.2rem 1.3rem 1.2rem}
+.faq-a a{color:var(--saffron);text-decoration:none;word-break:break-all}
+.faq-a a:hover{text-decoration:underline}
+.faq-a code{font-family:'Courier New',monospace;font-size:.85em;background:var(--cream-dark);border:1px solid var(--border);padding:1px 5px;border-radius:4px;word-break:break-all}
+
+/* Contact */
+.contact-section{background:var(--cream-dark);padding:64px 5%}
+.contact-inner{max-width:900px;margin:0 auto;text-align:center}
+.contact-inner h2{font-size:1.8rem;color:var(--charcoal);margin-bottom:.7rem}
+.contact-inner p{color:var(--muted);margin-bottom:2.5rem}
+.contact-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+.contact-card{background:#fff;border-radius:16px;padding:1.8rem;border:1px solid var(--border);text-align:center}
+.contact-card .icon{font-size:1.8rem;margin-bottom:.8rem}
+.contact-card h3{font-size:.97rem;color:var(--charcoal);margin-bottom:.4rem;font-family:'DM Sans',sans-serif;font-weight:700}
+.contact-card p{font-size:.82rem;color:var(--muted);margin-bottom:1rem;line-height:1.55}
+.contact-card a{display:inline-block;color:var(--saffron);font-weight:600;font-size:.88rem;text-decoration:none;word-break:break-all}
+.contact-card a:hover{text-decoration:underline}
+@media(max-width:640px){.contact-cards{grid-template-columns:1fr}}
+
+/* Footer */
+footer{background:var(--charcoal);color:rgba(255,255,255,.6);padding:52px 5% 28px}
+.footer-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:3rem;margin-bottom:2.5rem}
+.footer-brand h3{font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff;margin-bottom:.4rem}
+.footer-brand h3 span{color:var(--saffron)}
+.footer-brand p{font-size:.82rem;line-height:1.7;max-width:280px;margin:0}
+.footer-col h4{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.9rem}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.footer-col ul a{text-decoration:none;color:rgba(255,255,255,.55);font-size:.83rem;transition:color .2s}
+.footer-col ul a:hover{color:#fff}
+.footer-bottom{max-width:1200px;margin:0 auto;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between;align-items:center;font-size:.78rem;flex-wrap:wrap;gap:.5rem}
+@media(max-width:768px){.footer-inner{grid-template-columns:1fr;gap:2rem}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Roz<span>kaana</span></a>
+  <ul class="nav-links">
+    <li><a href="/#why">Why Us</a></li>
+    <li><a href="/#how">How It Works</a></li>
+    <li><a href="/#pricing">Pricing</a></li>
+    <li><a href="/help" class="nav-active">Help</a></li>
+  </ul>
+  <a href="/#pricing" class="btn">Start Free Trial &rarr;</a>
+</nav>
+
+<div class="hero">
+  <h1>How can we help you?</h1>
+  <p>Search our help articles or browse by category below.</p>
+  <div class="search-box">
+    <input class="search-input" type="text" placeholder="e.g. &ldquo;how do I change my cuisine?&rdquo;" id="helpSearch" oninput="filterHelp(this.value)">
+    <button class="search-btn">Search</button>
+  </div>
+</div>
+
+<div class="categories">
+
+  <!-- Category cards -->
+  <div class="cat-grid">
+    <a class="cat-card" href="#getting-started">
+      <div class="cat-icon">&#127919;</div>
+      <div><div class="cat-title">Getting Started</div><div class="cat-desc">Setting up your profile, onboarding, and your first plan</div></div>
+    </a>
+    <a class="cat-card" href="#meal-plans">
+      <div class="cat-icon">&#127857;</div>
+      <div><div class="cat-title">Meal Plans &amp; Customisation</div><div class="cat-desc">Cuisines, dietary modes, regenerating plans, skipping meals</div></div>
+    </a>
+    <a class="cat-card" href="#health">
+      <div class="cat-icon">&#129657;</div>
+      <div><div class="cat-title">Health &amp; Nutrition</div><div class="cat-desc">Medical conditions, macros, wellness signals, deficiency hints</div></div>
+    </a>
+    <a class="cat-card" href="#account-billing">
+      <div class="cat-icon">&#128179;</div>
+      <div><div class="cat-title">Account &amp; Billing</div><div class="cat-desc">Subscription plans, payments, pausing, cancelling, refunds</div></div>
+    </a>
+    <a class="cat-card" href="#household">
+      <div class="cat-icon">&#127968;</div>
+      <div><div class="cat-title">Household &amp; Family</div><div class="cat-desc">Adding members, shared plans, household grocery lists</div></div>
+    </a>
+    <a class="cat-card" href="#technical">
+      <div class="cat-icon">&#128736;&#65039;</div>
+      <div><div class="cat-title">Technical &amp; App</div><div class="cat-desc">PDF not loading, email not received, login issues, settings</div></div>
+    </a>
+  </div>
+
+  <!-- Getting Started -->
+  <div class="faq-section" id="getting-started">
+    <div class="faq-section-title">Getting Started</div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How do I create an account and start my free trial? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">Click &ldquo;Start Free Trial&rdquo; on the <a href="/">homepage</a>. Enter your email address and we&rsquo;ll send you a 6-digit OTP to verify. Once verified, you&rsquo;ll be taken through a 4-step onboarding wizard to set up your profile — this takes about 4 minutes. Your 7-day free trial starts immediately after onboarding is complete. No credit card is required to start.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What information do I need to provide during onboarding? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">We ask for: your name, age, gender, current weight (kg), and height (cm) — these are used to calculate your BMI and daily calorie/macro targets. Then your health goal (weight loss, maintenance, or muscle gain), any health conditions (diabetes, PCOS, hypertension, etc.), and food allergies. Finally, your dietary preference (veg, non-veg, Jain, Sattvic) and up to 3 regional cuisine preferences. That&rsquo;s it.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">When will I receive my first meal plan? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">Your first plan is generated the night after you complete onboarding and will be delivered to your email at 6:00 AM the following morning. If you onboard tonight, you&rsquo;ll have your first plan in your inbox by 6 AM tomorrow. You can also generate today&rsquo;s plan immediately from your dashboard if you&rsquo;re on the Pro or Family plan.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">I completed onboarding but haven&rsquo;t received a plan yet. What should I do? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">Check your spam/junk folder first — our emails sometimes land there on first delivery. Add <code>menu@rozkaana.in</code> to your contacts to avoid this in future. If you&rsquo;re on the Pro plan, you can also trigger a plan manually from the &ldquo;My Plan&rdquo; page by clicking &ldquo;Generate Now.&rdquo; If the issue persists, contact us at <a href="mailto:support@rozkaana.in">support@rozkaana.in</a>.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Meal Plans -->
+  <div class="faq-section" id="meal-plans">
+    <div class="faq-section-title">Meal Plans &amp; Customisation</div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How do I change my cuisine preference? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">Go to <a href="/settings">Settings</a> &rarr; Food Preferences &rarr; Cuisine Preferences. Select up to 3 cuisines (on Pro and Family plans) or 1 cuisine (on Starter). Save your changes. Your next plan — delivered the following morning — will use your updated preferences. You can also override just today&rsquo;s cuisine from the dashboard using the &ldquo;&#8635; Regen&rdquo; button on Pro plans.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Can I skip or replace a meal I don&rsquo;t like? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">Yes. On the &ldquo;My Plan&rdquo; page, each meal slot has a small ✕ button. Clicking it removes that meal from today&rsquo;s plan. Skipped meals don&rsquo;t carry over to tomorrow — your next day&rsquo;s plan is freshly generated. To permanently avoid a type of dish (e.g., you dislike sabudana), update your Food Preferences in Settings or note it in your profile conditions.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How does the 7-day non-repeat guarantee work? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">Our system tracks every dish you&rsquo;ve received in the past 7 days and excludes those from tomorrow&rsquo;s plan. This applies separately to each meal slot — so if you had Rajma Chawal for lunch on Monday, it won&rsquo;t appear in your lunch slot again until at least next Tuesday. The pool of 5,000+ recipes ensures we can maintain this variety indefinitely.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Can I regenerate today&rsquo;s plan if I don&rsquo;t like it? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">Yes, if you&rsquo;re on the Pro or Family plan. From the &ldquo;My Plan&rdquo; page, click the &ldquo;&#8635; Regen&rdquo; button. Regeneration takes about 2 minutes. You can also request a specific cuisine for the regenerated plan. Starter plan members receive their plan at 6 AM and cannot regenerate — upgrading to Pro unlocks this feature.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Where can I find my grocery list? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">On the &ldquo;My Plan&rdquo; page, click the &ldquo;&#128722; Grocery&rdquo; button. This opens a printable grocery list for today&rsquo;s meals, scaled to the number of people in your household. A weekly consolidated grocery list is also included in your Friday morning PDF. Household members on the Family plan get a combined grocery list for all members.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Health -->
+  <div class="faq-section" id="health">
+    <div class="faq-section-title">Health &amp; Nutrition</div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Does Rozkaana work for people with diabetes (Type 2)? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">Yes. When you select &ldquo;Diabetes T2&rdquo; in your health conditions, our engine filters recipes using glycemic index (GI) data. High-GI foods are excluded or portioned carefully. Meals are structured to avoid large carbohydrate spikes — for example, rice portions are moderated, and refined flour is replaced with whole grain alternatives. We recommend consulting your doctor about target calorie levels alongside using Rozkaana.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">I have PCOS. How does Rozkaana adapt my plan? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">For PCOS, our system prioritises low-GI foods, anti-inflammatory ingredients (turmeric, flaxseed, leafy greens common in Indian cooking), and adequate protein to support hormonal balance. High-sugar foods and refined carbs are deprioritised. Iron-rich dishes are included to address the anemia that often co-occurs with PCOS. You can log wellness signals like &ldquo;energy dips&rdquo; and &ldquo;cramps&rdquo; daily, and our AI uses these signals to adapt your plan over time.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What are Wellness Signals and how do I log them? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">Wellness Signals are daily health check-ins on the &ldquo;My Plan&rdquo; page. You log your energy level (1–10), sleep quality (1–10), digestion comfort (1–10), and optional flags like hair loss, muscle cramps, or blood sugar dips. After 5+ days of data, our system identifies nutritional patterns — for example, consistently low energy might indicate iron deficiency — and adjusts your plan to address them. Logging takes under 30 seconds daily.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Is Rozkaana a substitute for a doctor or nutritionist? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">No. Rozkaana provides personalised dietary guidance based on nutrition science and your inputs, but it is not a medical service and does not provide medical advice. If you have a serious medical condition, always consult a qualified doctor or registered dietician before making significant changes to your diet. Our plans are designed to complement — not replace — professional medical care.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account & Billing -->
+  <div class="faq-section" id="account-billing">
+    <div class="faq-section-title">Account &amp; Billing</div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What happens at the end of my 7-day free trial? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">Nothing happens automatically — we don&rsquo;t take any payment at the end of the trial because no credit card is required to start. If you&rsquo;d like to continue, visit the <a href="/billing">Billing page</a> and choose a plan. Your meal plans pause if you don&rsquo;t subscribe after the trial ends.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How do I upgrade, downgrade, or change my plan? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">Go to <a href="/billing">Billing</a> and select the plan you want. Upgrades take effect immediately — you&rsquo;ll be charged the prorated difference for the remainder of your current billing period. Downgrades take effect at the start of your next billing cycle. You won&rsquo;t lose access to your current plan features until the cycle ends.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How do I pause my subscription? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">From the <a href="/billing">Billing page</a>, click &ldquo;Pause.&rdquo; Your subscription pauses immediately — no more plans will be generated during the pause period. You can pause for up to 30 days per year, and your billing period extends by the paused duration. Resume any time from the same page. Pausing more than 30 days in a calendar year is not available — you&rsquo;d need to cancel and resubscribe.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How do I cancel my subscription? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">Go to <a href="/billing">Billing</a> &rarr; click &ldquo;Cancel Subscription.&rdquo; Your access continues until the end of the current billing period — we don&rsquo;t terminate access immediately. No cancellation fees apply. If you cancel in the first 7 days of a paid subscription (not trial), you can request a full refund. See our <a href="/refund">Refund Policy</a> for details.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Which payment methods do you accept? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">We accept all major Indian payment methods via Razorpay: UPI (GPay, PhonePe, Paytm, BHIM), Credit and Debit Cards (Visa, Mastercard, RuPay), Net Banking (all major Indian banks), and Wallets. International cards are supported on a best-effort basis. All transactions are processed in Indian Rupees (INR) and include GST where applicable.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How do I update my email address or password? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">Rozkaana uses passwordless login via OTP — there is no password to update. To change your email address, contact us at <a href="mailto:support@rozkaana.in">support@rozkaana.in</a> with your current and new email, and we&rsquo;ll update it after verifying ownership of both.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Household -->
+  <div class="faq-section" id="household">
+    <div class="faq-section-title">Household &amp; Family</div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How do I add family members to my household? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">You must be on the Family plan. Go to the <a href="/household">Household page</a> and click &ldquo;Invite Member.&rdquo; This generates a unique invite link valid for 48 hours. Share the link with your family member — they click it, sign in with their own account (or create one), and are added to your household. Each member sets up their own health profile during onboarding. The Family plan supports up to 6 members total.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Does each family member get their own meal plan? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">Yes. Each member&rsquo;s plan is personalised to their individual profile — their own calorie targets, health conditions, and dietary preferences. The household plan is coordinated so that overlapping meals (meals the household can share) are highlighted, and the grocery list is consolidated. However, if one member has diabetes and another is a gym-goer, their plans will be meaningfully different.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What happens to household members if I downgrade from Family to Pro? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">If you downgrade from Family to a lower plan, household members will lose access at the end of your current billing period. They will be notified by email in advance. Members can create individual accounts on their own plan. We recommend notifying your members before downgrading.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Technical -->
+  <div class="faq-section" id="technical">
+    <div class="faq-section-title">Technical &amp; App</div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">I didn&rsquo;t receive my morning meal plan email. <span class="faq-toggle">+</span></button>
+        <div class="faq-a">First check your spam/junk folder and search for emails from <code>menu@rozkaana.in</code>. If it&rsquo;s there, mark it as &ldquo;Not Spam&rdquo; to ensure future delivery. Add <code>menu@rozkaana.in</code> to your contacts. If you&rsquo;re on the Pro plan, you can also view and download your plan directly from the <a href="/app">My Plan dashboard</a>. If you haven&rsquo;t received any emails in 2+ days, contact us at <a href="mailto:support@rozkaana.in">support@rozkaana.in</a>.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">The PDF isn&rsquo;t loading or the &ldquo;View PDF&rdquo; button is missing. <span class="faq-toggle">+</span></button>
+        <div class="faq-a">PDFs are generated after your meal plan — this usually takes 5–10 minutes after plan delivery. If the button says &ldquo;PDF generating…&rdquo;, wait a few minutes and refresh the page. If it&rsquo;s been more than 30 minutes and the PDF still hasn&rsquo;t appeared, contact us at <a href="mailto:support@rozkaana.in">support@rozkaana.in</a> with the date of your plan and we&rsquo;ll regenerate it manually.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How do I delete my account and all my data? <span class="faq-toggle">+</span></button>
+        <div class="faq-a">Go to <a href="/settings">Settings</a> &rarr; scroll to the &ldquo;Danger Zone&rdquo; section &rarr; click &ldquo;Delete My Account.&rdquo; A confirmation dialog will appear. Once confirmed, your account, all meal plans, health data, and payment records are permanently deleted from our systems within 7 business days. This action cannot be undone. If you have an active subscription, it is cancelled immediately on deletion.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">I&rsquo;m getting an error when I try to log in. <span class="faq-toggle">+</span></button>
+        <div class="faq-a">Try these steps: (1) Make sure you&rsquo;re using the same email address you registered with. (2) OTPs expire after 10 minutes — request a new one if yours has expired. (3) Check that you&rsquo;re entering the 6-digit code correctly (no spaces). (4) Clear your browser cache and cookies and try again. If none of these work, email us at <a href="mailto:support@rozkaana.in">support@rozkaana.in</a> and we&rsquo;ll help you regain access within 24 hours.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Contact section -->
+<div class="contact-section">
+  <div class="contact-inner">
+    <h2>Couldn&rsquo;t find your answer?</h2>
+    <p>Our support team typically responds within 4 hours on weekdays and 8 hours on weekends.</p>
+    <div class="contact-cards">
+      <div class="contact-card">
+        <div class="icon">&#128140;</div>
+        <h3>Email Support</h3>
+        <p>Best for account issues, billing questions, and anything that needs a detailed response.</p>
+        <a href="mailto:support@rozkaana.in">support@rozkaana.in</a>
+      </div>
+      <div class="contact-card">
+        <div class="icon">&#128172;</div>
+        <h3>WhatsApp</h3>
+        <p>Quick questions, meal feedback, or anything that&rsquo;s easier to explain in chat.</p>
+        <a href="https://wa.me/919999999999" target="_blank" rel="noopener">Chat on WhatsApp</a>
+      </div>
+      <div class="contact-card">
+        <div class="icon">&#128203;</div>
+        <h3>Report a Bug</h3>
+        <p>Found a technical issue? Tell us exactly what happened and we&rsquo;ll fix it fast.</p>
+        <a href="mailto:bugs@rozkaana.in">bugs@rozkaana.in</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <h3>Roz<span>kaana</span></h3>
+      <p>India&rsquo;s most personalised diet subscription. Rooted in Indian food culture, powered by modern nutrition science.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="/#how">How It Works</a></li>
+        <li><a href="/#meals">Sample Meals</a></li>
+        <li><a href="/#pricing">Pricing</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal &amp; Support</h4>
+      <ul>
+        <li><a href="/about">About Us</a></li>
+        <li><a href="/help">Help Center</a></li>
+        <li><a href="/privacy">Privacy Policy</a></li>
+        <li><a href="/terms">Terms of Service</a></li>
+        <li><a href="/refund">Refund Policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Rozkaana. Made in India.</span>
+    <span>FSSAI Reg. &middot; ISO 27001 Certified &middot; RBI Compliant Payments</span>
+  </div>
+</footer>
+
+<script>
+function toggleFaq(btn) {
+  const answer = btn.nextElementSibling;
+  const wasOpen = btn.classList.contains('open');
+  document.querySelectorAll('.faq-q.open').forEach(q => {
+    q.classList.remove('open');
+    q.nextElementSibling.classList.remove('open');
+  });
+  if (!wasOpen) { btn.classList.add('open'); answer.classList.add('open'); }
+}
+function filterHelp(q) {
+  const term = q.toLowerCase().trim();
+  document.querySelectorAll('.faq-item').forEach(item => {
+    item.style.display = (!term || item.textContent.toLowerCase().includes(term)) ? '' : 'none';
+  });
+  // Hide section headings where every faq-item is hidden
+  document.querySelectorAll('.faq-section').forEach(sec => {
+    const hasVisible = [...sec.querySelectorAll('.faq-item')].some(i => i.style.display !== 'none');
+    sec.style.display = hasVisible ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

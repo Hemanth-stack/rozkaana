@@ -268,7 +268,7 @@ html, body { height:100%; overflow:hidden; background:var(--bg); color:var(--tex
 <main class="chat">
   <div class="chat-head">
     <div class="chat-head-left">
-      <h2>🍱 Rozkaana Dev Chat</h2>
+      <h2> Rozkaana Dev Chat</h2>
       <p id="chatSub">Sign in to start testing</p>
     </div>
     <div class="chat-actions">
@@ -279,7 +279,7 @@ html, body { height:100%; overflow:hidden; background:var(--bg); color:var(--tex
 
   <div class="messages" id="messages">
     <div class="msg bot">
-      <div class="msg-bubble">👋 Welcome to the <strong>Rozkaana Dev Console</strong>
+      <div class="msg-bubble"> Welcome to the <strong>Rozkaana Dev Console</strong>
 
 Sign in on the left panel to start testing the full user flow:
 
@@ -295,13 +295,13 @@ No WhatsApp needed — everything runs in this window.</div>
 
   <div class="quick-cmds" id="quickCmds" style="display:none">
     <span class="qcmd" onclick="sendCmd('regenerate')">↻ regenerate</span>
-    <span class="qcmd" onclick="sendCmd('today south indian')">🍚 south indian</span>
-    <span class="qcmd" onclick="sendCmd('today north indian')">🫓 north indian</span>
-    <span class="qcmd" onclick="sendCmd('today gujarati')">🥘 gujarati</span>
+    <span class="qcmd" onclick="sendCmd('today south indian')"> south indian</span>
+    <span class="qcmd" onclick="sendCmd('today north indian')"> north indian</span>
+    <span class="qcmd" onclick="sendCmd('today gujarati')"> gujarati</span>
     <span class="qcmd" onclick="sendCmd('skip lunch')">⏭ skip lunch</span>
-    <span class="qcmd" onclick="sendCmd('help')">❓ help</span>
+    <span class="qcmd" onclick="sendCmd('help')"> help</span>
     <span class="qcmd" onclick="generateMenu()">🆕 new menu</span>
-    <span class="qcmd" onclick="showSubscription()">💳 subscription</span>
+    <span class="qcmd" onclick="showSubscription()"> subscription</span>
   </div>
 
   <div class="input-bar">
@@ -336,12 +336,12 @@ No WhatsApp needed — everything runs in this window.</div>
   <div class="pdf-modal">
     <div class="pdf-modal-head">
       <div>
-        <h3>📄 Meal Plan PDF</h3>
+        <h3> Meal Plan PDF</h3>
         <p id="pdfModalSub">Today's personalised plan</p>
       </div>
       <div class="pdf-modal-actions">
         <a id="pdfDownloadLink" href="#" download="rozkaana-meal-plan.pdf"
-          class="btn btn-sm btn-ghost" style="text-decoration:none">⬇ Download</a>
+          class="btn btn-sm btn-ghost" style="text-decoration:none"> Download</a>
         <button class="btn btn-sm btn-ghost" onclick="closePDF()">✕ Close</button>
       </div>
     </div>
@@ -377,9 +377,9 @@ async function checkAPI() {
 // ── AUTH ────────────────────────────────────────────────────────────────────
 async function devLogin() {
   const email = document.getElementById('loginEmail').value.trim();
-  const name  = document.getElementById('loginName').value.trim() || 'Dev User';
+  const name = document.getElementById('loginName').value.trim() || 'Dev User';
   if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-    botMsg('❌ Enter a valid email address (e.g. you@gmail.com)'); return;
+    botMsg(' Enter a valid email address (e.g. you@gmail.com)'); return;
   }
   log('info', 'auth', `Dev login: ${email}`);
   showTyping();
@@ -389,12 +389,12 @@ async function devLogin() {
       body: JSON.stringify({email, name})
     });
     const d = await r.json();
-    if (!r.ok) { botMsg(`❌ ${d.detail}`); log('err','auth',d.detail); hideTyping(); return; }
+    if (!r.ok) { botMsg(` ${d.detail}`); log('err','auth',d.detail); hideTyping(); return; }
     token = d.access_token;
     localStorage.setItem('rzk_dev_token', token);
     await loadUserProfile();
     hideTyping();
-  } catch(e) { botMsg('❌ Network error'); log('err','auth',e.message); hideTyping(); }
+  } catch(e) { botMsg(' Network error'); log('err','auth',e.message); hideTyping(); }
 }
 
 function logout() {
@@ -438,10 +438,10 @@ async function loadUserProfile() {
   showUserPanel();
 
   if (currentUser.onboarding_complete) {
-    botMsg(`✅ Welcome back, <strong>${currentUser.name || 'there'}</strong>!\n\nLoaded your profile. Checking today's menu…`);
+    botMsg(` Welcome back, <strong>${currentUser.name || 'there'}</strong>!\n\nLoaded your profile. Checking today's menu…`);
     await loadTodayMenu();
   } else {
-    botMsg(`👋 Hi <strong>${currentUser.name || 'there'}</strong>! Let's set up your profile.\n\nFill in the details on the left panel and click <strong>Save Profile & Start</strong>.`);
+    botMsg(` Hi <strong>${currentUser.name || 'there'}</strong>! Let's set up your profile.\n\nFill in the details on the left panel and click <strong>Save Profile & Start</strong>.`);
   }
   log('ok','user',`Loaded: ${currentUser.name} (${currentUser.phone})`);
 }
@@ -490,7 +490,7 @@ async function saveProfile() {
   const cuisine = document.getElementById('cuisine').value;
   const health = document.getElementById('healthTags').value;
 
-  if (!age||!weight||!height) { botMsg('❌ Fill in age, weight, and height first.'); return; }
+  if (!age||!weight||!height) { botMsg(' Fill in age, weight, and height first.'); return; }
 
   showTyping();
   log('info','profile','Saving profile...');
@@ -512,10 +512,10 @@ async function saveProfile() {
     const subRes = await apiFetch('/subscription/');
     const sub = subRes.ok ? await subRes.json() : {trial_start:'—',trial_end:'—'};
     hideTyping();
-    botMsg(`✅ Profile saved!\n\n📊 BMI: ${currentUser.bmi} (${currentUser.bmi_band})\n🎯 Goal: ${goal.replace('_',' ')}\n🥗 Eating: ${mode}\n🍛 Cuisine: ${cuisine}\n🔥 Target: ${currentUser.daily_calorie_target} kcal/day\n\n📅 Trial: ${sub.trial_start} → ${sub.trial_end}\n\nNow generating today's menu…`);
+    botMsg(` Profile saved!\n\n BMI: ${currentUser.bmi} (${currentUser.bmi_band})\n Goal: ${goal.replace('_',' ')}\n Eating: ${mode}\n Cuisine: ${cuisine}\n Target: ${currentUser.daily_calorie_target} kcal/day\n\n Trial: ${sub.trial_start} → ${sub.trial_end}\n\nNow generating today's menu…`);
     log('ok','profile',`BMI ${currentUser.bmi} | ${currentUser.daily_calorie_target}kcal`);
     await generateMenu();
-  } catch(e) { hideTyping(); botMsg('❌ Error: ' + e.message); log('err','profile',e.message); }
+  } catch(e) { hideTyping(); botMsg(' Error: ' + e.message); log('err','profile',e.message); }
 }
 
 // ── MENU ─────────────────────────────────────────────────────────────────────
@@ -576,7 +576,7 @@ async function loadTodayMenu() {
   try {
     const r = await apiFetch('/menu/today');
     if (r.status === 404) {
-      botMsg('📭 No menu for today yet. Click <strong>Generate Menu</strong> to create one.');
+      botMsg(' No menu for today yet. Click <strong>Generate Menu</strong> to create one.');
       updateStats();
       return null;
     }
@@ -587,7 +587,7 @@ async function loadTodayMenu() {
       log('ok','menu','Trial created — retrying menu fetch');
       const r2 = await apiFetch('/menu/today');
       if (!r2.ok) {
-        botMsg('📭 No menu yet. Click <strong>Generate Menu</strong> to start.');
+        botMsg(' No menu yet. Click <strong>Generate Menu</strong> to start.');
         return null;
       }
       const menu2 = await r2.json();
@@ -604,11 +604,11 @@ async function loadTodayMenu() {
 
 function showMenuCard(menu) {
   const slots = [
-    {key:'breakfast',    icon:'☀️', time:'8:00 AM'},
-    {key:'morning_snack',icon:'🍵', time:'10:30 AM'},
-    {key:'lunch',        icon:'🍛', time:'1:00 PM'},
-    {key:'evening_snack',icon:'🫐', time:'4:30 PM'},
-    {key:'dinner',       icon:'🌙', time:'8:00 PM'},
+    {key:'breakfast', icon:'', time:'8:00 AM'},
+    {key:'morning_snack',icon:'', time:'10:30 AM'},
+    {key:'lunch', icon:'', time:'1:00 PM'},
+    {key:'evening_snack',icon:'', time:'4:30 PM'},
+    {key:'dinner', icon:'', time:'8:00 PM'},
   ];
   const filledSlots = slots.filter(s => menu[s.key]);
   const dateStr = new Date(menu.menu_date + 'T12:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
@@ -625,11 +625,11 @@ function showMenuCard(menu) {
 
   const pdfSection = menu.pdf_url
     ? `<div class="card-footer">
-        <button class="pdf-btn" onclick="downloadPDF('${menu.pdf_url}')">📄 Download PDF</button>
+        <button class="pdf-btn" onclick="downloadPDF('${menu.pdf_url}')"> Download PDF</button>
         <button class="regen-btn" onclick="generateMenu()">↻</button>
       </div>`
     : `<div class="card-footer">
-        <button class="pdf-btn" onclick="buildPDF()">🔨 Build PDF</button>
+        <button class="pdf-btn" onclick="buildPDF()"> Build PDF</button>
         <button class="regen-btn" onclick="generateMenu()">↻</button>
       </div>`;
 
@@ -669,9 +669,9 @@ function downloadPDF(url) {
 
 function openPDF(url) {
   const overlay = document.getElementById('pdfOverlay');
-  const frame   = document.getElementById('pdfFrame');
-  const dl      = document.getElementById('pdfDownloadLink');
-  const sub     = document.getElementById('pdfModalSub');
+  const frame = document.getElementById('pdfFrame');
+  const dl = document.getElementById('pdfDownloadLink');
+  const sub = document.getElementById('pdfModalSub');
   const dateStr = currentMenu?.menu_date
     ? new Date(currentMenu.menu_date + 'T12:00:00').toLocaleDateString('en-IN', {weekday:'long',day:'numeric',month:'long',year:'numeric'})
     : 'Today';
@@ -731,13 +731,13 @@ async function processCommand(cmd) {
   log('info','cmd',`> ${cmd}`);
 
   if (cmd === 'regenerate' || cmd === 'regen') {
-    botMsg('♻️ Regenerating your menu…');
+    botMsg(' Regenerating your menu…');
     hideTyping();
     await generateMenu();
 
   } else if (cmd.startsWith('today ')) {
     const cuisine = cmd.replace('today','').trim();
-    botMsg(`🍛 Switching cuisine to <strong>${cuisine}</strong> and regenerating…`);
+    botMsg(` Switching cuisine to <strong>${cuisine}</strong> and regenerating…`);
     hideTyping();
     // Set cuisine and regenerate
     await apiFetch('/users/me/eating', {method:'PUT', body:JSON.stringify({eating_mode:currentUser?.eating_mode||'pure_veg', nv_days:[], cuisine_prefs:[cuisine.replace(' ','_')]})});
@@ -757,33 +757,33 @@ async function processCommand(cmd) {
   } else if (cmd === 'profile' || cmd === 'me') {
     hideTyping();
     if (currentUser) {
-      botMsg(`👤 <strong>${currentUser.name}</strong>\n📱 ${currentUser.phone}\n⚖️ BMI: ${currentUser.bmi} (${currentUser.bmi_band})\n🥗 Mode: ${currentUser.eating_mode}\n🎯 Goal: ${currentUser.goal}\n🔥 Target: ${currentUser.daily_calorie_target} kcal`);
+      botMsg(` <strong>${currentUser.name}</strong>\n ${currentUser.phone}\n BMI: ${currentUser.bmi} (${currentUser.bmi_band})\n Mode: ${currentUser.eating_mode}\n Goal: ${currentUser.goal}\n Target: ${currentUser.daily_calorie_target} kcal`);
     }
 
   } else if (cmd === 'help' || cmd === '?') {
     hideTyping();
-    botMsg(`📋 <strong>Available Commands</strong>\n\n<strong>Menu</strong>\n• <code>regenerate</code> — New menu for today\n• <code>today north indian</code> — Change cuisine\n• <code>today south indian</code>\n• <code>today gujarati</code>\n• <code>skip lunch</code> — Note a skip\n\n<strong>Info</strong>\n• <code>subscription</code> — Plan & trial status\n• <code>profile</code> — Your health profile\n• <code>help</code> — This message\n\n<strong>Quick buttons</strong> above the input also work.`);
+    botMsg(` <strong>Available Commands</strong>\n\n<strong>Menu</strong>\n• <code>regenerate</code> — New menu for today\n• <code>today north indian</code> — Change cuisine\n• <code>today south indian</code>\n• <code>today gujarati</code>\n• <code>skip lunch</code> — Note a skip\n\n<strong>Info</strong>\n• <code>subscription</code> — Plan & trial status\n• <code>profile</code> — Your health profile\n• <code>help</code> — This message\n\n<strong>Quick buttons</strong> above the input also work.`);
 
   } else if (cmd === 'pause') {
     hideTyping();
     try {
       const r = await apiFetch('/subscription/pause', {method:'POST'});
       const d = await r.json();
-      botMsg(r.ok ? `⏸️ Subscription paused.` : `❌ ${d.detail}`);
+      botMsg(r.ok ? `⏸ Subscription paused.` : ` ${d.detail}`);
       log(r.ok?'ok':'err','sub',d.message||d.detail);
-    } catch(e) { botMsg('❌ ' + e.message); }
+    } catch(e) { botMsg(' ' + e.message); }
 
   } else if (cmd === 'resume') {
     hideTyping();
     try {
       const r = await apiFetch('/subscription/resume', {method:'POST'});
       const d = await r.json();
-      botMsg(r.ok ? `▶️ Subscription resumed.` : `❌ ${d.detail}`);
-    } catch(e) { botMsg('❌ ' + e.message); }
+      botMsg(r.ok ? `▶ Subscription resumed.` : ` ${d.detail}`);
+    } catch(e) { botMsg(' ' + e.message); }
 
   } else {
     hideTyping();
-    botMsg(`🤔 Unknown command: <strong>${esc(cmd)}</strong>\n\nType <code>help</code> to see available commands.`);
+    botMsg(` Unknown command: <strong>${esc(cmd)}</strong>\n\nType <code>help</code> to see available commands.`);
     log('warn','cmd','Unknown: '+cmd);
   }
 }
@@ -791,14 +791,14 @@ async function processCommand(cmd) {
 async function showSubscription() {
   try {
     const r = await apiFetch('/subscription/');
-    if (!r.ok) { botMsg('❌ No subscription found. Complete onboarding first.'); return; }
+    if (!r.ok) { botMsg(' No subscription found. Complete onboarding first.'); return; }
     const s = await r.json();
     const status = s.status;
-    const icon = {trial:'⏱️',active:'✅',paused:'⏸️',cancelled:'❌',expired:'⌛'}[status]||'💳';
+    const icon = {trial:'⏱',active:'',paused:'⏸',cancelled:'',expired:'⌛'}[status]||'';
     botMsg(`${icon} <strong>Subscription Status</strong>\n\nPlan: ${s.plan_type.replace('_',' ')}\nStatus: <strong>${status}</strong>\nTrial: ${s.trial_start} → ${s.trial_end}\n${s.current_period_end?'Period end: '+s.current_period_end:''}\nPaused: ${s.paused_at||'—'}`);
     document.getElementById('sSub').textContent = `${status} (${s.plan_type})`;
     document.getElementById('sSub').className = 'stat-val ' + (status==='trial'||status==='active'?'ok':'warn');
-  } catch(e) { botMsg('❌ ' + e.message); }
+  } catch(e) { botMsg(' ' + e.message); }
 }
 
 // ── HELPERS ──────────────────────────────────────────────────────────────────
@@ -846,16 +846,16 @@ function hideTyping() {
 
 function clearChat() {
   document.getElementById('messages').innerHTML = '';
-  botMsg('💬 Chat cleared. Type <code>help</code> to see commands.');
+  botMsg(' Chat cleared. Type <code>help</code> to see commands.');
 }
 
 function log(level, svc, msg) {
   const panel = document.getElementById('logArea');
   const cls = {ok:'lok',info:'linfo',warn:'lwarn',err:'lerr'}[level]||'linfo';
-  const pfx = {ok:'OK  ',info:'INFO',warn:'WARN',err:'ERR '}[level]||'INFO';
+  const pfx = {ok:'OK ',info:'INFO',warn:'WARN',err:'ERR '}[level]||'INFO';
   const line = document.createElement('div');
   line.className = 'log-line';
-  line.innerHTML = `<span class="lt">${now(true)}</span><span class="${cls}">${pfx}</span><span class="lmsg"><em>${svc}</em>  ${esc(msg)}</span>`;
+  line.innerHTML = `<span class="lt">${now(true)}</span><span class="${cls}">${pfx}</span><span class="lmsg"><em>${svc}</em> ${esc(msg)}</span>`;
   panel.appendChild(line);
   panel.scrollTop = panel.scrollHeight;
 }

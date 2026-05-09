@@ -109,9 +109,9 @@
   }
   .meal-icon svg { width: 18px; height: 18px; }
   .mi-breakfast { color: var(--saffron); }
-  .mi-lunch     { color: var(--green); }
-  .mi-snack     { color: #B45309; }
-  .mi-dinner    { color: #4338CA; }
+  .mi-lunch { color: var(--green); }
+  .mi-snack { color: #B45309; }
+  .mi-dinner { color: #4338CA; }
   .meal-info { flex: 1; }
   .meal-info .name { font-size: .84rem; font-weight: 600; color: var(--charcoal); margin-bottom: 1px; }
   .meal-info .time { font-size: .72rem; color: var(--text-muted); }
@@ -144,16 +144,16 @@
     display: flex; align-items: center; gap: .65rem;
   }
   .ps-head.prob { background: rgba(26,22,18,.025); }
-  .ps-head.sol  { background: rgba(232,89,60,.04); }
+  .ps-head.sol { background: rgba(232,89,60,.04); }
   .ps-head-icon {
     width: 30px; height: 30px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .ps-head.prob .ps-head-icon { background: rgba(26,22,18,.07); color: var(--text-muted); }
-  .ps-head.sol  .ps-head-icon { background: rgba(232,89,60,.12); color: var(--saffron); }
+  .ps-head.sol .ps-head-icon { background: rgba(232,89,60,.12); color: var(--saffron); }
   .ps-head h3 { font-size: .92rem; font-weight: 600; }
   .ps-head.prob h3 { color: var(--text); }
-  .ps-head.sol  h3 { color: var(--saffron-dark); }
+  .ps-head.sol h3 { color: var(--saffron-dark); }
   .ps-head svg { width: 16px; height: 16px; }
   .ps-row { display: flex; gap: .85rem; padding: 1rem 1.4rem; border-bottom: 1px solid rgba(232,220,208,.45); }
   .ps-row:last-child { border-bottom: none; }
@@ -162,7 +162,7 @@
     display: flex; align-items: center; justify-content: center;
   }
   .ps-card.prob .ps-row-icon { background: var(--cream-dark); color: var(--text-muted); }
-  .ps-card.sol  .ps-row-icon { background: rgba(232,89,60,.08); color: var(--saffron); }
+  .ps-card.sol .ps-row-icon { background: rgba(232,89,60,.08); color: var(--saffron); }
   .ps-row-icon svg { width: 14px; height: 14px; }
   .ps-row-text strong { font-size: .86rem; color: var(--charcoal); display: block; margin-bottom: .22rem; font-family: 'DM Sans', sans-serif; }
   .ps-row-text p { font-size: .8rem; color: var(--text-muted); line-height: 1.6; }
@@ -389,6 +389,172 @@
     letter-spacing: .04em;
   }
   .featured-trial { background: rgba(29,184,132,.18); color: #4ade80; }
+
+  /* ── HOW IT WORKS — journey strips ───────────────────────── */
+  .jrow {
+    display: grid; grid-template-columns: 1fr 1fr;
+    min-height: 340px; align-items: stretch;
+  }
+  .jrow-flip .jrow-vis { order: 2; }
+  .jrow-flip .jrow-txt { order: 1; }
+  .jrow-vis {
+    display: flex; align-items: center; justify-content: center;
+    padding: 3.5rem 4rem; background: inherit;
+  }
+  .jrow-txt {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 3.5rem 4rem;
+  }
+  .jrow-time {
+    font-size: .72rem; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--saffron); margin-bottom: .9rem;
+  }
+  .jrow-h {
+    font-family: 'Playfair Display', serif; font-size: clamp(1.4rem,2.5vw,2rem);
+    line-height: 1.22; color: var(--charcoal); margin-bottom: .8rem;
+  }
+  .jrow-p { font-size: .93rem; color: var(--text-muted); line-height: 1.75; margin-bottom: 1.2rem; }
+  .jrow-checks { display: flex; flex-direction: column; gap: .45rem; }
+  .jrow-check { font-size: .83rem; font-weight: 600; color: var(--green); display: flex; align-items: flex-start; gap: .5rem; }
+  /* visual cards inside strips */
+  .jcard {
+    background: #fff; border-radius: 18px; padding: 1.4rem 1.6rem;
+    box-shadow: 0 12px 40px rgba(26,22,18,.1); width: 100%; max-width: 300px;
+  }
+  .jcard-dark { background: #25201C; box-shadow: 0 12px 40px rgba(0,0,0,.3); }
+  .jprofile-row {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .55rem 0; border-bottom: 1px solid var(--border); font-size: .83rem;
+  }
+  .jprofile-row:last-of-type { border-bottom: none; }
+  .jprofile-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .jprofile-label { color: var(--text-muted); flex: 1; }
+  .jprofile-val { font-weight: 700; color: var(--charcoal); }
+  .jrecipe-row {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .5rem 0; border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .jrecipe-row:last-of-type { border-bottom: none; }
+  .jrecipe-icon {
+    width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: .95rem;
+  }
+  .jrecipe-name { font-size: .82rem; font-weight: 600; color: #fff; }
+  .jrecipe-meta { font-size: .7rem; color: rgba(255,255,255,.45); margin-top: 1px; }
+  .jcard-notify { border: 1px solid var(--border); max-width: 280px; }
+
+  /* ── MEAL PREVIEW — tabs + showcase ──────────────────────── */
+  .meal-tabs { display: flex; gap: .5rem; justify-content: center; margin-bottom: 2.5rem; flex-wrap: wrap; }
+  .meal-tab {
+    padding: .5rem 1.3rem; border-radius: 20px; border: 1.5px solid var(--border);
+    background: #fff; font-size: .85rem; font-weight: 600; color: var(--text-muted);
+    cursor: pointer; transition: .2s; font-family: 'DM Sans', sans-serif;
+  }
+  .meal-tab:hover { border-color: var(--saffron); color: var(--saffron); }
+  .meal-tab.active { border-color: var(--saffron); color: var(--saffron); background: rgba(232,89,60,.07); }
+  .meals-day {
+    display: grid; grid-template-columns: repeat(5,1fr); gap: 1.2rem; margin-bottom: 2.5rem;
+  }
+  .mday-card {
+    background: #fff; border-radius: 16px; overflow: hidden;
+    border: 1px solid var(--border); transition: transform .3s, box-shadow .3s;
+  }
+  .mday-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(26,22,18,.1); }
+  .mday-thumb {
+    height: 110px; display: flex; align-items: center; justify-content: center;
+    font-size: 2.2rem; position: relative;
+  }
+  .mday-slot {
+    position: absolute; top: 8px; left: 8px;
+    background: rgba(255,255,255,.88); border-radius: 5px;
+    padding: .15rem .5rem; font-size: .65rem; font-weight: 700; color: var(--charcoal);
+  }
+  .mday-body { padding: .85rem .9rem; }
+  .mday-name { font-size: .88rem; font-weight: 700; color: var(--charcoal); margin-bottom: .2rem; }
+  .mday-region { font-size: .7rem; color: var(--text-muted); margin-bottom: .6rem; }
+  .mday-macros { display: flex; gap: .4rem; }
+  .mday-mac { font-size: .68rem; color: var(--text-muted); background: var(--cream-dark); border-radius: 4px; padding: .18rem .4rem; }
+  .mday-mac strong { color: var(--charcoal); font-weight: 700; }
+  .meal-callout {
+    background: var(--charcoal); border-radius: 20px; padding: 2.5rem;
+    text-align: center; max-width: 640px; margin: 0 auto;
+  }
+  .meal-callout h3 { font-size: 1.35rem; color: #fff; margin-bottom: .6rem; }
+  .meal-callout p { font-size: .9rem; color: rgba(255,255,255,.6); line-height: 1.7; }
+
+  /* ── TESTIMONIALS — outcomes + hero ──────────────────────── */
+  .outcomes-strip {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    background: var(--charcoal); border-radius: 20px; overflow: hidden;
+    margin-bottom: 3rem;
+  }
+  .outcome-item {
+    padding: 2rem 1.5rem; text-align: center;
+    border-right: 1px solid rgba(255,255,255,.07);
+  }
+  .outcome-item:last-child { border-right: none; }
+  .outcome-num {
+    font-family: 'Playfair Display', serif; font-size: 2.4rem; font-weight: 700;
+    color: var(--saffron); line-height: 1; margin-bottom: .4rem;
+  }
+  .outcome-unit { font-size: 1.2rem; }
+  .outcome-lbl { font-size: .78rem; color: rgba(255,255,255,.45); line-height: 1.5; }
+  .hero-testi {
+    background: #fff; border-radius: 20px; border: 1px solid var(--border);
+    padding: 2.4rem; margin-bottom: 1.5rem;
+    display: grid; grid-template-columns: auto 1fr; gap: 2rem; align-items: start;
+  }
+  .hero-testi-av {
+    width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; font-weight: 700; color: #fff;
+  }
+  .hero-testi-quote {
+    font-size: 1.05rem; line-height: 1.72; color: var(--text);
+    font-style: italic; margin-bottom: 1.2rem;
+  }
+  .hero-testi-metrics { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+  .htm { background: var(--cream-dark); border-radius: 10px; padding: .65rem 1rem; text-align: center; }
+  .htm .htn { font-size: 1.1rem; font-weight: 800; color: var(--saffron); }
+  .htm .htl { font-size: .7rem; color: var(--text-muted); margin-top: 2px; }
+  .supp-testis { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .supp-testi {
+    background: var(--cream-dark); border-radius: 16px; padding: 1.6rem;
+    border: 1px solid var(--border);
+  }
+  .supp-quote { font-size: .88rem; line-height: 1.7; color: var(--text); font-style: italic; margin-bottom: 1rem; }
+
+  /* ── FAQ — CTA block ──────────────────────────────────────── */
+  .faq-cta {
+    background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
+    border-radius: 20px; padding: 2.8rem; text-align: center; margin-top: 2.5rem;
+  }
+  .faq-cta h3 { font-size: 1.4rem; color: #fff; margin-bottom: .6rem; }
+  .faq-cta p { font-size: .9rem; color: rgba(255,255,255,.8); margin-bottom: 1.6rem; }
+  .faq-cta .btn { background: #fff; color: var(--saffron); font-size: .95rem; padding: .8rem 2rem; }
+  .faq-cta .btn:hover { background: var(--cream-dark); transform: translateY(-2px); }
+
+  /* ── Responsive overrides ─────────────────────────────────── */
+  @media (max-width: 1024px) {
+    .meals-day { grid-template-columns: repeat(3,1fr); }
+    .outcomes-strip { grid-template-columns: repeat(2,1fr); }
+    .hero-testi { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 768px) {
+    .jrow { grid-template-columns: 1fr; }
+    .jrow-flip .jrow-vis, .jrow-flip .jrow-txt { order: unset; }
+    .jrow-vis { padding: 2rem; }
+    .jrow-txt { padding: 2rem; }
+    .jcard { max-width: 100%; }
+    .meals-day { grid-template-columns: repeat(2,1fr); }
+    .supp-testis { grid-template-columns: 1fr; }
+    .outcomes-strip { grid-template-columns: repeat(2,1fr); }
+    .hero-testi { grid-template-columns: 1fr; }
+    .hero-testi-av { width: 48px; height: 48px; font-size: 1.1rem; }
+  }
+  @media (max-width: 480px) {
+    .meals-day { grid-template-columns: 1fr 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -559,7 +725,10 @@
     <li><a href="#pricing">Pricing</a></li>
     <li><a href="#faq">FAQ</a></li>
   </ul>
-  <a href="#pricing" class="btn" onclick="openSignup('solo_pro');return false">Start Free Trial &rarr;</a>
+  <div style="display:flex;align-items:center;gap:12px">
+    <a href="#" onclick="openSignIn();return false" style="font-size:.88rem;font-weight:600;color:var(--text-muted);text-decoration:none;padding:8px 4px;transition:.15s" onmouseover="this.style.color='var(--saffron)'" onmouseout="this.style.color='var(--text-muted)'">Sign In</a>
+    <a href="#pricing" class="btn" onclick="openSignup('solo_pro');return false">Start Free Trial &rarr;</a>
+  </div>
 </nav>
 
 <!-- ═══ HERO ══════════════════════════════════════════════════ -->
@@ -740,112 +909,449 @@
 </div>
 
 <!-- ═══ HOW IT WORKS ══════════════════════════════════════════ -->
-<section class="how-bg" id="how">
-  <div class="section-head center">
-    <div class="section-label fade-up">The Process</div>
-    <h2 class="section-title fade-up">Four steps to your<br>perfect diet</h2>
-    <p class="section-sub fade-up">No gym. No complicated macros. Just your phone and a commitment to eating well.</p>
+<section id="how" style="padding:0;overflow:hidden;background:#fff">
+  <div style="text-align:center;padding:90px 5% 64px;background:var(--cream-dark)">
+    <div class="section-label fade-up">How It Works</div>
+    <h2 class="section-title fade-up">Set up once.<br>Eat right every day.</h2>
+    <p class="section-sub fade-up" style="margin:0 auto">From your first answer to your first personalised meal plan &mdash; all in under 24 hours.</p>
   </div>
-  <div class="steps-grid">
-    <div class="step-card fade-up">
-      <div class="step-num">1</div>
-      <div class="step-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-clipboard"/></svg></div>
-      <h3>Tell Us About You</h3>
-      <p>Share your age, weight, health goals, regional food preferences, and dietary restrictions via a quick WhatsApp quiz.</p>
+
+  <!-- Strip 1: Tonight — profile setup -->
+  <div class="jrow" style="background:var(--cream)">
+    <div class="jrow-vis">
+      <div class="jcard fade-up">
+        <div style="font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--saffron);margin-bottom:1rem">Your Profile</div>
+        <div class="jprofile-row"><span class="jprofile-dot" style="background:#E8593C"></span><span class="jprofile-label">Goal</span><span class="jprofile-val">Weight Loss</span></div>
+        <div class="jprofile-row"><span class="jprofile-dot" style="background:#2E7D52"></span><span class="jprofile-label">Cuisine</span><span class="jprofile-val">South Indian</span></div>
+        <div class="jprofile-row"><span class="jprofile-dot" style="background:#B45309"></span><span class="jprofile-label">Diet</span><span class="jprofile-val">Pure Veg</span></div>
+        <div class="jprofile-row"><span class="jprofile-dot" style="background:#4338CA"></span><span class="jprofile-label">Condition</span><span class="jprofile-val">PCOS</span></div>
+        <div class="jprofile-row"><span class="jprofile-dot" style="background:#7A6E65"></span><span class="jprofile-label">BMI</span><span class="jprofile-val">24.2 · Normal</span></div>
+        <div style="margin-top:.9rem;padding-top:.9rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--green);font-weight:700">&#10003; Macros auto-calculated · 1,680 kcal/day</div>
+      </div>
     </div>
-    <div class="step-card fade-up d1">
-      <div class="step-num">2</div>
-      <div class="step-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-sparkle"/></svg></div>
-      <h3>AI Builds Your Plan</h3>
-      <p>Our nutrition AI crafts a 7-day personalised meal plan from 5,000+ verified Indian recipes tuned to your macros.</p>
+    <div class="jrow-txt fade-up d1">
+      <div class="jrow-time">Tonight &middot; 4 minutes</div>
+      <h3 class="jrow-h">Tell us who you are.<br>We'll handle everything else.</h3>
+      <p class="jrow-p">Share your body stats, health goals, regional food preferences, medical conditions, and dietary restrictions. No guesswork &mdash; our onboarding understands Indian lives, not Western templates.</p>
+      <div class="jrow-checks">
+        <div class="jrow-check"><span>&#10003;</span> PCOS, diabetes, hypertension all understood</div>
+        <div class="jrow-check"><span>&#10003;</span> BMI and daily macros set automatically</div>
+        <div class="jrow-check"><span>&#10003;</span> Allergies and intolerances locked in</div>
+      </div>
     </div>
-    <div class="step-card fade-up d2">
-      <div class="step-num">3</div>
-      <div class="step-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-phone"/></svg></div>
-      <h3>Delivered at 6 AM</h3>
-      <p>Each morning, your PDF meal plan &mdash; with recipes, portion sizes, and a shopping list &mdash; lands on WhatsApp.</p>
+  </div>
+
+  <!-- Strip 2: While you sleep — AI builds plan (dark bg) -->
+  <div class="jrow jrow-flip" style="background:var(--charcoal)">
+    <div class="jrow-txt fade-up">
+      <div class="jrow-time" style="color:var(--saffron)">While you sleep &middot; Every night</div>
+      <h3 class="jrow-h" style="color:#fff">Our AI reads 5,000 recipes<br>and picks yours.</h3>
+      <p class="jrow-p" style="color:rgba(255,255,255,.65)">Every night our nutrition engine scans a library of FSSAI-verified Indian recipes — filtered for your macros, your region, your restrictions — and assembles tomorrow's perfect plan. Zero repeats in 7 days.</p>
+      <div class="jrow-checks">
+        <div class="jrow-check" style="color:#4ade80"><span>&#10003;</span> 12 regional cuisines, 5,000+ verified dishes</div>
+        <div class="jrow-check" style="color:#4ade80"><span>&#10003;</span> 7-day non-repeat variety guarantee</div>
+        <div class="jrow-check" style="color:#4ade80"><span>&#10003;</span> Calorie and micronutrient targets matched nightly</div>
+      </div>
     </div>
-    <div class="step-card fade-up d3">
-      <div class="step-num">4</div>
-      <div class="step-icon"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-trend-up"/></svg></div>
-      <h3>Track &amp; Improve</h3>
-      <p>Reply with feedback anytime. Your plan adapts weekly based on results, cravings, and seasonal produce.</p>
+    <div class="jrow-vis">
+      <div class="jcard jcard-dark fade-up d1">
+        <div style="font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:1rem">Building your plan&hellip;</div>
+        <div class="jrecipe-row">
+          <div class="jrecipe-icon" style="background:rgba(232,89,60,.2);color:var(--saffron)">&#9728;</div>
+          <div><div class="jrecipe-name">Idli Sambar + Chutney</div><div class="jrecipe-meta">Breakfast &middot; 310 kcal &middot; 14g protein</div></div>
+        </div>
+        <div class="jrecipe-row">
+          <div class="jrecipe-icon" style="background:rgba(46,125,82,.2);color:#4ade80">&#127807;</div>
+          <div><div class="jrecipe-name">Kootu Curry + Rice</div><div class="jrecipe-meta">Lunch &middot; 490 kcal &middot; 18g protein</div></div>
+        </div>
+        <div class="jrecipe-row">
+          <div class="jrecipe-icon" style="background:rgba(180,83,9,.2);color:#F59E0B">&#9749;</div>
+          <div><div class="jrecipe-name">Roasted Sundal</div><div class="jrecipe-meta">Snack &middot; 170 kcal &middot; 9g protein</div></div>
+        </div>
+        <div class="jrecipe-row" style="opacity:.55">
+          <div class="jrecipe-icon" style="background:rgba(67,56,202,.2);color:#818CF8">&#127769;</div>
+          <div><div class="jrecipe-name">Rasam + Papad</div><div class="jrecipe-meta">Dinner &middot; 360 kcal &middot; 16g protein</div></div>
+        </div>
+        <div style="margin-top:1rem;height:4px;background:rgba(255,255,255,.08);border-radius:2px">
+          <div style="width:78%;height:100%;background:var(--saffron);border-radius:2px;transition:width 2s"></div>
+        </div>
+        <div style="font-size:.7rem;color:rgba(255,255,255,.35);margin-top:.4rem">Optimising for your macros&hellip; 78%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Strip 3: 6 AM — plan arrives -->
+  <div class="jrow" style="background:#fff">
+    <div class="jrow-vis">
+      <div class="jcard jcard-notify fade-up">
+        <div style="display:flex;align-items:center;gap:.65rem;margin-bottom:.9rem">
+          <div style="width:38px;height:38px;background:var(--saffron);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">&#128139;</div>
+          <div>
+            <div style="font-size:.8rem;font-weight:700;color:var(--charcoal)">Rozkaana</div>
+            <div style="font-size:.7rem;color:var(--text-muted)">menu@rozkaana.in &middot; 6:00 AM</div>
+          </div>
+          <div style="margin-left:auto;background:rgba(232,89,60,.1);color:var(--saffron);border-radius:5px;padding:.15rem .45rem;font-size:.65rem;font-weight:700">New</div>
+        </div>
+        <div style="font-size:.88rem;font-weight:700;color:var(--charcoal);margin-bottom:.35rem">Your Meal Plan &mdash; Friday, 9 May</div>
+        <div style="font-size:.76rem;color:var(--text-muted);line-height:1.65;margin-bottom:.9rem">1,680 kcal &middot; 72g protein &middot; 200g carbs<br>5 meals &middot; South Indian &middot; Pure Veg &middot; PCOS-safe</div>
+        <div style="display:flex;gap:.5rem;margin-bottom:.9rem">
+          <div style="flex:1;background:var(--cream-dark);border-radius:6px;padding:.4rem;text-align:center;font-size:.68rem;color:var(--text-muted)"><strong style="display:block;color:var(--saffron);font-size:.85rem">5</strong>Meals</div>
+          <div style="flex:1;background:var(--cream-dark);border-radius:6px;padding:.4rem;text-align:center;font-size:.68rem;color:var(--text-muted)"><strong style="display:block;color:var(--charcoal);font-size:.85rem">PDF</strong>Recipes</div>
+          <div style="flex:1;background:var(--cream-dark);border-radius:6px;padding:.4rem;text-align:center;font-size:.68rem;color:var(--text-muted)"><strong style="display:block;color:var(--green);font-size:.85rem">List</strong>Grocery</div>
+        </div>
+        <div style="background:var(--saffron);color:#fff;border-radius:8px;padding:.6rem 1rem;font-size:.8rem;font-weight:700;text-align:center">View Full Plan + Recipes &rarr;</div>
+      </div>
+    </div>
+    <div class="jrow-txt fade-up d1">
+      <div class="jrow-time">6:00 AM &middot; Every morning</div>
+      <h3 class="jrow-h">Your perfect day,<br>waiting before you wake up.</h3>
+      <p class="jrow-p">A beautifully formatted PDF with your 5 meals, step-by-step recipes, macro breakdown per dish, and a weekly grocery list. Ready before your first sip of chai.</p>
+      <div class="jrow-checks">
+        <div class="jrow-check"><span>&#10003;</span> Full day of meals — no decisions needed</div>
+        <div class="jrow-check"><span>&#10003;</span> Step-by-step recipes for every dish</div>
+        <div class="jrow-check"><span>&#10003;</span> Grocery list auto-generated every week</div>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- ═══ MEAL PREVIEW ══════════════════════════════════════════ -->
-<section id="meals">
+<section id="meals" style="background:var(--cream-dark)">
   <div class="section-head center">
-    <div class="section-label fade-up">From Your Plan</div>
-    <h2 class="section-title fade-up">Real meals, real flavours</h2>
-    <p class="section-sub fade-up">Every dish is crafted for nutrition without sacrificing the comfort of home-cooked Indian food.</p>
+    <div class="section-label fade-up">Sample From Your Plan</div>
+    <h2 class="section-title fade-up">Food you actually<br>want to eat.</h2>
+    <p class="section-sub fade-up" style="margin:0 auto 2.5rem">Not boiled chicken and salads. Real Indian food, rebalanced for your body. Breakfast to dinner, every day different.</p>
   </div>
-  <div class="meals-grid">
-    <div class="meal-card fade-up">
-      <div class="meal-thumb thumb-1">
-        <div class="thumb-icon"><svg class="ic" style="width:30px;height:30px" viewBox="0 0 24 24"><use href="#ic-bowl"/></svg></div>
-        <span class="meal-tag">Breakfast</span>
+
+  <!-- Cuisine tabs -->
+  <div class="meal-tabs fade-up">
+    <button class="meal-tab active" onclick="switchMeals('ni',this)">&#127860; North Indian</button>
+    <button class="meal-tab" onclick="switchMeals('si',this)">&#127836; South Indian</button>
+    <button class="meal-tab" onclick="switchMeals('nv',this)">&#127831; Non-Veg</button>
+    <button class="meal-tab" onclick="switchMeals('jain',this)">&#129412; Jain</button>
+  </div>
+
+  <!-- North Indian day -->
+  <div class="meals-day fade-up" id="mealsNi">
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#FFF3E0,#FFCC80)">
+        <span style="font-size:2.5rem">&#127859;</span>
+        <span class="mday-slot">Breakfast</span>
       </div>
-      <div class="meal-body">
-        <h4>Masala Oats Upma</h4>
-        <p class="cuisine">Maharashtra &middot; High Fibre</p>
-        <div class="macro-row">
-          <span><strong>310</strong>kcal</span>
-          <span><strong>14g</strong>Protein</span>
-          <span><strong>48g</strong>Carbs</span>
-          <span><strong>6g</strong>Fat</span>
+      <div class="mday-body">
+        <div class="mday-name">Poha with Peas &amp; Sprouts</div>
+        <div class="mday-region">Maharashtra &middot; High Fibre</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>310</strong> kcal</span>
+          <span class="mday-mac"><strong>12g</strong> protein</span>
+          <span class="mday-mac"><strong>52g</strong> carbs</span>
         </div>
       </div>
     </div>
-    <div class="meal-card fade-up d1">
-      <div class="meal-thumb thumb-2">
-        <div class="thumb-icon"><svg class="ic" style="width:30px;height:30px" viewBox="0 0 24 24"><use href="#ic-fork"/></svg></div>
-        <span class="meal-tag">Lunch</span>
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#FBE9E7,#FFAB91)">
+        <span style="font-size:2.5rem">&#129368;</span>
+        <span class="mday-slot">Snack</span>
       </div>
-      <div class="meal-body">
-        <h4>Rajma Chawal Bowl</h4>
-        <p class="cuisine">Punjab &middot; High Protein</p>
-        <div class="macro-row">
-          <span><strong>520</strong>kcal</span>
-          <span><strong>22g</strong>Protein</span>
-          <span><strong>78g</strong>Carbs</span>
-          <span><strong>10g</strong>Fat</span>
+      <div class="mday-body">
+        <div class="mday-name">Makhana Chaat</div>
+        <div class="mday-region">North India &middot; Low Cal</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>160</strong> kcal</span>
+          <span class="mday-mac"><strong>8g</strong> protein</span>
+          <span class="mday-mac"><strong>22g</strong> carbs</span>
         </div>
       </div>
     </div>
-    <div class="meal-card fade-up d2">
-      <div class="meal-thumb thumb-3">
-        <div class="thumb-icon"><svg class="ic" style="width:30px;height:30px" viewBox="0 0 24 24"><use href="#ic-cup"/></svg></div>
-        <span class="meal-tag">Snack</span>
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#E8F5E9,#A5D6A7)">
+        <span style="font-size:2.5rem">&#127858;</span>
+        <span class="mday-slot">Lunch</span>
       </div>
-      <div class="meal-body">
-        <h4>Roasted Chana &amp; Lemon</h4>
-        <p class="cuisine">All India &middot; Low Cal</p>
-        <div class="macro-row">
-          <span><strong>160</strong>kcal</span>
-          <span><strong>9g</strong>Protein</span>
-          <span><strong>26g</strong>Carbs</span>
-          <span><strong>3g</strong>Fat</span>
+      <div class="mday-body">
+        <div class="mday-name">Dal Palak + 2 Rotis</div>
+        <div class="mday-region">Punjab &middot; High Iron</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>510</strong> kcal</span>
+          <span class="mday-mac"><strong>20g</strong> protein</span>
+          <span class="mday-mac"><strong>72g</strong> carbs</span>
         </div>
       </div>
     </div>
-    <div class="meal-card fade-up d3">
-      <div class="meal-thumb thumb-4">
-        <div class="thumb-icon"><svg class="ic" style="width:30px;height:30px" viewBox="0 0 24 24"><use href="#ic-pot"/></svg></div>
-        <span class="meal-tag">Dinner</span>
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#FFF8E1,#FFE082)">
+        <span style="font-size:2.5rem">&#127837;</span>
+        <span class="mday-slot">Snack</span>
       </div>
-      <div class="meal-body">
-        <h4>Moong Dal Soup + Roti</h4>
-        <p class="cuisine">Gujarat &middot; Light &amp; Sattvic</p>
-        <div class="macro-row">
-          <span><strong>380</strong>kcal</span>
-          <span><strong>18g</strong>Protein</span>
-          <span><strong>55g</strong>Carbs</span>
-          <span><strong>8g</strong>Fat</span>
+      <div class="mday-body">
+        <div class="mday-name">Roasted Chana &amp; Lemon</div>
+        <div class="mday-region">All India &middot; Low Cal</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>155</strong> kcal</span>
+          <span class="mday-mac"><strong>9g</strong> protein</span>
+          <span class="mday-mac"><strong>24g</strong> carbs</span>
         </div>
       </div>
     </div>
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#EDE7F6,#CE93D8)">
+        <span style="font-size:2.5rem">&#127956;</span>
+        <span class="mday-slot">Dinner</span>
+      </div>
+      <div class="mday-body">
+        <div class="mday-name">Moong Dal Khichdi + Ghee</div>
+        <div class="mday-region">Gujarat &middot; Light &amp; Sattvic</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>400</strong> kcal</span>
+          <span class="mday-mac"><strong>17g</strong> protein</span>
+          <span class="mday-mac"><strong>60g</strong> carbs</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- South Indian day -->
+  <div class="meals-day fade-up" id="mealsSi" style="display:none">
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#FFF3E0,#FFCC80)">
+        <span style="font-size:2.5rem">&#127859;</span>
+        <span class="mday-slot">Breakfast</span>
+      </div>
+      <div class="mday-body">
+        <div class="mday-name">Idli Sambar + Coconut Chutney</div>
+        <div class="mday-region">Tamil Nadu &middot; Gut-Friendly</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>290</strong> kcal</span>
+          <span class="mday-mac"><strong>13g</strong> protein</span>
+          <span class="mday-mac"><strong>55g</strong> carbs</span>
+        </div>
+      </div>
+    </div>
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#E3F2FD,#90CAF9)">
+        <span style="font-size:2.5rem">&#127857;</span>
+        <span class="mday-slot">Snack</span>
+      </div>
+      <div class="mday-body">
+        <div class="mday-name">Sundal (Boiled Chickpea)</div>
+        <div class="mday-region">Kerala &middot; High Protein</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>180</strong> kcal</span>
+          <span class="mday-mac"><strong>10g</strong> protein</span>
+          <span class="mday-mac"><strong>28g</strong> carbs</span>
+        </div>
+      </div>
+    </div>
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#E8F5E9,#A5D6A7)">
+        <span style="font-size:2.5rem">&#127839;</span>
+        <span class="mday-slot">Lunch</span>
+      </div>
+      <div class="mday-body">
+        <div class="mday-name">Kootu Curry + Steamed Rice</div>
+        <div class="mday-region">Kerala &middot; Balanced</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>480</strong> kcal</span>
+          <span class="mday-mac"><strong>16g</strong> protein</span>
+          <span class="mday-mac"><strong>80g</strong> carbs</span>
+        </div>
+      </div>
+    </div>
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#FCE4EC,#F48FB1)">
+        <span style="font-size:2.5rem">&#127829;</span>
+        <span class="mday-slot">Snack</span>
+      </div>
+      <div class="mday-body">
+        <div class="mday-name">Banana Stem Raita</div>
+        <div class="mday-region">Karnataka &middot; Digestive</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>130</strong> kcal</span>
+          <span class="mday-mac"><strong>5g</strong> protein</span>
+          <span class="mday-mac"><strong>18g</strong> carbs</span>
+        </div>
+      </div>
+    </div>
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#F3E5F5,#CE93D8)">
+        <span style="font-size:2.5rem">&#127956;</span>
+        <span class="mday-slot">Dinner</span>
+      </div>
+      <div class="mday-body">
+        <div class="mday-name">Rasam + Papad + Rice</div>
+        <div class="mday-region">Tamil Nadu &middot; Light</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>350</strong> kcal</span>
+          <span class="mday-mac"><strong>14g</strong> protein</span>
+          <span class="mday-mac"><strong>58g</strong> carbs</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Non-Veg day -->
+  <div class="meals-day fade-up" id="mealsNv" style="display:none">
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#FFF3E0,#FFCC80)">
+        <span style="font-size:2.5rem">&#129371;</span>
+        <span class="mday-slot">Breakfast</span>
+      </div>
+      <div class="mday-body">
+        <div class="mday-name">Egg Bhurji + Multigrain Toast</div>
+        <div class="mday-region">All India &middot; High Protein</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>340</strong> kcal</span>
+          <span class="mday-mac"><strong>22g</strong> protein</span>
+          <span class="mday-mac"><strong>32g</strong> carbs</span>
+        </div>
+      </div>
+    </div>
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#FFEBEE,#EF9A9A)">
+        <span style="font-size:2.5rem">&#127831;</span>
+        <span class="mday-slot">Snack</span>
+      </div>
+      <div class="mday-body">
+        <div class="mday-name">Grilled Chicken Tikka (2 pcs)</div>
+        <div class="mday-region">Punjab &middot; Muscle Gain</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>200</strong> kcal</span>
+          <span class="mday-mac"><strong>28g</strong> protein</span>
+          <span class="mday-mac"><strong>4g</strong> carbs</span>
+        </div>
+      </div>
+    </div>
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#E8F5E9,#A5D6A7)">
+        <span style="font-size:2.5rem">&#127858;</span>
+        <span class="mday-slot">Lunch</span>
+      </div>
+      <div class="mday-body">
+        <div class="mday-name">Chicken Curry + 2 Rotis</div>
+        <div class="mday-region">North India &middot; High Protein</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>560</strong> kcal</span>
+          <span class="mday-mac"><strong>38g</strong> protein</span>
+          <span class="mday-mac"><strong>52g</strong> carbs</span>
+        </div>
+      </div>
+    </div>
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#FFF8E1,#FFE082)">
+        <span style="font-size:2.5rem">&#129372;</span>
+        <span class="mday-slot">Snack</span>
+      </div>
+      <div class="mday-body">
+        <div class="mday-name">Boiled Egg + Sprout Salad</div>
+        <div class="mday-region">All India &middot; Low Cal</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>180</strong> kcal</span>
+          <span class="mday-mac"><strong>14g</strong> protein</span>
+          <span class="mday-mac"><strong>12g</strong> carbs</span>
+        </div>
+      </div>
+    </div>
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#EDE7F6,#CE93D8)">
+        <span style="font-size:2.5rem">&#127956;</span>
+        <span class="mday-slot">Dinner</span>
+      </div>
+      <div class="mday-body">
+        <div class="mday-name">Fish Curry + Steamed Rice</div>
+        <div class="mday-region">Kerala &middot; Omega-3 Rich</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>450</strong> kcal</span>
+          <span class="mday-mac"><strong>32g</strong> protein</span>
+          <span class="mday-mac"><strong>58g</strong> carbs</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Jain day -->
+  <div class="meals-day fade-up" id="mealsJain" style="display:none">
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#FFF3E0,#FFCC80)">
+        <span style="font-size:2.5rem">&#127861;</span>
+        <span class="mday-slot">Breakfast</span>
+      </div>
+      <div class="mday-body">
+        <div class="mday-name">Sabudana Khichdi</div>
+        <div class="mday-region">Maharashtra &middot; Jain</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>280</strong> kcal</span>
+          <span class="mday-mac"><strong>8g</strong> protein</span>
+          <span class="mday-mac"><strong>54g</strong> carbs</span>
+        </div>
+      </div>
+    </div>
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#E3F2FD,#90CAF9)">
+        <span style="font-size:2.5rem">&#129370;</span>
+        <span class="mday-slot">Snack</span>
+      </div>
+      <div class="mday-body">
+        <div class="mday-name">Makhana &amp; Dry Fruit Mix</div>
+        <div class="mday-region">Jain &middot; Energy Boost</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>200</strong> kcal</span>
+          <span class="mday-mac"><strong>7g</strong> protein</span>
+          <span class="mday-mac"><strong>24g</strong> carbs</span>
+        </div>
+      </div>
+    </div>
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#E8F5E9,#A5D6A7)">
+        <span style="font-size:2.5rem">&#127839;</span>
+        <span class="mday-slot">Lunch</span>
+      </div>
+      <div class="mday-body">
+        <div class="mday-name">Toor Dal + Jowar Roti</div>
+        <div class="mday-region">Gujarat &middot; Jain</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>460</strong> kcal</span>
+          <span class="mday-mac"><strong>18g</strong> protein</span>
+          <span class="mday-mac"><strong>74g</strong> carbs</span>
+        </div>
+      </div>
+    </div>
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#FFF8E1,#FFE082)">
+        <span style="font-size:2.5rem">&#127830;</span>
+        <span class="mday-slot">Snack</span>
+      </div>
+      <div class="mday-body">
+        <div class="mday-name">Paneer Tikka (Jain)</div>
+        <div class="mday-region">North India &middot; High Protein</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>210</strong> kcal</span>
+          <span class="mday-mac"><strong>14g</strong> protein</span>
+          <span class="mday-mac"><strong>8g</strong> carbs</span>
+        </div>
+      </div>
+    </div>
+    <div class="mday-card">
+      <div class="mday-thumb" style="background:linear-gradient(135deg,#F3E5F5,#CE93D8)">
+        <span style="font-size:2.5rem">&#127956;</span>
+        <span class="mday-slot">Dinner</span>
+      </div>
+      <div class="mday-body">
+        <div class="mday-name">Lauki Sabzi + 2 Rotis</div>
+        <div class="mday-region">Jain &middot; Light</div>
+        <div class="mday-macros">
+          <span class="mday-mac"><strong>360</strong> kcal</span>
+          <span class="mday-mac"><strong>12g</strong> protein</span>
+          <span class="mday-mac"><strong>58g</strong> carbs</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Callout -->
+  <div class="meal-callout fade-up">
+    <div style="font-size:2rem;margin-bottom:.6rem">&#128260;</div>
+    <h3 style="color:#fff">5,000+ dishes in the rotation. You won't repeat for months.</h3>
+    <p>Our 7-day non-repeat engine guarantees variety. No more &ldquo;dal again?&rdquo; Your plan is always fresh, always balanced, always yours.</p>
   </div>
 </section>
 
@@ -858,7 +1364,7 @@
   </div>
 
   <div class="trial-banner fade-up">
-    <span class="trial-icon">🎁</span>
+    <span class="trial-icon"></span>
     <div class="trial-text">
       <strong>7-Day Free Trial on all plans</strong>
       <span>No credit card required &middot; Cancel anytime &middot; Full access from day one</span>
@@ -918,58 +1424,92 @@
 <!-- ═══ TESTIMONIALS ══════════════════════════════════════════ -->
 <section id="reviews">
   <div class="section-head center">
-    <div class="section-label fade-up">Member Stories</div>
-    <h2 class="section-title fade-up">What our members say</h2>
+    <div class="section-label fade-up">Real Results</div>
+    <h2 class="section-title fade-up">The numbers our<br>members actually see.</h2>
+    <p class="section-sub fade-up" style="margin:0 auto 3rem">Not promised outcomes. Logged results from members across India, tracked over 60 days.</p>
   </div>
-  <div class="testimonials-grid">
-    <div class="testi-card fade-up">
-      <div class="stars-row">
-        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
-        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
-        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
-        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
-        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+
+  <!-- Outcomes strip -->
+  <div class="outcomes-strip fade-up">
+    <div class="outcome-item">
+      <div class="outcome-num">4.2<span class="outcome-unit">kg</span></div>
+      <div class="outcome-lbl">Average weight lost<br>in 60 days</div>
+    </div>
+    <div class="outcome-item">
+      <div class="outcome-num">73<span class="outcome-unit">%</span></div>
+      <div class="outcome-lbl">Members who hit their<br>weekly plan goal</div>
+    </div>
+    <div class="outcome-item">
+      <div class="outcome-num">0.8</div>
+      <div class="outcome-lbl">Average HbA1c drop<br>for diabetic members</div>
+    </div>
+    <div class="outcome-item">
+      <div class="outcome-num">91<span class="outcome-unit">%</span></div>
+      <div class="outcome-lbl">Still active at<br>month 3</div>
+    </div>
+  </div>
+
+  <!-- Hero testimonial -->
+  <div class="hero-testi fade-up">
+    <div class="hero-testi-av" style="background:linear-gradient(135deg,#FFD4B8,#E8593C)">PS</div>
+    <div>
+      <div class="stars-row" style="margin-bottom:.9rem">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px"><use href="#ic-star"/></svg>
       </div>
-      <p class="testi-text">&ldquo;Lost 7 kgs in 2 months eating food I actually love &mdash; rajma, poha, khichdi. Rozkaana doesn&rsquo;t feel like dieting at all. The WhatsApp delivery at 6 AM is genius.&rdquo;</p>
+      <p class="hero-testi-quote">&ldquo;I&rsquo;ve tried three other diet apps. All of them gave me meal plans built around chicken salads and brown bread. Rozkaana was the first one that gave me actual South Indian food &mdash; idli, sambar, kootu, rasam &mdash; and somehow still made me lose weight. In 8 weeks I went from 78 kg to 71 kg. My PCOS symptoms have reduced noticeably. My dermatologist says my skin has improved. I used to think eating healthy meant suffering. Rozkaana proved me wrong.&rdquo;</p>
+      <div class="hero-testi-metrics">
+        <div class="htm"><div class="htn">−7 kg</div><div class="htl">in 8 weeks</div></div>
+        <div class="htm"><div class="htn">PCOS</div><div class="htl">symptoms reduced</div></div>
+        <div class="htm"><div class="htn">100%</div><div class="htl">Indian food</div></div>
+        <div class="htm"><div class="htn">Pro Plan</div><div class="htl">South Indian</div></div>
+      </div>
       <div class="testi-author">
-        <div class="author-avatar av1">PS</div>
+        <div class="author-avatar av1" style="width:36px;height:36px;font-size:.75rem">PS</div>
         <div class="author-info">
           <div class="name">Priya Sharma</div>
-          <div class="detail">Software Engineer &middot; Delhi &middot; Pro Plan</div>
+          <div class="detail">Software Engineer &middot; Bengaluru &middot; on Rozkaana for 4 months</div>
         </div>
       </div>
     </div>
-    <div class="testi-card fade-up d1">
-      <div class="stars-row">
-        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
-        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
-        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
-        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
-        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+  </div>
+
+  <!-- Supporting testimonials -->
+  <div class="supp-testis">
+    <div class="supp-testi fade-up">
+      <div class="stars-row" style="margin-bottom:.7rem">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px"><use href="#ic-star"/></svg>
       </div>
-      <p class="testi-text">&ldquo;As a diabetic, I was skeptical. But the AI actually understands glycemic index and keeps my blood sugar stable. My doctor noticed the improvement in my last HbA1c test.&rdquo;</p>
-      <div class="testi-author">
-        <div class="author-avatar av2">RI</div>
+      <p class="supp-quote">&ldquo;My HbA1c dropped from 8.4 to 7.6 in three months. My doctor asked what I changed &mdash; I said I just followed the Rozkaana meal plan. The glycemic index filter actually works. No more post-lunch blood sugar crashes.&rdquo;</p>
+      <div class="testi-author" style="margin-top:.8rem">
+        <div class="author-avatar av2" style="width:36px;height:36px;font-size:.75rem">RI</div>
         <div class="author-info">
-          <div class="name">Ramesh Iyer</div>
-          <div class="detail">Retired Teacher &middot; Chennai &middot; Family Plan</div>
+          <div class="name" style="font-size:.85rem">Ramesh Iyer</div>
+          <div class="detail">Retired Teacher &middot; Chennai &middot; Family Plan &middot; T2 Diabetic</div>
         </div>
       </div>
     </div>
-    <div class="testi-card fade-up d2">
-      <div class="stars-row">
-        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
-        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
-        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
-        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
-        <svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+    <div class="supp-testi fade-up d1">
+      <div class="stars-row" style="margin-bottom:.7rem">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px"><use href="#ic-star"/></svg>
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px"><use href="#ic-star"/></svg>
       </div>
-      <p class="testi-text">&ldquo;The recipes are actually from my state &mdash; Odia dishes, Chenna poda, Dalma. No other app understands regional Indian food this well. Worth every rupee.&rdquo;</p>
-      <div class="testi-author">
-        <div class="author-avatar av3">AD</div>
+      <p class="supp-quote">&ldquo;I&rsquo;m from Odisha. Every other app thinks &lsquo;Indian food&rsquo; means paneer and naan. Rozkaana gave me Dalma, Chenna poda, Pakhala bhat. My mother was impressed. I lost 5 kg in 6 weeks on a ₹199 plan. Nothing else comes close.&rdquo;</p>
+      <div class="testi-author" style="margin-top:.8rem">
+        <div class="author-avatar av3" style="width:36px;height:36px;font-size:.75rem">AD</div>
         <div class="author-info">
-          <div class="name">Ankit Das</div>
-          <div class="detail">College Student &middot; Bhubaneswar &middot; Starter</div>
+          <div class="name" style="font-size:.85rem">Ankit Das</div>
+          <div class="detail">College Student &middot; Bhubaneswar &middot; Starter Plan &middot; Odia cuisine</div>
         </div>
       </div>
     </div>
@@ -980,51 +1520,59 @@
 <section class="faq-bg" id="faq">
   <div class="section-head center">
     <div class="section-label fade-up">FAQ</div>
-    <h2 class="section-title fade-up">Common questions</h2>
+    <h2 class="section-title fade-up">Still on the fence?<br>Fair questions, honest answers.</h2>
+    <p class="section-sub fade-up" style="margin:0 auto 3rem">Everything you wanted to ask before hitting &lsquo;Start Free Trial.&rsquo;</p>
   </div>
   <div class="faq-list">
     <div class="faq-item fade-up">
       <button class="faq-q" onclick="toggleFaq(this)">
-        How is my meal plan personalised?
+        How is my meal plan actually personalised — not just filtered?
         <span class="faq-toggle"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-plus"/></svg></span>
       </button>
-      <div class="faq-a">We collect your age, weight, height, health goals, food intolerances, regional preference, and eating habits through a WhatsApp onboarding flow. Our AI engine then builds a plan from 5,000+ recipes that matches your exact macronutrient targets and taste profile.</div>
+      <div class="faq-a">We collect your age, weight, height, health goals, food intolerances, regional preference, and eating habits. Our nutrition AI then calculates your exact calorie, protein, carb, and fat targets — and builds each meal from scratch to hit those numbers, using only recipes from your preferred regional cuisine. It&rsquo;s not a template filter. Every plan is genuinely built for you.</div>
     </div>
     <div class="faq-item fade-up d1">
       <button class="faq-q" onclick="toggleFaq(this)">
-        Can I switch between Indian cuisines?
+        What if I have diabetes, PCOS, or hypertension?
         <span class="faq-toggle"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-plus"/></svg></span>
       </button>
-      <div class="faq-a">Yes. We support 12 regional cuisines including North Indian, South Indian, Bengali, Gujarati, Maharashtrian, Punjabi, Rajasthani, Odia, Kashmiri, Goan, Kerala Sadhya, and Hyderabadi. Pro and Family plans allow multiple cuisine rotations within the same week.</div>
+      <div class="faq-a">We were built for exactly this. Our recipe database tracks glycemic index (for diabetes &amp; PCOS), sodium content (for hypertension), iron (for anemia), and 12 other micronutrients critical to Indian health conditions. When you flag a condition, every dish in your plan is filtered through the relevant medical criteria — not just calorie-counted.</div>
     </div>
     <div class="faq-item fade-up d2">
       <button class="faq-q" onclick="toggleFaq(this)">
-        What does the 7-day guarantee mean?
+        Can I switch between cuisines — North Indian one week, South Indian the next?
         <span class="faq-toggle"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-plus"/></svg></span>
       </button>
-      <div class="faq-a">If you are not satisfied with your meal plans within the first 7 days for any reason, we issue a full refund &mdash; no questions asked. Reply &ldquo;REFUND&rdquo; to our WhatsApp number and our team processes it within 24 hours.</div>
+      <div class="faq-a">Yes. We support 12 regional cuisines: North Indian, South Indian, Bengali, Gujarati, Maharashtrian, Punjabi, Rajasthani, Odia, Kashmiri, Goan, Kerala Sadhya, and Hyderabadi. Pro and Family plans let you set multiple cuisine preferences that rotate within the same week. You can also override any day&rsquo;s cuisine from your dashboard.</div>
     </div>
     <div class="faq-item fade-up d3">
       <button class="faq-q" onclick="toggleFaq(this)">
-        How do I receive my meal plans?
+        How exactly do I receive my meal plans?
         <span class="faq-toggle"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-plus"/></svg></span>
       </button>
-      <div class="faq-a">Every morning at 6 AM, you receive a formatted PDF on WhatsApp with your full day&rsquo;s meal plan &mdash; complete with recipes, portion sizes, macronutrient breakdown, and a smart shopping list for the week.</div>
+      <div class="faq-a">Every morning at 6 AM, a PDF lands in your email inbox with your full day&rsquo;s meal plan — 5 meals with step-by-step recipes, portion sizes, macronutrient breakdown per dish, and a consolidated grocery list for the week. You can also view everything on the Rozkaana web app and download or share the PDF anytime.</div>
     </div>
     <div class="faq-item fade-up">
       <button class="faq-q" onclick="toggleFaq(this)">
-        Do you support non-vegetarian and vegan diets?
+        What does the 7-day free trial include?
         <span class="faq-toggle"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-plus"/></svg></span>
       </button>
-      <div class="faq-a">Rozkaana supports vegetarian, non-vegetarian, vegan, Jain, and Sattvic eating modes. Each plan is built from the ground up around your dietary identity &mdash; not adapted from a generic template.</div>
+      <div class="faq-a">Full access to everything in your chosen plan — personalised meal plans delivered daily, PDF with recipes, grocery lists, wellness tracking, and the dashboard. No credit card required to start. If you don&rsquo;t love it within 7 days, your account simply doesn&rsquo;t charge. No cancellation needed, no questions asked.</div>
     </div>
     <div class="faq-item fade-up d1">
       <button class="faq-q" onclick="toggleFaq(this)">
-        Can I cancel or pause my subscription?
+        Can I pause or cancel anytime?
         <span class="faq-toggle"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-plus"/></svg></span>
       </button>
-      <div class="faq-a">Yes, anytime. No long-term contracts, no cancellation fees. Message &ldquo;PAUSE&rdquo; or &ldquo;CANCEL&rdquo; on WhatsApp and your subscription adjusts immediately. Paused subscriptions can be resumed within 90 days at the same rate.</div>
+      <div class="faq-a">Yes, always. No contracts, no cancellation fees, no minimum commitment. Pause for up to 30 days per year at no cost (your billing simply extends). Cancel anytime from your billing dashboard — your access continues until the end of the paid period.</div>
     </div>
+  </div>
+
+  <!-- CTA block -->
+  <div class="faq-cta fade-up">
+    <h3>Still not sure? Try it. It&rsquo;s free.</h3>
+    <p>7 days, full access, no card needed. The worst that happens is you eat well for a week.</p>
+    <a href="#pricing" class="btn" onclick="openSignup('solo_pro');return false">Start My Free Trial &rarr;</a>
   </div>
 </section>
 
@@ -1052,31 +1600,28 @@
     <div class="footer-col">
       <h4>Product</h4>
       <ul>
-        <li><a href="#">How It Works</a></li>
-        <li><a href="#">Meal Library</a></li>
-        <li><a href="#">Cuisines</a></li>
-        <li><a href="#">Pricing</a></li>
-        <li><a href="#">Refer a Friend</a></li>
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#meals">Sample Meals</a></li>
+        <li><a href="#why">Why Rozkaana</a></li>
+        <li><a href="#pricing">Pricing</a></li>
       </ul>
     </div>
     <div class="footer-col">
       <h4>Company</h4>
       <ul>
-        <li><a href="#">About Us</a></li>
-        <li><a href="#">Nutritionists</a></li>
-        <li><a href="#">Press</a></li>
-        <li><a href="#">Careers</a></li>
-        <li><a href="#">Blog</a></li>
+        <li><a href="/about">About Us</a></li>
+        <li><a href="mailto:press@rozkaana.in">Press</a></li>
+        <li><a href="mailto:careers@rozkaana.in">Careers</a></li>
       </ul>
     </div>
     <div class="footer-col">
       <h4>Legal &amp; Support</h4>
       <ul>
-        <li><a href="#">Help Center</a></li>
-        <li><a href="#">WhatsApp Us</a></li>
-        <li><a href="#">Privacy Policy</a></li>
-        <li><a href="#">Terms of Service</a></li>
-        <li><a href="#">Refund Policy</a></li>
+        <li><a href="/help">Help Center</a></li>
+        <li><a href="mailto:support@rozkaana.in">Email Support</a></li>
+        <li><a href="/privacy">Privacy Policy</a></li>
+        <li><a href="/terms">Terms of Service</a></li>
+        <li><a href="/refund">Refund Policy</a></li>
       </ul>
     </div>
   </div>
@@ -1108,6 +1653,16 @@
     if (!wasOpen) { btn.classList.add('open'); answer.classList.add('open'); }
   }
 
+  // Cuisine tab switcher for meal preview
+  function switchMeals(key, btn) {
+    const map = { ni: 'mealsNi', si: 'mealsSi', nv: 'mealsNv', jain: 'mealsJain' };
+    Object.values(map).forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+    const target = document.getElementById(map[key]);
+    if (target) target.style.display = 'grid';
+    document.querySelectorAll('.meal-tab').forEach(t => t.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+  }
+
   // Counter animation for stats
   function animateCount(el, target, suffix) {
     let v = 0;
@@ -1136,12 +1691,25 @@
   let selectedPlan = 'solo_pro';
   let sessionId = '';
 
+  // Redirect logged-in users away from landing page
+  if (localStorage.getItem('rzk_token')) {
+    window.location.replace('/app');
+  }
+
   function openSignup(plan) {
     selectedPlan = plan || 'solo_pro';
     document.getElementById('signupModal').style.display = 'flex';
     showStep('stepPhone');
     document.getElementById('modalPlanLabel').textContent =
       {solo_basic:'Starter — ₹199/mo', solo_pro:'Pro — ₹399/mo', family:'Family — ₹699/mo'}[plan] || plan;
+    document.getElementById('phoneInput').focus();
+  }
+
+  function openSignIn() {
+    selectedPlan = null;
+    document.getElementById('signupModal').style.display = 'flex';
+    showStep('stepPhone');
+    document.getElementById('modalPlanLabel').textContent = 'Welcome back';
     document.getElementById('phoneInput').focus();
   }
 
@@ -1188,7 +1756,7 @@
         document.getElementById('otpInput').value = d.dev_otp;
         const note = document.getElementById('otpDevNote');
         note.style.display = 'block';
-        note.innerHTML = '🔧 Dev mode &mdash; OTP auto-filled: <strong style="font-size:1.1rem;letter-spacing:.15em">' + d.dev_otp + '</strong>';
+        note.innerHTML = ' Dev mode &mdash; OTP auto-filled: <strong style="font-size:1.1rem;letter-spacing:.15em">' + d.dev_otp + '</strong>';
       }
       document.getElementById('otpInput').focus();
     } catch(e) {
@@ -1214,6 +1782,12 @@
       if (!r.ok) { err.textContent = d.detail || 'Invalid OTP'; btn.disabled = false; btn.textContent = 'Verify & Start Trial'; return; }
       localStorage.setItem('rzk_token', d.access_token);
       localStorage.setItem('rzk_refresh', d.refresh_token);
+      // Check onboarding status — existing users go straight to /app
+      try {
+        const meRes = await fetch(`${API}/users/me`, {headers: {'Authorization': 'Bearer ' + d.access_token}});
+        const me = await meRes.json();
+        if (me.onboarding_complete) { window.location.href = '/app'; return; }
+      } catch(e) {}
       showStep('stepSuccess');
     } catch(e) {
       err.textContent = 'Network error';
@@ -1303,12 +1877,12 @@
 
     <!-- Step 1: Phone -->
     <div class="signup-step" id="stepPhone">
-      <div class="modal-badge">🎁 7-Day Free Trial</div>
+      <div class="modal-badge"> 7-Day Free Trial</div>
       <div class="plan-label" id="modalPlanLabel">Pro — ₹399/mo</div>
       <h3>Start your free trial</h3>
       <p>No card required. Get your personalised Indian diet plan delivered to your inbox every morning.</p>
       <div class="modal-trial-strip">
-        <span>✅</span>
+        <span></span>
         <span><strong>7 days free</strong> · Then ₹199–699/mo · Cancel anytime</span>
       </div>
 
@@ -1332,7 +1906,7 @@
 
     <!-- Step 2: OTP -->
     <div class="signup-step" id="stepOTP" style="display:none">
-      <div class="modal-badge">📧 OTP Sent</div>
+      <div class="modal-badge"> OTP Sent</div>
       <h3>Check your email</h3>
       <p>We emailed a 6-digit code to <strong id="otpPhoneLabel">—</strong></p>
       <label class="modal-label">6-Digit OTP</label>
@@ -1349,14 +1923,14 @@
 
     <!-- Step 3: Success -->
     <div class="signup-step" id="stepSuccess" style="display:none;text-align:center">
-      <div class="success-icon">🎉</div>
+      <div class="success-icon"></div>
       <h3>You're in!</h3>
       <p style="text-align:center">Your <strong>7-day free trial</strong> has started.<br>
       Complete your profile to get your first personalised meal plan tomorrow at 6 AM on WhatsApp.</p>
       <div class="modal-trial-strip" style="justify-content:center">
-        <span>📅</span><span>First plan arrives <strong>tomorrow at 6 AM</strong></span>
+        <span></span><span>First plan arrives <strong>tomorrow at 6 AM</strong></span>
       </div>
-      <button class="modal-btn" onclick="closeModal()">Got it — Let's go!</button>
+      <button class="modal-btn" onclick="window.location.href='/onboard'">Set Up My Profile &rarr;</button>
     </div>
   </div>
 </div>

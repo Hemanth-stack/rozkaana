@@ -20,7 +20,7 @@
   }
   .logo { font-size: 2.5rem; margin-bottom: 16px; }
   h2 { font-size: 1.4rem; font-weight: 700; color: #1A1612; margin-bottom: 8px; }
-  p  { font-size: .9rem; color: #7A6E65; line-height: 1.6; }
+  p { font-size: .9rem; color: #7A6E65; line-height: 1.6; }
   .spinner {
     width: 40px; height: 40px; border: 3px solid #F2ECE3;
     border-top-color: #E8593C; border-radius: 50%;
@@ -44,7 +44,7 @@
 </head>
 <body>
 <div class="card">
-  <div class="logo">🍱</div>
+  <div class="logo"></div>
   <h2 id="heading">Signing you in…</h2>
   <p id="subtext">Connecting your Google account to Rozkaana</p>
   <div class="spinner" id="spinner"></div>
@@ -54,17 +54,17 @@
 <script>
 (function () {
   const params = new URLSearchParams(window.location.search);
-  const accessToken  = params.get('access_token');
+  const accessToken = params.get('access_token');
   const refreshToken = params.get('refresh_token');
-  const isNew  = params.get('is_new') === 'true';
-  const name   = params.get('name') || '';
+  const isNew = params.get('is_new') === 'true';
+  const name = params.get('name') || '';
   const oauthError = params.get('oauth_error');
 
   if (oauthError) {
     const messages = {
-      missing_code:           'Google did not return an authorisation code.',
-      token_exchange_failed:  'Could not connect to Google. Please try again.',
-      no_email:               'Google did not share your email. Please allow email access.',
+      missing_code: 'Google did not return an authorisation code.',
+      token_exchange_failed: 'Could not connect to Google. Please try again.',
+      no_email: 'Google did not share your email. Please allow email access.',
     };
     document.getElementById('heading').textContent = 'Sign-in failed';
     document.getElementById('subtext').textContent = 'Something went wrong with Google sign-in.';
@@ -88,7 +88,7 @@
   localStorage.setItem('rzk_refresh', refreshToken || '');
 
   if (isNew) {
-    document.getElementById('heading').textContent = `Welcome, ${name || 'there'}! 🎉`;
+    document.getElementById('heading').textContent = `Welcome, ${name || 'there'}! `;
     document.getElementById('subtext').textContent = 'Your 7-day free trial has started. Redirecting to complete your profile…';
   } else {
     document.getElementById('heading').textContent = `Welcome back${name ? ', ' + name.split(' ')[0] : ''}!`;

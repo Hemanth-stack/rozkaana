@@ -52,14 +52,14 @@ async function init() {
   const card = document.getElementById('card');
 
   if (!inviteToken || inviteToken.length < 10) {
-    card.innerHTML = `<div class="icon">❌</div><h1>Invalid Link</h1><p class="sub">This invite link is not valid. Ask the household head for a fresh invite.</p><a href="/app" class="btn btn-primary" style="display:block;text-decoration:none">Go to My Plan</a>`;
+    card.innerHTML = `<div class="icon"></div><h1>Invalid Link</h1><p class="sub">This invite link is not valid. Ask the household head for a fresh invite.</p><a href="/app" class="btn btn-primary" style="display:block;text-decoration:none">Go to My Plan</a>`;
     return;
   }
 
   if (!token) {
     // Not logged in — save token in sessionStorage and redirect to login
     sessionStorage.setItem('pending_join_token', inviteToken);
-    card.innerHTML = `<div class="icon">🏠</div><h1>Join Household</h1><p class="sub">Sign in first to accept this household invite.</p><a href="/?join=${inviteToken}" class="btn btn-primary" style="display:block;text-decoration:none">Sign In to Join</a>`;
+    card.innerHTML = `<div class="icon"></div><h1>Join Household</h1><p class="sub">Sign in first to accept this household invite.</p><a href="/?join=${inviteToken}" class="btn btn-primary" style="display:block;text-decoration:none">Sign In to Join</a>`;
     return;
   }
 
@@ -68,13 +68,13 @@ async function init() {
   const me = await meRes.json();
 
   if (me.household_id) {
-    card.innerHTML = `<div class="icon">⚠️</div><h1>Already in a Household</h1><p class="sub">You're already part of a household. Leave it first before joining another.</p>
+    card.innerHTML = `<div class="icon"></div><h1>Already in a Household</h1><p class="sub">You're already part of a household. Leave it first before joining another.</p>
       <a href="/household" class="btn btn-primary" style="display:block;text-decoration:none">Manage Household</a>`;
     return;
   }
 
   card.innerHTML = `
-    <div class="icon">🏠</div>
+    <div class="icon"></div>
     <h1>You've been invited!</h1>
     <p class="sub">You're invited to join a shared household meal plan on Rozkaana. Your menus will be tailored to the whole family.</p>
     <button class="btn btn-primary" id="joinBtn" onclick="joinHousehold(this)">Accept Invite</button>

@@ -237,7 +237,7 @@
 <!-- ═══ LOGIN SCREEN ═══ -->
 <div id="loginScreen">
   <div class="login-box">
-    <h2>🍱 Rozkaana Admin</h2>
+    <h2> Rozkaana Admin</h2>
     <p>Sign in to access the admin panel</p>
     <div class="form-group">
       <label class="form-label">Admin Email</label>
@@ -255,7 +255,7 @@
 <!-- ═══ SIDEBAR ═══ -->
 <aside class="sidebar" id="sidebarEl" style="display:none">
   <div class="sidebar-logo">
-    <div class="logo-icon">🍱</div>
+    <div class="logo-icon"></div>
     <div>
       <div class="logo-text">Roz<span>kaana</span></div>
       <div class="logo-sub">Admin Panel</div>
@@ -263,21 +263,21 @@
   </div>
   <div class="nav-section">
     <div class="nav-section-label">Overview</div>
-    <button class="nav-item active" onclick="showPage('dashboard',this)"><span class="icon">📊</span> Dashboard</button>
-    <button class="nav-item" onclick="showPage('pipeline',this)"><span class="icon">⚙️</span> Daily Pipeline</button>
-    <button class="nav-item" onclick="showPage('health',this)"><span class="icon">💚</span> System Health</button>
-    <button class="nav-item" onclick="showPage('logs',this)"><span class="icon">📋</span> System Logs</button>
+    <button class="nav-item active" onclick="showPage('dashboard',this)"><span class="icon"></span> Dashboard</button>
+    <button class="nav-item" onclick="showPage('pipeline',this)"><span class="icon"></span> Daily Pipeline</button>
+    <button class="nav-item" onclick="showPage('health',this)"><span class="icon"></span> System Health</button>
+    <button class="nav-item" onclick="showPage('logs',this)"><span class="icon"></span> System Logs</button>
   </div>
   <div class="nav-section">
     <div class="nav-section-label">Content</div>
-    <button class="nav-item" onclick="showPage('recipes',this)"><span class="icon">🍛</span> Recipes <span class="badge amber" id="recipeBadge">—</span></button>
-    <button class="nav-item" onclick="showPage('recipedb',this)"><span class="icon">🗄️</span> Recipe DB <span class="badge teal" id="recipeDbBadge">—</span></button>
-    <button class="nav-item" onclick="showPage('aigenerate',this)"><span class="icon">🤖</span> AI Generate</button>
+    <button class="nav-item" onclick="showPage('recipes',this)"><span class="icon"></span> Recipes <span class="badge amber" id="recipeBadge">—</span></button>
+    <button class="nav-item" onclick="showPage('recipedb',this)"><span class="icon"></span> Recipe DB <span class="badge teal" id="recipeDbBadge">—</span></button>
+    <button class="nav-item" onclick="showPage('aigenerate',this)"><span class="icon"></span> AI Generate</button>
   </div>
   <div class="nav-section">
     <div class="nav-section-label">Users</div>
-    <button class="nav-item" onclick="showPage('users',this)"><span class="icon">👥</span> All Users</button>
-    <button class="nav-item" onclick="showPage('subscriptions',this)"><span class="icon">💳</span> Subscriptions</button>
+    <button class="nav-item" onclick="showPage('users',this)"><span class="icon"></span> All Users</button>
+    <button class="nav-item" onclick="showPage('subscriptions',this)"><span class="icon"></span> Subscriptions</button>
   </div>
   <div class="sidebar-footer">
     <div class="admin-chip">
@@ -409,7 +409,7 @@
             <option value="true">Verified</option>
             <option value="false">Unverified</option>
           </select>
-          <button class="btn-sm verify" style="padding:6px 14px;flex:none" onclick="exportRecipeDb()">⬇ Export JSON</button>
+          <button class="btn-sm verify" style="padding:6px 14px;flex:none" onclick="exportRecipeDb()"> Export JSON</button>
         </div>
       </div>
 
@@ -525,7 +525,7 @@
               <option value="claude-opus-4-7">claude-opus-4-7 (best quality)</option>
             </select>
           </div>
-          <button class="btn-primary" id="genBtn" onclick="startGeneration()">🤖 Generate Recipes</button>
+          <button class="btn-primary" id="genBtn" onclick="startGeneration()"> Generate Recipes</button>
         </div>
         <div>
           <div class="section-title" style="margin-bottom:10px">Generation Log</div>
@@ -634,8 +634,8 @@ const USER_LIMIT = 20, RECIPE_LIMIT = 9;
 // ── AUTH ──────────────────────────────────────────────────────────────────────
 async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
-  const pass  = document.getElementById('loginPass').value.trim();
-  const err   = document.getElementById('loginErr');
+  const pass = document.getElementById('loginPass').value.trim();
+  const err = document.getElementById('loginErr');
   err.style.display = 'none';
   try {
     const r = await fetch(`${API}/admin/login`, {
@@ -678,15 +678,15 @@ if (token) showApp();
 
 // ── PAGE SWITCHING ────────────────────────────────────────────────────────────
 const META = {
-  dashboard:     ['Dashboard', ''],
-  pipeline:      ['Daily Pipeline', 'Menu generation → PDF build → email delivery'],
-  recipes:       ['Recipes', 'AI-generated recipes pending verification'],
-  aigenerate:    ['AI Generate', 'Generate new recipes with Claude AI'],
-  users:         ['All Users', 'User management and profiles'],
+  dashboard: ['Dashboard', ''],
+  pipeline: ['Daily Pipeline', 'Menu generation → PDF build → email delivery'],
+  recipes: ['Recipes', 'AI-generated recipes pending verification'],
+  aigenerate: ['AI Generate', 'Generate new recipes with Claude AI'],
+  users: ['All Users', 'User management and profiles'],
   subscriptions: ['Subscriptions', 'Revenue, churn, and subscription status'],
-  logs:          ['System Logs', 'Real-time log stream'],
-  health:        ['System Health', 'Component status and Celery worker health'],
-  recipedb:      ['Recipe Database', 'Full raw recipe bank — all slots, cuisines, macros'],
+  logs: ['System Logs', 'Real-time log stream'],
+  health: ['System Health', 'Component status and Celery worker health'],
+  recipedb: ['Recipe Database', 'Full raw recipe bank — all slots, cuisines, macros'],
 };
 
 function showPage(id, el) {
@@ -754,13 +754,13 @@ async function loadDashboard() {
 
     // Metrics
     document.getElementById('dashMetrics').innerHTML = `
-      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-saffron">👥</div></div>
+      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-saffron"></div></div>
         <div class="metric-val">${stats.total_users.toLocaleString('en-IN')}</div><div class="metric-label">Total Users</div></div>
-      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-teal">✅</div></div>
+      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-teal"></div></div>
         <div class="metric-val">${stats.active_subscribers.toLocaleString('en-IN')}</div><div class="metric-label">Active Subscribers</div></div>
-      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-amber">🍱</div></div>
+      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-amber"></div></div>
         <div class="metric-val">${stats.menus_today.toLocaleString('en-IN')}</div><div class="metric-label">Menus Today</div></div>
-      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-blue">📧</div></div>
+      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-blue"></div></div>
         <div class="metric-val">${(stats.emails_sent_today||0).toLocaleString('en-IN')}</div><div class="metric-label">Emails Sent</div></div>`;
 
     // Donut
@@ -807,7 +807,7 @@ async function loadDashboard() {
         <td>${planBadge(u.plan_type)}</td>
         <td>${statusBadge(u.sub_status||'—')}</td>
         <td style="font-family:var(--mono);font-size:.72rem">${fmtDate(u.created_at)}</td>
-        <td><button class="btn-sm verify" style="max-width:72px" onclick="event.stopPropagation();triggerMenu('${u.id}',this)">⚡ Gen</button></td>
+        <td><button class="btn-sm verify" style="max-width:72px" onclick="event.stopPropagation();triggerMenu('${u.id}',this)">Gen</button></td>
       </tr>`).join('');
     document.getElementById('recentUsersBody').innerHTML = rows || `<tr><td colspan="6" class="empty">No users yet</td></tr>`;
   } catch(e) {
@@ -821,13 +821,13 @@ async function loadPipeline() {
     const r = await apiFetch('/admin/pipeline/today');
     const data = await r.json();
     const steps = data.steps || [];
-    const icons = ['🤖','📄','💬'];
+    const icons = ['','',''];
     document.getElementById('pipelineSteps').innerHTML = steps.map((s, i) => `
       <div class="pipe-card ${s.status}">
-        <div class="pipe-icon">${icons[i]||'⚙️'}</div>
+        <div class="pipe-icon">${icons[i]||''}</div>
         <div class="pipe-name">${s.name}</div>
         <div class="pipe-status"><span class="badge b-${s.status==='done'?'teal':s.status==='partial'?'amber':'gray'}">${s.completed}/${s.count}</span></div>
-        <div class="pipe-time">${s.failed > 0 ? `⚠️ ${s.failed} failed` : 'OK'}</div>
+        <div class="pipe-time">${s.failed > 0 ? ` ${s.failed} failed` : 'OK'}</div>
       </div>`).join('') || '<div class="empty">No pipeline data for today</div>';
     await loadFailedMenus();
   } catch(e) {
@@ -848,7 +848,7 @@ async function loadFailedMenus() {
         <td>${m.pdf_key?'<span class="badge b-teal">✓</span>':'<span class="badge b-red">✗</span>'}</td>
         <td><button class="btn-sm verify" style="max-width:80px" onclick="retryEmail('${m.id}',this)">↻ Email</button></td>
       </tr>`).join('');
-    document.getElementById('failedMenusBody').innerHTML = rows || `<tr><td colspan="6" class="empty">No failed menus 🎉</td></tr>`;
+    document.getElementById('failedMenusBody').innerHTML = rows || `<tr><td colspan="6" class="empty">No failed menus </td></tr>`;
   } catch(e) {
     document.getElementById('failedMenusBody').innerHTML = `<tr><td colspan="6" class="empty">Error: ${e.message}</td></tr>`;
   }
@@ -879,10 +879,10 @@ async function loadRecipes() {
     document.getElementById('prevRecipeBtn').disabled = recipePage <= 1;
     document.getElementById('nextRecipeBtn').disabled = recipePage >= Math.ceil(total/RECIPE_LIMIT);
 
-    const mealEmoji = {breakfast:'🌅',morning_snack:'🍵',lunch:'🍛',evening_snack:'🥨',dinner:'🌙'};
+    const mealEmoji = {breakfast:'',morning_snack:'',lunch:'',evening_snack:'',dinner:''};
     const cards = (data.recipes || []).map(rec => `
       <div class="recipe-card unverified" id="rc-${rec.id}">
-        <div class="recipe-thumb">${mealEmoji[rec.meal_type]||'🍽️'}<span class="ai-tag">${rec.source==='ai_generated'?'AI':'MAN'}</span></div>
+        <div class="recipe-thumb">${mealEmoji[rec.meal_type]||''}<span class="ai-tag">${rec.source==='ai_generated'?'AI':'MAN'}</span></div>
         <div class="recipe-body">
           <div class="recipe-name">${rec.name}</div>
           <div class="recipe-meta">${rec.cuisine_region||'—'} · ${rec.meal_type} · ${(rec.eating_mode_tags||[]).join('/')}</div>
@@ -936,7 +936,7 @@ async function startGeneration() {
   const addLog = (level, msg) => {
     const ts = new Date().toTimeString().slice(0,8);
     const cls = {ok:'log-ok',info:'log-info',warn:'log-warn',err:'log-err'}[level];
-    const pfx = {ok:'[OK]  ',info:'[INFO]',warn:'[WARN]',err:'[ERR] '}[level];
+    const pfx = {ok:'[OK] ',info:'[INFO]',warn:'[WARN]',err:'[ERR] '}[level];
     panel.querySelector('.log-cursor')?.remove();
     const line = document.createElement('div');
     line.className = 'log-line';
@@ -959,7 +959,7 @@ async function startGeneration() {
   addLog('info', `Initializing Rozkaana Recipe AI`);
   addLog('info', `Cuisine: ${body.cuisine_region} · Meal: ${body.meal_type} · Mode: ${body.eating_mode}`);
   addLog('info', `Health tags: ${healthTags.join(', ') || 'none'}`);
-  addLog('ok',   `Connected to ${body.model}`);
+  addLog('ok', `Connected to ${body.model}`);
   addLog('info', `Dispatching batch: ${body.count} recipes…`);
 
   try {
@@ -983,7 +983,7 @@ async function startGeneration() {
   }
 
   panel.querySelector('.log-cursor')?.remove();
-  generating = false; btn.disabled = false; btn.textContent = '🤖 Generate Recipes';
+  generating = false; btn.disabled = false; btn.textContent = ' Generate Recipes';
 }
 
 // ── USERS ─────────────────────────────────────────────────────────────────────
@@ -997,10 +997,10 @@ async function loadUsers() {
   document.getElementById('usersBody').innerHTML = `<tr><td colspan="8" class="loading"> </td></tr>`;
   try {
     const search = document.getElementById('userSearch').value.trim();
-    const plan   = document.getElementById('userPlanFilter').value;
+    const plan = document.getElementById('userPlanFilter').value;
     const params = new URLSearchParams({page: userPage, limit: USER_LIMIT});
     if (search) params.set('search', search);
-    if (plan)   params.set('plan_type', plan);
+    if (plan) params.set('plan_type', plan);
 
     const r = await apiFetch(`/admin/users?${params}`);
     const data = await r.json();
@@ -1011,10 +1011,10 @@ async function loadUsers() {
     document.getElementById('nextUserBtn').disabled = userPage >= Math.ceil(total/USER_LIMIT);
 
     document.getElementById('userMetrics').innerHTML = `
-      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-saffron">👥</div></div><div class="metric-val">${total}</div><div class="metric-label">Total Users</div></div>
-      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-teal">✅</div></div><div class="metric-val">${allUsers.filter(u=>u.sub_status==='active').length}</div><div class="metric-label">Active Paid (page)</div></div>
-      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-amber">🔬</div></div><div class="metric-val">${allUsers.filter(u=>u.sub_status==='trial').length}</div><div class="metric-label">On Trial (page)</div></div>
-      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-blue">✔️</div></div><div class="metric-val">${allUsers.filter(u=>u.onboarding_complete).length}</div><div class="metric-label">Onboarded (page)</div></div>`;
+      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-saffron"></div></div><div class="metric-val">${total}</div><div class="metric-label">Total Users</div></div>
+      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-teal"></div></div><div class="metric-val">${allUsers.filter(u=>u.sub_status==='active').length}</div><div class="metric-label">Active Paid (page)</div></div>
+      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-amber"></div></div><div class="metric-val">${allUsers.filter(u=>u.sub_status==='trial').length}</div><div class="metric-label">On Trial (page)</div></div>
+      <div class="metric-card"><div class="metric-top"><div class="metric-icon mi-blue"></div></div><div class="metric-val">${allUsers.filter(u=>u.onboarding_complete).length}</div><div class="metric-label">Onboarded (page)</div></div>`;
 
     renderUsers(allUsers);
   } catch(e) {
@@ -1032,7 +1032,7 @@ function renderUsers(users) {
       <td>${u.eating_mode||'—'}</td>
       <td style="font-family:var(--mono)">${u.bmi||'—'}</td>
       <td style="font-family:var(--mono);font-size:.72rem">${fmtDate(u.created_at)}</td>
-      <td><button class="btn-sm verify" style="max-width:72px" onclick="event.stopPropagation();triggerMenu('${u.id}',this)">⚡ Gen</button></td>
+      <td><button class="btn-sm verify" style="max-width:72px" onclick="event.stopPropagation();triggerMenu('${u.id}',this)">Gen</button></td>
     </tr>`).join('');
   document.getElementById('usersBody').innerHTML = rows || `<tr><td colspan="8" class="empty">No users found</td></tr>`;
 }
@@ -1078,9 +1078,57 @@ async function openDrawer(userId) {
         <div style="display:flex;justify-content:space-between;font-size:.82rem"><span style="color:var(--text-muted)">Joined</span><span style="font-family:var(--mono)">${fmtDate(u.created_at)}</span></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="btn-primary" style="margin:0" onclick="triggerMenuDrawer('${u.id}',this)">⚡ Generate Today's Menu</button>
-        <button class="btn-sm" style="padding:9px" onclick="triggerEmailDrawer('${u.id}',this)">📧 Send Menu Email</button>
+        <button class="btn-primary" style="margin:0" onclick="triggerMenuDrawer('${u.id}',this)">Generate Today's Menu</button>
+        <button class="btn-sm" style="padding:9px" onclick="triggerEmailDrawer('${u.id}',this)">Send Menu Email</button>
       </div>
+
+      <!-- Subscription management -->
+      <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
+        <div class="section-title">Subscription Management</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+
+          <!-- Grant / Provision -->
+          <div style="background:var(--surface2);border-radius:8px;padding:12px">
+            <div style="font-size:.75rem;font-weight:600;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Grant Access</div>
+            <div style="display:flex;gap:6px;margin-bottom:6px">
+              <select id="grantPlan-${u.id}" class="form-select" style="flex:1;padding:7px 10px;font-size:.78rem">
+                <option value="solo_basic">Starter</option>
+                <option value="solo_pro" selected>Pro</option>
+                <option value="family">Family</option>
+              </select>
+              <select id="grantDays-${u.id}" class="form-select" style="flex:1;padding:7px 10px;font-size:.78rem">
+                <option value="30">30 days</option>
+                <option value="90">90 days</option>
+                <option value="180">6 months</option>
+                <option value="365" selected>1 year</option>
+              </select>
+            </div>
+            <button class="btn-primary" style="margin:0;width:100%;padding:8px;font-size:.78rem"
+              onclick="grantSub('${u.id}',this)">Grant Subscription</button>
+          </div>
+
+          <!-- Upgrade plan -->
+          <div style="background:var(--surface2);border-radius:8px;padding:12px">
+            <div style="font-size:.75rem;font-weight:600;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Change Plan</div>
+            <div style="display:flex;gap:6px">
+              <select id="upgradePlan-${u.id}" class="form-select" style="flex:1;padding:7px 10px;font-size:.78rem">
+                <option value="solo_basic">Starter</option>
+                <option value="solo_pro">Pro</option>
+                <option value="family">Family</option>
+              </select>
+              <button class="btn-sm verify" style="padding:7px 12px;font-size:.78rem;white-space:nowrap"
+                onclick="upgradeSub('${u.id}',this)">Change</button>
+            </div>
+          </div>
+
+          <!-- Cancel -->
+          <button class="btn-sm reject" style="padding:9px;font-size:.78rem"
+            onclick="cancelSub('${u.id}',this)">Cancel Subscription</button>
+
+          <div id="subActionMsg-${u.id}" style="font-size:.75rem;margin-top:4px;display:none"></div>
+        </div>
+      </div>
+
       ${(d.recent_menus||[]).length ? `
       <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
         <div class="section-title">Recent Menus</div>
@@ -1101,7 +1149,7 @@ async function triggerMenuDrawer(userId, btn) {
   try {
     await apiFetch(`/admin/trigger/menu/${userId}`, {method:'POST'});
     btn.textContent = '✓ Queued';
-    setTimeout(() => { btn.textContent = '⚡ Generate Today\'s Menu'; btn.disabled = false; }, 3000);
+    setTimeout(() => { btn.textContent = 'Generate Today\'s Menu'; btn.disabled = false; }, 3000);
   } catch(e) { btn.textContent = 'Error'; btn.disabled = false; }
 }
 
@@ -1112,16 +1160,83 @@ async function triggerEmailDrawer(userId, btn) {
     const r = await apiFetch(`/admin/menus?owner_id=${userId}&menu_date=${today}`);
     const d = await r.json();
     const menu = (d.menus||[])[0];
-    if (!menu) { btn.textContent = 'No menu for today'; setTimeout(() => { btn.textContent = '📧 Send Menu Email'; btn.disabled = false; }, 2000); return; }
+    if (!menu) { btn.textContent = 'No menu for today'; setTimeout(() => { btn.textContent = ' Send Menu Email'; btn.disabled = false; }, 2000); return; }
     await apiFetch(`/admin/menus/${menu.id}/retry-email`, {method:'POST'});
     btn.textContent = '✓ Email Queued';
-    setTimeout(() => { btn.textContent = '📧 Send Menu Email'; btn.disabled = false; }, 3000);
+    setTimeout(() => { btn.textContent = ' Send Menu Email'; btn.disabled = false; }, 3000);
   } catch(e) { btn.textContent = 'Error'; btn.disabled = false; }
 }
 
 function closeDrawer() {
   document.getElementById('userDrawerBg').style.display = 'none';
   document.getElementById('userDrawer').style.display = 'none';
+}
+
+// ── Subscription management ───────────────────────────────────────────────
+
+function _subMsg(userId, text, color) {
+  const el = document.getElementById(`subActionMsg-${userId}`);
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = color || 'var(--teal)';
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
+
+async function grantSub(userId, btn) {
+  const plan = document.getElementById(`grantPlan-${userId}`)?.value;
+  const days = parseInt(document.getElementById(`grantDays-${userId}`)?.value || '365');
+  btn.disabled = true; btn.textContent = 'Granting…';
+  try {
+    const r = await apiFetch(`/admin/users/${userId}/subscription/grant`, {
+      method: 'POST',
+      body: JSON.stringify({ plan_type: plan, duration_days: days }),
+    });
+    const d = await r.json();
+    if (r.ok) {
+      _subMsg(userId, `✓ ${d.message}`, 'var(--teal)');
+      // Refresh drawer to show updated sub status
+      setTimeout(() => openDrawer(userId), 1000);
+    } else {
+      _subMsg(userId, d.detail || 'Failed to grant', 'var(--red)');
+    }
+  } catch(e) { _subMsg(userId, 'Error: ' + e.message, 'var(--red)'); }
+  btn.disabled = false; btn.textContent = 'Grant Subscription';
+}
+
+async function upgradeSub(userId, btn) {
+  const plan = document.getElementById(`upgradePlan-${userId}`)?.value;
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    const r = await apiFetch(`/admin/users/${userId}/subscription/upgrade`, {
+      method: 'POST',
+      body: JSON.stringify({ plan_type: plan }),
+    });
+    const d = await r.json();
+    if (r.ok) {
+      _subMsg(userId, `✓ ${d.message}`, 'var(--teal)');
+      setTimeout(() => openDrawer(userId), 1000);
+    } else {
+      _subMsg(userId, d.detail || 'Failed to change plan', 'var(--red)');
+    }
+  } catch(e) { _subMsg(userId, 'Error: ' + e.message, 'var(--red)'); }
+  btn.disabled = false; btn.textContent = 'Change';
+}
+
+async function cancelSub(userId, btn) {
+  if (!confirm('Cancel this subscription immediately? The user will lose access now.')) return;
+  btn.disabled = true; btn.textContent = 'Cancelling…';
+  try {
+    const r = await apiFetch(`/admin/users/${userId}/subscription/cancel`, { method: 'POST' });
+    const d = await r.json();
+    if (r.ok) {
+      _subMsg(userId, '✓ Subscription cancelled', 'var(--amber)');
+      setTimeout(() => openDrawer(userId), 1000);
+    } else {
+      _subMsg(userId, d.detail || 'Failed to cancel', 'var(--red)');
+    }
+  } catch(e) { _subMsg(userId, 'Error: ' + e.message, 'var(--red)'); }
+  btn.disabled = false; btn.textContent = 'Cancel Subscription';
 }
 
 // ── SUBSCRIPTIONS ─────────────────────────────────────────────────────────────
@@ -1176,7 +1291,7 @@ async function loadLogs() {
     const rows = (data.logs||[]).map(l =>
       `<div class="slog-line"><span class="slog-ts">${l.ts||'—'}</span>
        <span class="slog-level ${clsMap[l.level]||'slog-info'}">${l.level||'INFO'}</span>
-       <span class="slog-msg"><em>${l.service||'app'}</em>  ${l.message||''}</span></div>`).join('');
+       <span class="slog-msg"><em>${l.service||'app'}</em> ${l.message||''}</span></div>`).join('');
     panel.innerHTML = rows || `<div class="empty">No logs available</div>`;
     panel.scrollTop = panel.scrollHeight;
   } catch(e) {
@@ -1198,14 +1313,14 @@ async function loadHealth() {
     const celery = await cRes.json();
 
     const statusColor = {ok:'var(--teal)',degraded:'var(--amber)',down:'var(--red)'};
-    const statusIcon  = {ok:'✓',degraded:'⚠',down:'✗'};
-    const compIcons   = {database:'🗄️',redis:'⚡',minio:'📦',celery:'⚙️'};
+    const statusIcon = {ok:'✓',degraded:'',down:'✗'};
+    const compIcons = {database:'DB',redis:'Cache',minio:'Store',celery:'Workers'};
 
     document.getElementById('healthComponents').innerHTML =
       Object.entries(health.components||{}).map(([name, c]) => `
         <div class="metric-card">
           <div class="metric-top">
-            <div class="metric-icon" style="background:${c.status==='ok'?'var(--teal-dim)':c.status==='degraded'?'var(--amber-dim)':'var(--red-dim)'}">${compIcons[name]||'🔧'}</div>
+            <div class="metric-icon" style="background:${c.status==='ok'?'var(--teal-dim)':c.status==='degraded'?'var(--amber-dim)':'var(--red-dim)'}">${compIcons[name]||''}</div>
             <span style="font-size:.75rem;font-family:var(--mono);color:${statusColor[c.status]||'var(--text-muted)'}">${statusIcon[c.status]||'?'} ${c.status}</span>
           </div>
           <div style="font-size:1rem;font-weight:700;color:var(--text)">${name}</div>
@@ -1251,7 +1366,7 @@ async function loadRecipeStats() {
         <div><span style="font-size:1.4rem;font-weight:800;font-family:var(--mono);color:${gaps.length>0?'var(--amber)':'var(--teal)'}">${gaps.length}</span><span style="font-size:.75rem;color:var(--text-muted);margin-left:6px">gaps (&lt;5 verified)</span></div>
       </div>
       ${gaps.length ? `<div style="font-size:.75rem;color:var(--amber);margin-bottom:8px">Coverage gaps: ${gaps.map(g=>`${g.cuisine_region}/${g.meal_type}/${g.eating_mode} (${g.count})`).join(' · ')}</div>` : ''}
-      <button class="btn-sm verify" style="max-width:160px;padding:7px 14px" onclick="triggerSeed(this)">🌱 Run Seed (~45min)</button>`;
+      <button class="btn-sm verify" style="max-width:160px;padding:7px 14px" onclick="triggerSeed(this)"> Run Seed (~45min)</button>`;
   } catch(e) {
     document.getElementById('recipeStatsContent').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
   }
@@ -1298,7 +1413,7 @@ async function loadRecipeDb() {
     const pages = Math.max(1, Math.ceil(total / DB_LIMIT));
 
     document.getElementById('recipeDbSubtitle').textContent =
-      `${total.toLocaleString('en-IN')} recipes  ·  page ${dbPage} of ${pages}`;
+      `${total.toLocaleString('en-IN')} recipes · page ${dbPage} of ${pages}`;
     document.getElementById('recipeDbBadge').textContent = total;
     document.getElementById('recipeDbPageInfo').textContent =
       `${(dbPage-1)*DB_LIMIT+1}–${Math.min(dbPage*DB_LIMIT,total)} of ${total.toLocaleString('en-IN')}`;

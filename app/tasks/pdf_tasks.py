@@ -1,6 +1,6 @@
 import logging
 from contextlib import contextmanager
-from datetime import date
+from datetime import date, timedelta
 
 from app.tasks.celery_app import celery_app
 from app.database import SyncSessionLocal
@@ -23,16 +23,27 @@ def get_sync_session():
 
 @celery_app.task
 def build_all_pdfs():
+    """Safety net: build PDFs for any menus in the ±2-day window that are missing one.
+
+    generate_all_menus queues build_single_pdf immediately after generation, but if
+    that task fails or is lost, this job catches it.  The window covers:
+      - yesterday  : catch menus whose PDF failed on the previous night
+      - today      : menus regenerated during the day (user-triggered)
+      - tomorrow   : the freshly-generated nightly menus (generated ~4h before this runs)
+    """
     from app.models.daily_menu import DailyMenu
     today = date.today()
+    window_start = today - timedelta(days=1)
+    window_end = today + timedelta(days=1)
     with get_sync_session() as db:
         menus = db.query(DailyMenu).filter(
-            DailyMenu.menu_date == today,
+            DailyMenu.menu_date >= window_start,
+            DailyMenu.menu_date <= window_end,
             DailyMenu.pdf_key.is_(None),
         ).all()
         for menu in menus:
             build_single_pdf.delay(str(menu.id))
-    logger.info("Queued PDF build for %d menus", len(menus))
+    logger.info("Queued PDF build for %d menus (window %s – %s)", len(menus), window_start, window_end)
 
 
 @celery_app.task(bind=True, max_retries=3, default_retry_delay=120)

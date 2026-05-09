@@ -3,15 +3,36 @@ Seed recipe database using Claude AI batch generation.
 Run from project root: PYTHONPATH=. python -m scripts.seed_recipes
 
 Imports the shared GENERATION_MATRIX from app/data/seed_matrix.py.
+
+Resume behaviour: for each matrix entry, counts existing DB recipes that
+match (meal_type, cuisine, eating_mode, health_tags). If already at or
+above target, the entry is skipped entirely (no Claude call). If partially
+filled, only the shortfall is requested.
 """
 import asyncio
 import logging
-from sqlalchemy import func, select
+from sqlalchemy import cast, func, select
+from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
+from sqlalchemy import String
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
+
+
+async def _count_existing(db: AsyncSession, Recipe, meal_type, cuisine, eating_mode, health_tags) -> int:
+    """Count active recipes in DB that satisfy this matrix entry's filters."""
+    filters = [
+        Recipe.meal_type == meal_type,
+        Recipe.cuisine_region == cuisine,
+        Recipe.eating_mode_tags.op("@>")(cast([eating_mode], PG_ARRAY(String))),
+        Recipe.is_active == True,  # noqa
+    ]
+    for tag in (health_tags or []):
+        filters.append(Recipe.health_safe_tags.op("@>")(cast([tag], PG_ARRAY(String))))
+    result = await db.execute(select(func.count()).where(*filters))
+    return result.scalar() or 0
 
 
 async def main():
@@ -24,13 +45,14 @@ async def main():
     AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     total_inserted = 0
-    total_skipped = 0
+    total_skipped_dup = 0
+    total_batches_skipped = 0
     total_batches = len(GENERATION_MATRIX)
 
     logger.info("Starting seed: %d matrix entries, target ~%d recipes", total_batches, TOTAL_TARGET)
 
     async with AsyncSessionLocal() as db:
-        # Flat dedup set for post-generation guard
+        # Flat dedup set for post-generation guard: (meal_type, lower_name)
         existing_result = await db.execute(
             select(Recipe.meal_type, func.lower(Recipe.name)).where(Recipe.is_active == True)  # noqa
         )
@@ -48,17 +70,28 @@ async def main():
         logger.info("Existing active recipes: %d", len(existing))
 
         for idx, (meal_type, cuisine, eating_mode, health_tags, count) in enumerate(GENERATION_MATRIX, 1):
+            # ── Resume check: how many recipes already satisfy this entry? ──────
+            already = await _count_existing(db, Recipe, meal_type, cuisine, eating_mode, health_tags)
+            if already >= count:
+                logger.info("[%d/%d] SKIP %s/%s/%s %s — already %d/%d",
+                            idx, total_batches, meal_type, cuisine, eating_mode,
+                            health_tags or "", already, count)
+                total_batches_skipped += 1
+                continue
+
+            need = count - already
             prompt_existing = names_by_slot.get((meal_type, cuisine), [])
-            logger.info("[%d/%d] %s / %s / %s %s count=%d  context=%d existing",
+            logger.info("[%d/%d] %s/%s/%s %s  have=%d need=%d  context=%d names",
                         idx, total_batches, meal_type, cuisine, eating_mode,
-                        health_tags or "", count, len(prompt_existing))
+                        health_tags or "", already, need, len(prompt_existing))
+
             try:
                 recipes_data = await generate_recipe_batch(
                     meal_type=meal_type,
                     cuisine_region=cuisine,
                     eating_mode=eating_mode,
                     health_tags=health_tags,
-                    count=count,
+                    count=need,
                     existing_names=prompt_existing,
                 )
             except Exception as exc:
@@ -73,20 +106,21 @@ async def main():
                     continue
                 key = (meal_type, name_lower)
                 if key in existing:
-                    total_skipped += 1
+                    total_skipped_dup += 1
                     continue
                 existing.add(key)
-                # Update prompt context so later batches in this run see it
                 names_by_slot.setdefault((meal_type, cuisine), []).append(data["name"])
 
                 try:
                     raw_safe_tags = data.get("health_safe_tags") or []
                     merged_safe_tags = list(set(raw_safe_tags + (health_tags or []) + ["general_healthy"]))
+                    def _s(val, maxlen):
+                        return str(val)[:maxlen] if val else None
                     recipe = Recipe(
-                        name=data["name"],
-                        name_local=data.get("name_local"),
+                        name=data["name"][:200],
+                        name_local=_s(data.get("name_local"), 200),
                         meal_type=meal_type,
-                        cuisine_region=data.get("cuisine_region", cuisine),
+                        cuisine_region=data.get("cuisine_region", cuisine)[:30],
                         eating_mode_tags=data.get("eating_mode_tags", [eating_mode]),
                         health_safe_tags=merged_safe_tags,
                         allergy_free_tags=data.get("allergy_free_tags", []),
@@ -104,10 +138,10 @@ async def main():
                         vitamin_b12_mcg=float(data.get("vitamin_b12_mcg", 0)) if data.get("vitamin_b12_mcg") else None,
                         vitamin_d_mcg=float(data.get("vitamin_d_mcg", 0)) if data.get("vitamin_d_mcg") else None,
                         glycemic_index=int(data.get("glycemic_index", 0)) if data.get("glycemic_index") else None,
-                        serving_unit=data.get("serving_unit"),
+                        serving_unit=_s(data.get("serving_unit"), 200),
                         prep_time_mins=data.get("prep_time_mins"),
-                        spice_level=data.get("spice_level", "medium"),
-                        main_ingredient=data.get("main_ingredient"),
+                        spice_level=_s(data.get("spice_level", "medium"), 20),
+                        main_ingredient=_s(data.get("main_ingredient"), 100),
                         ingredients=data.get("ingredients", []),
                         steps=data.get("steps", []),
                         is_verified=True,
@@ -121,11 +155,14 @@ async def main():
 
             await db.commit()
             total_inserted += batch_inserted
-            logger.info("  +%d inserted (skipped %d dups). Total: %d",
-                        batch_inserted, total_skipped, total_inserted)
+            logger.info("  +%d inserted (%d name-dups). Total: %d",
+                        batch_inserted, total_skipped_dup, total_inserted)
             await asyncio.sleep(1)
 
-    logger.info("Seed complete. Inserted: %d  Skipped: %d", total_inserted, total_skipped)
+    logger.info(
+        "Seed complete. Inserted: %d  Batches skipped (already full): %d  Name-dups: %d",
+        total_inserted, total_batches_skipped, total_skipped_dup,
+    )
     await engine.dispose()
 
 

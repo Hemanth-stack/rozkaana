@@ -35,10 +35,10 @@ class Recipe(Base):
     vitamin_b12_mcg = Column(Numeric(5, 2), nullable=True)  # vegetarian deficiency risk
     vitamin_d_mcg = Column(Numeric(5, 2), nullable=True)    # India deficiency epidemic
     glycemic_index = Column(SmallInteger, nullable=True)    # diabetes / PCOS (0-100)
-    serving_unit = Column(String(50), nullable=True)
+    serving_unit = Column(String(200), nullable=True)
     prep_time_mins = Column(SmallInteger, nullable=True)
-    spice_level = Column(String(10), nullable=True)
-    main_ingredient = Column(String(50), nullable=True)
+    spice_level = Column(String(20), nullable=True)
+    main_ingredient = Column(String(100), nullable=True)
     ingredients = Column(JSONB, nullable=True)
     steps = Column(ARRAY(TEXT), nullable=True)
     is_verified = Column(Boolean, default=False, server_default="false", index=True)

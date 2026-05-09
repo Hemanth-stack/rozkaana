@@ -144,9 +144,19 @@ async def _call_claude_raw(model: str, prompt: str) -> str:
     return response.content[0].text
 
 
+def _strip_fences(text: str) -> str:
+    """Remove markdown code fences Claude adds despite being told not to."""
+    text = text.strip()
+    if text.startswith("```"):
+        # Drop first line (```json or ```) and last line (```)
+        lines = text.splitlines()
+        text = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
+    return text.strip()
+
+
 async def _call_claude(model: str, prompt: str) -> list[dict]:
     try:
-        raw = await _call_claude_raw(model, prompt)
+        raw = _strip_fences(await _call_claude_raw(model, prompt))
         payload = json.loads(raw)
         if isinstance(payload, list):
             return payload

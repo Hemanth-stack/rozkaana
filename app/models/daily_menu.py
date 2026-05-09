@@ -28,6 +28,10 @@ class DailyMenu(Base):
     is_regenerated = Column(Boolean, default=False, server_default="false")
     pdf_key = Column(String(300), nullable=True)
     pdf_url = Column(String, nullable=True)
+    # Email delivery tracking
+    email_sent_at = Column(DateTime(timezone=True), nullable=True)
+    email_status = Column(String(20), default="pending", server_default="pending")
+    # WhatsApp delivery tracking
     wa_sent_at = Column(DateTime(timezone=True), nullable=True)
     wa_status = Column(String(20), default="pending", server_default="pending")
     generated_at = Column(DateTime(timezone=True), server_default=text("now()"))

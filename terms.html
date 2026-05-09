@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Service — Rozkaana</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--saffron:#E8593C;--saffron-dark:#C9421F;--cream:#FAF7F2;--cream-dark:#F2ECE3;--charcoal:#1A1612;--text:#3A3028;--muted:#7A6E65;--border:#E8DDD0;--green:#2E7D52}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);line-height:1.5}
+h1,h2,h3{font-family:'Playfair Display',serif}
+nav{background:rgba(250,247,242,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 5%;height:68px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--charcoal);text-decoration:none}
+.nav-logo span{color:var(--saffron)}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{text-decoration:none;color:var(--muted);font-weight:500;font-size:.92rem;transition:color .2s}
+.nav-links a:hover{color:var(--saffron)}
+.btn{display:inline-flex;align-items:center;background:var(--saffron);color:#fff;border:none;border-radius:10px;padding:.65rem 1.4rem;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.9rem;cursor:pointer;text-decoration:none;transition:background .2s}
+.btn:hover{background:var(--saffron-dark)}
+@media(max-width:768px){.nav-links{display:none}}
+.hero{background:var(--charcoal);padding:56px 5%;text-align:center}
+.hero h1{font-size:clamp(1.8rem,3.5vw,2.6rem);color:#fff;margin-bottom:.6rem}
+.hero p{font-size:.92rem;color:rgba(255,255,255,.55)}
+.layout{display:grid;grid-template-columns:220px 1fr;gap:3rem;max-width:1100px;margin:0 auto;padding:56px 5% 80px;align-items:start}
+.toc{position:sticky;top:88px;background:#fff;border-radius:14px;padding:1.4rem;border:1px solid var(--border)}
+.toc-toggle{display:none;width:100%;background:none;border:none;padding:0;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;color:var(--charcoal);cursor:pointer;align-items:center;justify-content:space-between;margin-bottom:.6rem}
+.toc-toggle:hover{color:var(--saffron)}
+.toc-chevron{font-size:.75rem;transition:transform .3s;display:inline-block}
+.toc.open .toc-chevron{transform:rotate(180deg)}
+.toc h4{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.9rem;font-family:'DM Sans',sans-serif}
+.toc-list{list-style:none;display:flex;flex-direction:column;gap:.4rem}
+.toc-list a{font-size:.83rem;color:var(--muted);text-decoration:none;line-height:1.4;transition:color .2s;display:block;padding:.15rem 0}
+.toc-list a:hover,.toc-list a.active{color:var(--saffron);font-weight:600}
+.toc-list a.active{border-left:2px solid var(--saffron);padding-left:.5rem;margin-left:-.5rem}
+.prose{min-width:0;overflow-wrap:break-word;word-break:break-word}
+.prose h2{font-size:1.5rem;color:var(--charcoal);margin:2.5rem 0 .9rem;padding-top:1rem}
+.prose h3{font-size:1.05rem;color:var(--charcoal);margin:1.5rem 0 .5rem;font-family:'DM Sans',sans-serif;font-weight:700}
+.prose p{color:var(--text);line-height:1.8;margin-bottom:1rem;font-size:.95rem}
+.prose ul,.prose ol{padding-left:1.4rem;margin-bottom:1rem}
+.prose li{color:var(--text);line-height:1.8;margin-bottom:.3rem;font-size:.95rem}
+.prose a{color:var(--saffron);text-decoration:none;overflow-wrap:break-word;word-break:break-all}
+.prose a:hover{text-decoration:underline}
+.prose strong{color:var(--charcoal);font-weight:600}
+.prose code{font-family:'Courier New',monospace;font-size:.85em;background:var(--cream-dark);border:1px solid var(--border);padding:1px 6px;border-radius:4px;word-break:break-all}
+.highlight-box{background:rgba(232,89,60,.06);border:1px solid rgba(232,89,60,.2);border-radius:12px;padding:1.2rem 1.4rem;margin:1.5rem 0;font-size:.9rem;color:var(--text);line-height:1.7;overflow-wrap:break-word}
+.highlight-box strong{color:var(--saffron-dark)}
+.warning-box{background:rgba(26,22,18,.04);border:1px solid rgba(26,22,18,.12);border-radius:12px;padding:1.2rem 1.4rem;margin:1.5rem 0;font-size:.9rem;color:var(--text);line-height:1.7;overflow-wrap:break-word}
+.divider{border:none;border-top:1px solid var(--border);margin:2rem 0}
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .toc{position:static;order:-1;margin-bottom:1.5rem}
+  .toc h4{display:none}
+  .toc-toggle{display:flex}
+  .toc-list{max-height:0;overflow:hidden;transition:max-height .35s ease}
+  .toc.open .toc-list{max-height:800px}
+}
+@media(max-width:600px){.prose h2{font-size:1.25rem}.prose h3{font-size:.97rem}}
+footer{background:var(--charcoal);color:rgba(255,255,255,.6);padding:52px 5% 28px}
+.footer-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:3rem;margin-bottom:2.5rem}
+.footer-brand h3{font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff;margin-bottom:.4rem}
+.footer-brand h3 span{color:var(--saffron)}
+.footer-brand p{font-size:.82rem;line-height:1.7;max-width:280px;margin:0}
+.footer-col h4{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.9rem}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.footer-col ul a{text-decoration:none;color:rgba(255,255,255,.55);font-size:.83rem;transition:color .2s}
+.footer-col ul a:hover{color:#fff}
+.footer-bottom{max-width:1200px;margin:0 auto;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between;align-items:center;font-size:.78rem;flex-wrap:wrap;gap:.5rem}
+@media(max-width:768px){.footer-inner{grid-template-columns:1fr;gap:2rem}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Roz<span>kaana</span></a>
+  <ul class="nav-links">
+    <li><a href="/#why">Why Us</a></li>
+    <li><a href="/#pricing">Pricing</a></li>
+    <li><a href="/help">Help</a></li>
+  </ul>
+  <a href="/#pricing" class="btn">Start Free Trial &rarr;</a>
+</nav>
+
+<div class="hero">
+  <h1>Terms of Service</h1>
+  <p>Last updated: 9 May 2026 &middot; Effective from: 9 May 2026</p>
+</div>
+
+<div class="layout">
+  <nav class="toc" id="pageToc">
+    <button class="toc-toggle" onclick="document.getElementById('pageToc').classList.toggle('open')" aria-expanded="false">
+      Contents <span class="toc-chevron">&#9660;</span>
+    </button>
+    <h4>Contents</h4>
+    <ul class="toc-list">
+      <li><a href="#agreement">1. Agreement</a></li>
+      <li><a href="#definitions">2. Definitions</a></li>
+      <li><a href="#account">3. Account &amp; Eligibility</a></li>
+      <li><a href="#service">4. The Service</a></li>
+      <li><a href="#subscription">5. Subscription &amp; Payment</a></li>
+      <li><a href="#trial">6. Free Trial</a></li>
+      <li><a href="#acceptable-use">7. Acceptable Use</a></li>
+      <li><a href="#health-disclaimer">8. Health Disclaimer</a></li>
+      <li><a href="#ip">9. Intellectual Property</a></li>
+      <li><a href="#liability">10. Limitation of Liability</a></li>
+      <li><a href="#indemnity">11. Indemnification</a></li>
+      <li><a href="#termination">12. Termination</a></li>
+      <li><a href="#governing-law">13. Governing Law</a></li>
+      <li><a href="#disputes">14. Dispute Resolution</a></li>
+      <li><a href="#changes">15. Changes</a></li>
+      <li><a href="#contact">16. Contact</a></li>
+    </ul>
+  </nav>
+
+  <div class="prose">
+
+    <div class="highlight-box">
+      <strong>Before you start:</strong> Please read these Terms carefully. By creating an account or using Rozkaana, you agree to be bound by these Terms. If you do not agree, do not use the Service.
+    </div>
+
+    <h2 id="agreement">1. Agreement to Terms</h2>
+    <p>These Terms of Service (&ldquo;Terms&rdquo;) constitute a legally binding agreement between you (&ldquo;User,&rdquo; &ldquo;you,&rdquo; &ldquo;your&rdquo;) and Rozkaana Tech Private Limited (&ldquo;Rozkaana,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; &ldquo;our&rdquo;), a company incorporated under the Companies Act 2013 and registered in India.</p>
+    <p>By accessing rozkaana.in, creating an account, or using any part of the Service, you confirm that you have read, understood, and agree to these Terms and our <a href="/privacy">Privacy Policy</a>. These two documents together constitute the entire agreement between you and Rozkaana.</p>
+
+    <h2 id="definitions">2. Definitions</h2>
+    <ul>
+      <li><strong>&ldquo;Service&rdquo;</strong> means the Rozkaana personalised Indian diet and meal plan subscription service, including the website, web application, email delivery, and all associated features.</li>
+      <li><strong>&ldquo;Meal Plan&rdquo;</strong> means the daily personalised meal schedule, including recipes, portion sizes, macronutrient information, and grocery lists generated by the Service.</li>
+      <li><strong>&ldquo;Profile&rdquo;</strong> means the health, dietary, and personal information you provide to personalise your Meal Plans.</li>
+      <li><strong>&ldquo;Household&rdquo;</strong> means a group of up to 6 Users linked under a Family plan for coordinated meal planning.</li>
+      <li><strong>&ldquo;Content&rdquo;</strong> means all recipes, nutritional data, text, graphics, and other material made available through the Service.</li>
+      <li><strong>&ldquo;Subscription&rdquo;</strong> means a paid recurring plan (Starter, Pro, or Family) granting access to the Service.</li>
+    </ul>
+
+    <h2 id="account">3. Account Registration &amp; Eligibility</h2>
+    <p>To use the Service, you must:</p>
+    <ul>
+      <li>Be at least 18 years of age (or the age of majority in your jurisdiction, whichever is higher);</li>
+      <li>Provide a valid email address and complete onboarding accurately;</li>
+      <li>Not have a previously terminated account unless we have granted written consent to re-register.</li>
+    </ul>
+    <p>You are responsible for maintaining the confidentiality of your login credentials (OTP tokens) and for all activities that occur under your account. Notify us immediately at <a href="mailto:support@rozkaana.in">support@rozkaana.in</a> if you suspect unauthorised account access.</p>
+    <p>You must provide accurate information in your Profile. Providing false health information may result in Meal Plans that are unsuitable for you, and we bear no liability for plans generated based on inaccurate inputs.</p>
+
+    <h2 id="service">4. The Service</h2>
+    <p>Rozkaana provides personalised Indian meal plans based on your Profile inputs. We reserve the right to:</p>
+    <ul>
+      <li>Modify, update, or discontinue any feature of the Service with reasonable notice;</li>
+      <li>Suspend the Service for maintenance, upgrades, or emergency situations;</li>
+      <li>Reject or terminate accounts that violate these Terms.</li>
+    </ul>
+    <p>Meal Plans are generated daily and delivered to your registered email address by 6:00 AM IST. Delivery times may vary due to infrastructure delays, email provider policies, or force majeure events. We target 99.5% uptime but do not guarantee uninterrupted availability.</p>
+
+    <h2 id="subscription">5. Subscription &amp; Payment</h2>
+    <h3>Plans and Pricing</h3>
+    <p>We offer three subscription plans: Starter (&#8377;199/month), Pro (&#8377;399/month), and Family (&#8377;699/month). Prices are in Indian Rupees and include applicable GST. We reserve the right to change pricing with 30 days&rsquo; notice to existing subscribers.</p>
+    <h3>Billing</h3>
+    <p>Subscriptions are billed monthly on the anniversary date of your first paid subscription. Payment is processed via Razorpay. By subscribing, you authorise us to charge your selected payment method on each billing date until you cancel.</p>
+    <h3>Failed Payments</h3>
+    <p>If a payment fails, we will attempt to retry up to 3 times over 7 days. If payment is not recovered, your subscription will be suspended and Meal Plan generation will pause until payment is settled.</p>
+    <h3>Upgrades and Downgrades</h3>
+    <p>Upgrades take effect immediately with prorated billing. Downgrades take effect at the start of your next billing cycle. No partial refunds are issued for downgrades mid-cycle.</p>
+    <h3>Taxes</h3>
+    <p>All prices are inclusive of GST. We will issue a GST-compliant invoice for each transaction. No other taxes are applicable to Indian residents. International users (if any) are responsible for any taxes applicable in their jurisdiction.</p>
+
+    <h2 id="trial">6. Free Trial</h2>
+    <p>New users receive a 7-day free trial on sign-up. No credit card or payment information is required to start the trial. After the trial expires, Meal Plan generation pauses unless you subscribe. Your account and profile data remain accessible for 30 days after trial expiry before potential deletion.</p>
+    <p>Rozkaana reserves the right to modify or discontinue the free trial offer at any time for new users without notice. Existing trials in progress will not be affected.</p>
+
+    <h2 id="acceptable-use">7. Acceptable Use</h2>
+    <p>You agree not to:</p>
+    <ul>
+      <li>Use the Service to generate content for commercial redistribution without our written consent;</li>
+      <li>Attempt to reverse-engineer, scrape, or extract the recipe database or AI models;</li>
+      <li>Share your login credentials or account access with third parties who are not authorised Household members;</li>
+      <li>Use the Service to provide meal planning or nutrition advice to others as a commercial service;</li>
+      <li>Submit false health information with the intent to receive plans inappropriate to your actual condition;</li>
+      <li>Attempt to circumvent payment, bypass plan restrictions, or manipulate the system to gain features beyond your plan;</li>
+      <li>Use automated tools, bots, or scripts to access the Service;</li>
+      <li>Upload, transmit, or store content that is illegal, harmful, offensive, or infringes third-party rights.</li>
+    </ul>
+    <p>Violation of these terms may result in immediate termination of your account without refund.</p>
+
+    <h2 id="health-disclaimer">8. Health Disclaimer</h2>
+    <div class="warning-box">
+      <strong>Important:</strong> Rozkaana is a nutrition information and meal planning service. It is not a medical service and does not provide medical advice, diagnosis, or treatment. Always consult a qualified doctor or registered dietician before making significant dietary changes, particularly if you have a medical condition.
+    </div>
+    <p>The Meal Plans generated by Rozkaana are based on generally accepted nutritional science and the inputs you provide. They are intended for healthy adults seeking to improve their diet. We make no representations that our plans are appropriate for your specific medical situation.</p>
+    <p>By using the Service, you acknowledge that:</p>
+    <ul>
+      <li>You are responsible for verifying that any Meal Plan is appropriate for your health condition with a qualified professional;</li>
+      <li>Rozkaana is not liable for any adverse health outcomes resulting from following our Meal Plans;</li>
+      <li>Food allergies and intolerances are based on the information you provide — always verify ingredient lists yourself before consuming any dish.</li>
+    </ul>
+
+    <h2 id="ip">9. Intellectual Property</h2>
+    <p>All Content — including but not limited to recipes, nutritional data, software, design, and text — is owned by or licensed to Rozkaana and protected under Indian copyright law and international IP treaties.</p>
+    <p>We grant you a limited, non-exclusive, non-transferable, revocable licence to access and use the Service and Content for your personal, non-commercial use. This licence does not permit:</p>
+    <ul>
+      <li>Reproduction or distribution of Content for commercial purposes;</li>
+      <li>Creating derivative works based on our Content;</li>
+      <li>Sublicensing access to others beyond permitted Household use.</li>
+    </ul>
+    <p>By submitting information to Rozkaana (including feedback, suggestions, or wellness data), you grant us a worldwide, royalty-free licence to use that information to improve and operate the Service, consistent with our Privacy Policy.</p>
+
+    <h2 id="liability">10. Limitation of Liability</h2>
+    <p>To the maximum extent permitted by applicable law:</p>
+    <ul>
+      <li>The Service is provided &ldquo;as is&rdquo; and &ldquo;as available&rdquo; without warranties of any kind, express or implied, including warranties of merchantability, fitness for a particular purpose, or non-infringement;</li>
+      <li>Rozkaana&rsquo;s total liability to you for any claim arising from these Terms or your use of the Service shall not exceed the amount you paid to Rozkaana in the 3 months preceding the claim;</li>
+      <li>We are not liable for indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, health outcomes, or business interruption;</li>
+      <li>We are not liable for failures of third-party services (email providers, payment processors, cloud infrastructure) that affect Service delivery.</li>
+    </ul>
+    <p>Some jurisdictions do not allow the exclusion of certain warranties or the limitation of liability — in such cases, liability is limited to the minimum extent permitted by law.</p>
+
+    <h2 id="indemnity">11. Indemnification</h2>
+    <p>You agree to indemnify and hold Rozkaana, its directors, employees, and partners harmless from any claims, losses, damages, or expenses (including reasonable legal fees) arising from:</p>
+    <ul>
+      <li>Your violation of these Terms;</li>
+      <li>Your submission of inaccurate profile or health information;</li>
+      <li>Your infringement of any third-party rights through your use of the Service.</li>
+    </ul>
+
+    <h2 id="termination">12. Termination</h2>
+    <h3>Termination by You</h3>
+    <p>You may cancel your subscription at any time from the <a href="/billing">Billing page</a>. Your access continues until the end of the current billing period. You may delete your account via <a href="/settings">Settings</a> at any time. See our <a href="/refund">Refund Policy</a> for applicable refunds.</p>
+    <h3>Termination by Rozkaana</h3>
+    <p>We may suspend or terminate your account immediately, without notice or refund, if you:</p>
+    <ul>
+      <li>Violate any provision of these Terms;</li>
+      <li>Engage in fraudulent, abusive, or harmful conduct;</li>
+      <li>Provide deliberately false health information;</li>
+      <li>Attempt to circumvent our systems or payments.</li>
+    </ul>
+    <p>In cases of unintentional breach, we will attempt to provide 7 days&rsquo; notice and an opportunity to remedy the breach before termination.</p>
+    <h3>Effect of Termination</h3>
+    <p>Upon termination: your licence to use the Service ends; your Meal Plans and profile data will be deleted (subject to legal retention requirements); access to your account and history will cease. Provisions of these Terms that by their nature should survive termination (including Sections 9, 10, 11, 13, and 14) shall survive.</p>
+
+    <h2 id="governing-law">13. Governing Law</h2>
+    <p>These Terms are governed by and construed in accordance with the laws of India, including the Indian Contract Act 1872, the Information Technology Act 2000 and its rules, the Consumer Protection Act 2019, the DPDP Act 2023, and all other applicable Indian statutes. The United Nations Convention on Contracts for the International Sale of Goods does not apply.</p>
+
+    <h2 id="disputes">14. Dispute Resolution</h2>
+    <p>We encourage you to first contact us at <a href="mailto:support@rozkaana.in">support@rozkaana.in</a> to attempt informal resolution of any dispute. Most issues are resolved within 7 business days.</p>
+    <p>If informal resolution fails, disputes shall be referred to and finally resolved by arbitration under the Arbitration and Conciliation Act, 1996, as amended. The seat and venue of arbitration shall be [City], India. The language of arbitration shall be English. The arbitral tribunal shall consist of a sole arbitrator appointed by mutual agreement.</p>
+    <p>Nothing in this clause prevents either party from seeking urgent injunctive or other equitable relief from a court of competent jurisdiction. Subject to the arbitration clause, you consent to the exclusive jurisdiction of courts in [City], India for any disputes not subject to arbitration.</p>
+
+    <h2 id="changes">15. Changes to These Terms</h2>
+    <p>We may update these Terms from time to time. We will notify you of material changes by email at least 30 days before they take effect, and by posting the updated Terms on this page with a revised &ldquo;Last updated&rdquo; date. Non-material changes (such as typographical corrections or clarifications that do not alter your rights) may be made without notice.</p>
+    <p>Your continued use of the Service after the effective date of any changes constitutes acceptance of the updated Terms. If you disagree with the updated Terms, you may cancel your subscription and delete your account before the effective date.</p>
+
+    <h2 id="contact">16. Contact</h2>
+    <p>For questions about these Terms:<br>
+    <a href="mailto:legal@rozkaana.in">legal@rozkaana.in</a></p>
+    <p>For general support:<br>
+    <a href="mailto:support@rozkaana.in">support@rozkaana.in</a></p>
+    <p>Rozkaana Tech Private Limited<br>
+    [Address], India</p>
+
+    <hr class="divider">
+    <p style="font-size:.82rem;color:var(--muted)">These Terms were last updated on 9 May 2026. If you have a print of a previous version, please refer to this page for the current version.</p>
+
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <h3>Roz<span>kaana</span></h3>
+      <p>India&rsquo;s most personalised diet subscription. Rooted in Indian food culture, powered by modern nutrition science.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="/#how">How It Works</a></li>
+        <li><a href="/#meals">Sample Meals</a></li>
+        <li><a href="/#pricing">Pricing</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal &amp; Support</h4>
+      <ul>
+        <li><a href="/about">About Us</a></li>
+        <li><a href="/help">Help Center</a></li>
+        <li><a href="/privacy">Privacy Policy</a></li>
+        <li><a href="/terms">Terms of Service</a></li>
+        <li><a href="/refund">Refund Policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Rozkaana. Made in India.</span>
+    <span>FSSAI Reg. &middot; ISO 27001 Certified &middot; RBI Compliant Payments</span>
+  </div>
+</footer>
+
+<script>
+// TOC: highlight active section on scroll
+(function () {
+  var headings = document.querySelectorAll('.prose h2[id]');
+  var links    = document.querySelectorAll('.toc-list a');
+  if (!headings.length || !links.length) return;
+
+  function update() {
+    var scrollY  = window.scrollY + 110;
+    var activeId = headings[0].id;
+    headings.forEach(function (h) {
+      if (h.offsetTop <= scrollY) activeId = h.id;
+    });
+    links.forEach(function (a) {
+      var on = a.getAttribute('href') === '#' + activeId;
+      a.classList.toggle('active', on);
+    });
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+
+  // Close mobile TOC after clicking a link
+  links.forEach(function (a) {
+    a.addEventListener('click', function () {
+      var toc = document.getElementById('pageToc');
+      if (toc) toc.classList.remove('open');
+    });
+  });
+})();
+</script>
+</body>
+</html>

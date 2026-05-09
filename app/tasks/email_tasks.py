@@ -24,18 +24,24 @@ def get_sync_session():
 
 @celery_app.task
 def send_all_emails():
-    """Send daily meal plan email to all users whose PDF is ready and email not yet sent."""
+    """Send daily meal plan email to all users whose PDF is ready and email not yet sent.
+
+    Runs at EMAIL_SEND_HOUR_UTC (default 00:00 UTC = 05:30 IST) for today's menus.
+    Also sweeps yesterday in case a PDF was built late or a previous send failed.
+    """
     from app.models.daily_menu import DailyMenu
     today = date.today()
+    yesterday = today - timedelta(days=1)
     with get_sync_session() as db:
         menus = db.query(DailyMenu).filter(
-            DailyMenu.menu_date == today,
-            DailyMenu.wa_sent_at.is_(None),
+            DailyMenu.menu_date >= yesterday,
+            DailyMenu.menu_date <= today,
+            DailyMenu.email_sent_at.is_(None),
             DailyMenu.pdf_key.isnot(None),
         ).all()
         for menu in menus:
             send_menu_email.delay(str(menu.id))
-    logger.info("Queued menu email for %d menus", len(menus))
+    logger.info("Queued menu email for %d menus (dates %s – %s)", len(menus), yesterday, today)
 
 
 @celery_app.task(bind=True, max_retries=2, default_retry_delay=300)
@@ -55,6 +61,9 @@ def send_menu_email(self, menu_id: str):
             if not menu or not menu.pdf_key:
                 logger.info("Skipping email for menu %s — no PDF", menu_id)
                 return
+            if menu.email_sent_at is not None:
+                logger.info("Skipping email for menu %s — already sent at %s", menu_id, menu.email_sent_at)
+                return
 
             if menu.owner_type == "household":
                 household = db.query(Household).get(menu.owner_id)
@@ -64,7 +73,7 @@ def send_menu_email(self, menu_id: str):
 
             if not user or not user.email or not user.email_verified:
                 logger.info("Skipping email for menu %s — no verified email", menu_id)
-                menu.wa_status = "skipped"
+                menu.email_status = "skipped"
                 return
 
             # Build recipe dict for template
@@ -112,11 +121,11 @@ def send_menu_email(self, menu_id: str):
             success = asyncio.run(_send())
 
             if success:
-                menu.wa_sent_at = datetime.utcnow()
-                menu.wa_status = "sent"
+                menu.email_sent_at = datetime.utcnow()
+                menu.email_status = "sent"
                 logger.info("Menu email sent to %s for %s", user.email, menu_id)
             else:
-                menu.wa_status = "failed"
+                menu.email_status = "failed"
                 raise self.retry(exc=RuntimeError("Email send failed"))
 
     except Exception as exc:

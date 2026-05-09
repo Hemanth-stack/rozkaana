@@ -101,16 +101,15 @@ def run_recipe_seed(self, verify: bool = True):
                     names_by_slot.setdefault((meal_type, cuisine), []).append(data["name"])
 
                     try:
-                        # Force matrix health_tags into health_safe_tags — prompt-level
-                        # safety net: Claude may still output generic tags like "general_healthy"
-                        # even after instruction, so we inject the requested condition tags here.
                         raw_safe_tags = data.get("health_safe_tags") or []
                         merged_safe_tags = list(set(raw_safe_tags + (health_tags or []) + ["general_healthy"]))
+                        def _s(val, maxlen):
+                            return str(val)[:maxlen] if val else None
                         recipe = Recipe(
-                            name=data["name"],
-                            name_local=data.get("name_local"),
+                            name=data["name"][:200],
+                            name_local=_s(data.get("name_local"), 200),
                             meal_type=meal_type,
-                            cuisine_region=data.get("cuisine_region", cuisine),
+                            cuisine_region=data.get("cuisine_region", cuisine)[:30],
                             eating_mode_tags=data.get("eating_mode_tags", [eating_mode]),
                             health_safe_tags=merged_safe_tags,
                             allergy_free_tags=data.get("allergy_free_tags", []),
@@ -128,10 +127,10 @@ def run_recipe_seed(self, verify: bool = True):
                             vitamin_b12_mcg=float(data.get("vitamin_b12_mcg", 0)) if data.get("vitamin_b12_mcg") else None,
                             vitamin_d_mcg=float(data.get("vitamin_d_mcg", 0)) if data.get("vitamin_d_mcg") else None,
                             glycemic_index=int(data.get("glycemic_index", 0)) if data.get("glycemic_index") else None,
-                            serving_unit=data.get("serving_unit"),
+                            serving_unit=_s(data.get("serving_unit"), 200),
                             prep_time_mins=data.get("prep_time_mins"),
-                            spice_level=data.get("spice_level", "medium"),
-                            main_ingredient=data.get("main_ingredient"),
+                            spice_level=_s(data.get("spice_level", "medium"), 20),
+                            main_ingredient=_s(data.get("main_ingredient"), 100),
                             ingredients=data.get("ingredients", []),
                             steps=data.get("steps", []),
                             is_verified=verify,

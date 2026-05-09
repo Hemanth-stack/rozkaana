@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Rozkaana</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--saffron:#E8593C;--saffron-dark:#C9421F;--cream:#FAF7F2;--cream-dark:#F2ECE3;--charcoal:#1A1612;--text:#3A3028;--muted:#7A6E65;--border:#E8DDD0;--green:#2E7D52}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);line-height:1.5}
+h1,h2,h3{font-family:'Playfair Display',serif}
+nav{background:rgba(250,247,242,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 5%;height:68px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--charcoal);text-decoration:none}
+.nav-logo span{color:var(--saffron)}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{text-decoration:none;color:var(--muted);font-weight:500;font-size:.92rem;transition:color .2s}
+.nav-links a:hover{color:var(--saffron)}
+.btn{display:inline-flex;align-items:center;background:var(--saffron);color:#fff;border:none;border-radius:10px;padding:.65rem 1.4rem;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.9rem;cursor:pointer;text-decoration:none;transition:background .2s}
+.btn:hover{background:var(--saffron-dark)}
+@media(max-width:768px){.nav-links{display:none}}
+.hero{background:var(--charcoal);padding:56px 5%;text-align:center}
+.hero h1{font-size:clamp(1.8rem,3.5vw,2.6rem);color:#fff;margin-bottom:.6rem}
+.hero p{font-size:.92rem;color:rgba(255,255,255,.55)}
+.layout{display:grid;grid-template-columns:220px 1fr;gap:3rem;max-width:1100px;margin:0 auto;padding:56px 5% 80px;align-items:start}
+.toc{position:sticky;top:88px;background:#fff;border-radius:14px;padding:1.4rem;border:1px solid var(--border)}
+.toc-toggle{display:none;width:100%;background:none;border:none;padding:0;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;color:var(--charcoal);cursor:pointer;align-items:center;justify-content:space-between;margin-bottom:.6rem}
+.toc-toggle:hover{color:var(--saffron)}
+.toc-chevron{font-size:.75rem;transition:transform .3s;display:inline-block}
+.toc.open .toc-chevron{transform:rotate(180deg)}
+.toc h4{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.9rem;font-family:'DM Sans',sans-serif}
+.toc-list{list-style:none;display:flex;flex-direction:column;gap:.4rem}
+.toc-list a{font-size:.83rem;color:var(--muted);text-decoration:none;line-height:1.4;transition:color .2s;display:block;padding:.15rem 0}
+.toc-list a:hover,.toc-list a.active{color:var(--saffron);font-weight:600}
+.toc-list a.active{border-left:2px solid var(--saffron);padding-left:.5rem;margin-left:-.5rem}
+.prose{min-width:0;overflow-wrap:break-word;word-break:break-word}
+.prose h2{font-size:1.5rem;color:var(--charcoal);margin:2.5rem 0 .9rem;padding-top:1rem}
+.prose h3{font-size:1.05rem;color:var(--charcoal);margin:1.5rem 0 .5rem;font-family:'DM Sans',sans-serif;font-weight:700}
+.prose p{color:var(--text);line-height:1.8;margin-bottom:1rem;font-size:.95rem}
+.prose ul,.prose ol{padding-left:1.4rem;margin-bottom:1rem}
+.prose li{color:var(--text);line-height:1.8;margin-bottom:.3rem;font-size:.95rem}
+.prose a{color:var(--saffron);text-decoration:none;overflow-wrap:break-word;word-break:break-all}
+.prose a:hover{text-decoration:underline}
+.prose strong{color:var(--charcoal);font-weight:600}
+.prose code{font-family:'Courier New',monospace;font-size:.85em;background:var(--cream-dark);border:1px solid var(--border);padding:1px 6px;border-radius:4px;word-break:break-all}
+.highlight-box{background:rgba(232,89,60,.06);border:1px solid rgba(232,89,60,.2);border-radius:12px;padding:1.2rem 1.4rem;margin:1.5rem 0;font-size:.9rem;color:var(--text);line-height:1.7;overflow-wrap:break-word}
+.highlight-box strong{color:var(--saffron-dark)}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1rem 0 1.5rem;border-radius:8px;border:1px solid var(--border)}
+.data-table{width:100%;border-collapse:collapse;font-size:.87rem;min-width:480px}
+.data-table th{background:var(--charcoal);color:#fff;padding:.7rem 1rem;text-align:left;font-weight:600;font-size:.78rem;letter-spacing:.04em;white-space:nowrap}
+.data-table td{padding:.7rem 1rem;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top;line-height:1.6;word-break:break-word}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tbody tr:nth-child(even) td{background:var(--cream)}
+.divider{border:none;border-top:1px solid var(--border);margin:2rem 0}
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .toc{position:static;order:-1;margin-bottom:1.5rem}
+  .toc h4{display:none}
+  .toc-toggle{display:flex}
+  .toc-list{max-height:0;overflow:hidden;transition:max-height .35s ease}
+  .toc.open .toc-list{max-height:800px}
+}
+@media(max-width:600px){.prose h2{font-size:1.25rem}.prose h3{font-size:.97rem}}
+footer{background:var(--charcoal);color:rgba(255,255,255,.6);padding:52px 5% 28px}
+.footer-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:3rem;margin-bottom:2.5rem}
+.footer-brand h3{font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff;margin-bottom:.4rem}
+.footer-brand h3 span{color:var(--saffron)}
+.footer-brand p{font-size:.82rem;line-height:1.7;max-width:280px;margin:0}
+.footer-col h4{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.9rem}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.footer-col ul a{text-decoration:none;color:rgba(255,255,255,.55);font-size:.83rem;transition:color .2s}
+.footer-col ul a:hover{color:#fff}
+.footer-bottom{max-width:1200px;margin:0 auto;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between;align-items:center;font-size:.78rem;flex-wrap:wrap;gap:.5rem}
+@media(max-width:768px){.footer-inner{grid-template-columns:1fr;gap:2rem}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Roz<span>kaana</span></a>
+  <ul class="nav-links">
+    <li><a href="/#why">Why Us</a></li>
+    <li><a href="/#pricing">Pricing</a></li>
+    <li><a href="/help">Help</a></li>
+  </ul>
+  <a href="/#pricing" class="btn">Start Free Trial &rarr;</a>
+</nav>
+
+<div class="hero">
+  <h1>Privacy Policy</h1>
+  <p>Last updated: 9 May 2026 &middot; Effective from: 9 May 2026</p>
+</div>
+
+<div class="layout">
+  <nav class="toc" id="pageToc">
+    <button class="toc-toggle" onclick="document.getElementById('pageToc').classList.toggle('open')" aria-expanded="false">
+      Contents <span class="toc-chevron">&#9660;</span>
+    </button>
+    <h4>Contents</h4>
+    <ul class="toc-list">
+      <li><a href="#who-we-are">1. Who We Are</a></li>
+      <li><a href="#data-we-collect">2. Data We Collect</a></li>
+      <li><a href="#how-we-use">3. How We Use It</a></li>
+      <li><a href="#legal-basis">4. Legal Basis</a></li>
+      <li><a href="#sharing">5. Sharing Your Data</a></li>
+      <li><a href="#retention">6. Retention</a></li>
+      <li><a href="#your-rights">7. Your Rights</a></li>
+      <li><a href="#health-data">8. Health Data</a></li>
+      <li><a href="#security">9. Security</a></li>
+      <li><a href="#cookies">10. Cookies</a></li>
+      <li><a href="#children">11. Children</a></li>
+      <li><a href="#changes">12. Changes</a></li>
+      <li><a href="#contact">13. Contact &amp; Grievances</a></li>
+    </ul>
+  </nav>
+
+  <div class="prose">
+
+    <div class="highlight-box">
+      <strong>Plain-English Summary:</strong> We collect your health details and food preferences to build your personalised meal plan. We don&rsquo;t sell your data or use it for advertising. Your health data is encrypted and treated as sensitive. You can access, correct, or delete your data at any time. We comply with India&rsquo;s Digital Personal Data Protection (DPDP) Act, 2023.
+    </div>
+
+    <h2 id="who-we-are">1. Who We Are</h2>
+    <p>Rozkaana Tech Private Limited (&ldquo;Rozkaana,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; &ldquo;our&rdquo;) operates the Rozkaana personalised meal plan service available at rozkaana.in and its subdomains (the &ldquo;Service&rdquo;). We are the <strong>Data Fiduciary</strong> as defined under India&rsquo;s Digital Personal Data Protection Act, 2023 (&ldquo;DPDP Act&rdquo;).</p>
+    <p>Registered address: [Address], India. For all privacy matters, contact our Grievance Officer as described in Section 13.</p>
+
+    <h2 id="data-we-collect">2. Data We Collect</h2>
+    <p>We collect personal data in the following categories:</p>
+
+    <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Category</th><th>Data Points</th><th>How Collected</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Identity</strong></td><td>Name, email address</td><td>You provide during sign-up</td></tr>
+        <tr><td><strong>Body &amp; Physical</strong></td><td>Age, gender, weight (kg), height (cm), BMI</td><td>You provide during onboarding</td></tr>
+        <tr><td><strong>Health (Sensitive)</strong></td><td>Medical conditions (diabetes, PCOS, hypertension, etc.), food allergies, dietary restrictions</td><td>You provide during onboarding; updated via Settings</td></tr>
+        <tr><td><strong>Wellness Signals</strong></td><td>Daily energy level, sleep quality, digestion, hair loss, muscle cramps, blood sugar indicators</td><td>You log daily via the app (voluntary)</td></tr>
+        <tr><td><strong>Dietary Preferences</strong></td><td>Eating mode, cuisine preferences, non-veg days</td><td>You provide during onboarding; updated via Settings</td></tr>
+        <tr><td><strong>Usage &amp; Technical</strong></td><td>Login timestamps, page views, plan generation events, error logs, IP address, browser type</td><td>Automatically collected via server logs</td></tr>
+        <tr><td><strong>Payment</strong></td><td>Transaction ID, plan type, subscription status. We do NOT store card numbers or UPI credentials.</td><td>Processed by Razorpay (PCI-DSS compliant)</td></tr>
+        <tr><td><strong>Communications</strong></td><td>Support emails and messages you send us</td><td>You provide when contacting support</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>We do <strong>not</strong> collect biometric data, government ID numbers, financial account details, or location data beyond what is provided voluntarily in your profile.</p>
+
+    <h2 id="how-we-use">3. How We Use Your Data</h2>
+    <ul>
+      <li><strong>Meal plan generation:</strong> Your body stats, health conditions, dietary preferences, and wellness signals are the core inputs to our nutrition AI. Without this data, the Service cannot function.</li>
+      <li><strong>Plan delivery:</strong> We use your email address to deliver your daily meal plan PDF and system notifications.</li>
+      <li><strong>Account management:</strong> OTP authentication, subscription management, billing communications.</li>
+      <li><strong>Service improvement:</strong> Aggregated, anonymised usage data helps us improve recipe coverage, fix bugs, and improve plan quality. This data cannot be traced back to you.</li>
+      <li><strong>Safety:</strong> We may process technical data to detect fraud, abuse, or security threats.</li>
+      <li><strong>Legal compliance:</strong> We process data as required by Indian law, including the DPDP Act, GST regulations, and any valid legal orders from competent authorities.</li>
+    </ul>
+    <p>We do <strong>not</strong> use your data for advertising, profiling for commercial purposes unrelated to the Service, or selling to third parties.</p>
+
+    <h2 id="legal-basis">4. Legal Basis for Processing</h2>
+    <p>Under the DPDP Act, 2023, we process your personal data on the following bases:</p>
+    <ul>
+      <li><strong>Consent:</strong> For health data (sensitive personal data), wellness signals, and marketing communications. You provide explicit consent during onboarding and can withdraw it at any time.</li>
+      <li><strong>Contract performance:</strong> For account creation, meal plan generation, and delivery — necessary to provide the Service you have subscribed to.</li>
+      <li><strong>Legitimate interest:</strong> For service improvement using anonymised aggregates, fraud prevention, and system security — balanced against your privacy rights.</li>
+      <li><strong>Legal obligation:</strong> For retention of billing records and compliance with tax law (GST) and other applicable Indian legislation.</li>
+    </ul>
+
+    <h2 id="sharing">5. Sharing Your Data</h2>
+    <p>We share your data only in the following limited circumstances:</p>
+    <h3>Service Providers (Data Processors)</h3>
+    <p>We engage trusted third-party processors who act on our instructions and are bound by data processing agreements:</p>
+    <ul>
+      <li><strong>Razorpay:</strong> Payment processing. Processes transaction data; does not receive health data.</li>
+      <li><strong>Amazon Web Services (AWS):</strong> Cloud infrastructure hosting the application and database. Servers located in India (ap-south-1 region).</li>
+      <li><strong>Zoho Mail:</strong> Transactional email delivery (OTPs, meal plan PDFs, notifications).</li>
+      <li><strong>Anthropic (Claude API):</strong> Used for recipe generation assistance. Only recipe-related parameters (meal type, cuisine, dietary constraints) are sent — no personal identifiers or health data.</li>
+    </ul>
+    <h3>Legal Disclosures</h3>
+    <p>We may disclose your data to government authorities or courts when required by a valid legal order under Indian law. We will notify you where legally permissible.</p>
+    <h3>Business Transfers</h3>
+    <p>If Rozkaana is acquired or merged with another entity, your data may be transferred as part of the transaction. We will notify you at least 30 days before such a transfer and give you the option to delete your account.</p>
+    <p>We do <strong>not</strong> sell, rent, or share your personal data with advertisers or data brokers under any circumstances.</p>
+
+    <h2 id="retention">6. Data Retention</h2>
+    <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Data Type</th><th>Retention Period</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Account &amp; profile data</td><td>Until account deletion + 7 days for deletion processing</td><td>Service delivery</td></tr>
+        <tr><td>Health &amp; wellness data</td><td>Until account deletion + 7 days</td><td>Plan personalisation; deleted on request</td></tr>
+        <tr><td>Meal plan records</td><td>24 months from generation</td><td>History feature; review and audit</td></tr>
+        <tr><td>Billing &amp; payment records</td><td>7 years from transaction</td><td>GST compliance (Indian tax law requires 6-year retention)</td></tr>
+        <tr><td>Support communications</td><td>3 years from last contact</td><td>Dispute resolution</td></tr>
+        <tr><td>Server logs</td><td>90 days</td><td>Security and debugging</td></tr>
+        <tr><td>OTP session data</td><td>10 minutes (auto-purged)</td><td>Authentication security</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h2 id="your-rights">7. Your Rights Under the DPDP Act</h2>
+    <p>As a Data Principal under India&rsquo;s Digital Personal Data Protection Act, 2023, you have the following rights:</p>
+    <ul>
+      <li><strong>Right to access:</strong> Request a copy of the personal data we hold about you.</li>
+      <li><strong>Right to correction:</strong> Request correction of inaccurate or incomplete data. Most profile data can be updated directly in <a href="/settings">Settings</a>.</li>
+      <li><strong>Right to erasure:</strong> Request deletion of your personal data. Exercise this via Settings → Danger Zone → Delete Account, or by emailing <a href="mailto:privacy@rozkaana.in">privacy@rozkaana.in</a>. Note: billing records are retained for 7 years as required by law.</li>
+      <li><strong>Right to grievance redressal:</strong> Raise a complaint with our Grievance Officer (Section 13). If unresolved, you may approach the Data Protection Board of India.</li>
+      <li><strong>Right to withdraw consent:</strong> You can withdraw consent for health data processing at any time. Withdrawing consent for core service data will necessitate account closure.</li>
+      <li><strong>Right to nominate:</strong> You may nominate a person to exercise your rights in the event of your incapacity or death.</li>
+    </ul>
+    <p>To exercise any right, email <a href="mailto:privacy@rozkaana.in">privacy@rozkaana.in</a> from your registered email address. We will respond within <strong>30 days</strong> as required by the DPDP Act.</p>
+
+    <h2 id="health-data">8. Health Data — Special Protections</h2>
+    <div class="highlight-box">
+      <strong>Your health data is sensitive.</strong> Medical conditions, dietary restrictions related to health, and wellness signals constitute sensitive personal data under the DPDP Act. We apply additional protections to this data.
+    </div>
+    <ul>
+      <li>Health data is collected only with your explicit, informed consent.</li>
+      <li>It is encrypted at rest using AES-256 and in transit using TLS 1.3.</li>
+      <li>It is never shared with third parties for commercial purposes.</li>
+      <li>It is processed only by the Rozkaana meal plan engine — not exposed to any external AI model in identifiable form.</li>
+      <li>Access within Rozkaana is restricted to personnel with a legitimate operational need.</li>
+      <li>You can delete all health data by deleting your account (Settings → Danger Zone).</li>
+    </ul>
+    <p>Rozkaana is not a medical service. The meal plans we generate are based on nutrition science and your profile inputs — they are not medical advice and should not replace consultation with a qualified doctor or registered dietician.</p>
+
+    <h2 id="security">9. Security</h2>
+    <p>We maintain technical and organisational measures appropriate to the sensitivity of the data we hold:</p>
+    <ul>
+      <li>All data is encrypted at rest (AES-256) and in transit (TLS 1.3).</li>
+      <li>Databases are not publicly accessible; all access is restricted to the application layer via private networking.</li>
+      <li>Authentication uses time-limited OTPs with rate limiting to prevent brute-force attacks.</li>
+      <li>We conduct regular security reviews and vulnerability assessments.</li>
+      <li>Access to production systems is restricted to authorised personnel using multi-factor authentication.</li>
+    </ul>
+    <p>In the event of a personal data breach that is likely to result in harm to you, we will notify the Data Protection Board of India within 72 hours and notify affected users without undue delay, as required by the DPDP Act.</p>
+
+    <h2 id="cookies">10. Cookies and Local Storage</h2>
+    <p>We use browser local storage (not traditional cookies) to store your authentication token (<code>rzk_token</code>) and refresh token (<code>rzk_refresh</code>) on your device. These are essential for keeping you logged in. They are deleted when you log out.</p>
+    <p>We do not use advertising cookies, tracking pixels, or cross-site tracking of any kind. We do not integrate with Google Analytics, Facebook Pixel, or any advertising network.</p>
+
+    <h2 id="children">11. Children&rsquo;s Privacy</h2>
+    <p>Rozkaana is not intended for individuals under 13 years of age. We do not knowingly collect personal data from children under 13. If you are a parent or guardian and believe your child has provided us with personal data, contact <a href="mailto:privacy@rozkaana.in">privacy@rozkaana.in</a> and we will delete it promptly.</p>
+    <p>For household accounts on the Family plan, parents may add children (under 13) to the household. In such cases, the parent or guardian is responsible for obtaining appropriate consent on the child&rsquo;s behalf, and the child&rsquo;s data is processed under the parent&rsquo;s account authority.</p>
+
+    <h2 id="changes">12. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. When we make material changes — changes that meaningfully affect how we use your data — we will notify you by email at least 30 days before the changes take effect and update the &ldquo;Last updated&rdquo; date at the top of this page.</p>
+    <p>Continued use of the Service after the effective date constitutes acceptance of the updated policy. If you do not agree to a material change, you may delete your account before the effective date.</p>
+
+    <h2 id="contact">13. Contact &amp; Grievance Redressal</h2>
+    <h3>General Privacy Enquiries</h3>
+    <p>Email: <a href="mailto:privacy@rozkaana.in">privacy@rozkaana.in</a><br>
+    Response time: Within 30 days of receipt.</p>
+
+    <h3>Grievance Officer</h3>
+    <p>As required by the DPDP Act, 2023, we have appointed a Grievance Officer:</p>
+    <p><strong>Name:</strong> [Grievance Officer Name]<br>
+    <strong>Designation:</strong> Grievance Officer, Rozkaana Tech Private Limited<br>
+    <strong>Email:</strong> <a href="mailto:grievance@rozkaana.in">grievance@rozkaana.in</a><br>
+    <strong>Address:</strong> [Company Address], India<br>
+    <strong>Response time:</strong> Within 30 days of complaint receipt.</p>
+
+    <p>If you are not satisfied with our response, you may approach the <strong>Data Protection Board of India</strong> once constituted under the DPDP Act, or any other competent authority under applicable Indian law.</p>
+
+    <hr class="divider">
+    <p style="font-size:.82rem;color:var(--muted)">This Privacy Policy is governed by the laws of India. Any disputes arising from this policy shall be subject to the jurisdiction of courts in [City], India.</p>
+
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <h3>Roz<span>kaana</span></h3>
+      <p>India&rsquo;s most personalised diet subscription. Rooted in Indian food culture, powered by modern nutrition science.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="/#how">How It Works</a></li>
+        <li><a href="/#meals">Sample Meals</a></li>
+        <li><a href="/#pricing">Pricing</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal &amp; Support</h4>
+      <ul>
+        <li><a href="/about">About Us</a></li>
+        <li><a href="/help">Help Center</a></li>
+        <li><a href="/privacy">Privacy Policy</a></li>
+        <li><a href="/terms">Terms of Service</a></li>
+        <li><a href="/refund">Refund Policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Rozkaana. Made in India.</span>
+    <span>FSSAI Reg. &middot; ISO 27001 Certified &middot; RBI Compliant Payments</span>
+  </div>
+</footer>
+
+<script>
+// TOC: highlight active section on scroll
+(function () {
+  var headings = document.querySelectorAll('.prose h2[id]');
+  var links    = document.querySelectorAll('.toc-list a');
+  if (!headings.length || !links.length) return;
+
+  function update() {
+    var scrollY  = window.scrollY + 110;
+    var activeId = headings[0].id;
+    headings.forEach(function (h) {
+      if (h.offsetTop <= scrollY) activeId = h.id;
+    });
+    links.forEach(function (a) {
+      var on = a.getAttribute('href') === '#' + activeId;
+      a.classList.toggle('active', on);
+    });
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+
+  // Close mobile TOC after clicking a link
+  links.forEach(function (a) {
+    a.addEventListener('click', function () {
+      var toc = document.getElementById('pageToc');
+      if (toc) toc.classList.remove('open');
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -39,6 +39,12 @@ input:focus,select:focus{border-color:var(--saffron)}
 .bmi-box{display:none;background:var(--cream-dark);border-radius:10px;padding:12px 16px;margin-top:16px;font-size:.85rem}
 .bmi-val{font-size:1.3rem;font-weight:800;color:var(--saffron)}
 .err{font-size:.78rem;color:#dc2626;margin-top:6px;display:none}
+@media(max-width:600px){
+  .card{padding:24px 18px}
+  .row{grid-template-columns:1fr}
+  .container{margin:24px auto}
+  h2{font-size:1.4rem}
+}
 </style>
 </head>
 <body>
@@ -85,32 +91,32 @@ input:focus,select:focus{border-color:var(--saffron)}
     <h2>What's your goal?</h2>
     <p class="sub">We'll adjust your calorie targets and meal types accordingly.</p>
     <div class="chip-group" id="goalGroup">
-      <div class="chip" data-val="weight_loss" onclick="pickOne(this,'goalGroup')">⬇ Weight Loss</div>
-      <div class="chip" data-val="maintenance" onclick="pickOne(this,'goalGroup')">⚖ Maintenance</div>
-      <div class="chip" data-val="muscle_gain" onclick="pickOne(this,'goalGroup')">💪 Muscle Gain</div>
+      <div class="chip" data-val="weight_loss" onclick="pickOne(this,'goalGroup')">Weight Loss</div>
+      <div class="chip" data-val="maintenance" onclick="pickOne(this,'goalGroup')">Maintenance</div>
+      <div class="chip" data-val="muscle_gain" onclick="pickOne(this,'goalGroup')">Muscle Gain</div>
     </div>
     <div style="margin-top:28px">
       <label style="display:block;margin-bottom:10px">Any health conditions? (optional)</label>
       <div class="chip-group" id="healthGroup">
-        <div class="chip" data-val="diabetes_t2" onclick="pickMany(this)">🩺 Diabetes T2</div>
-        <div class="chip" data-val="hypertension" onclick="pickMany(this)">❤️ High BP</div>
-        <div class="chip" data-val="pcos" onclick="pickMany(this)">🔬 PCOS</div>
-        <div class="chip" data-val="thyroid_hypo" onclick="pickMany(this)">🦋 Thyroid</div>
-        <div class="chip" data-val="anemia" onclick="pickMany(this)">🩸 Anemia</div>
-        <div class="chip" data-val="high_cholesterol" onclick="pickMany(this)">🫀 High Cholesterol</div>
-        <div class="chip" data-val="kidney_disease" onclick="pickMany(this)">💊 Kidney Disease</div>
+        <div class="chip" data-val="diabetes_t2" onclick="pickMany(this)">Diabetes T2</div>
+        <div class="chip" data-val="hypertension" onclick="pickMany(this)">High BP</div>
+        <div class="chip" data-val="pcos" onclick="pickMany(this)">PCOS</div>
+        <div class="chip" data-val="thyroid_hypo" onclick="pickMany(this)">Thyroid</div>
+        <div class="chip" data-val="anemia" onclick="pickMany(this)">Anemia</div>
+        <div class="chip" data-val="high_cholesterol" onclick="pickMany(this)">High Cholesterol</div>
+        <div class="chip" data-val="kidney_disease" onclick="pickMany(this)">Kidney Disease</div>
       </div>
     </div>
     <div style="margin-top:24px">
       <label style="display:block;margin-bottom:10px">Any food allergies? (optional)</label>
       <div class="chip-group" id="allergyGroup">
-        <div class="chip" data-val="gluten" onclick="pickMany(this)">🌾 Gluten</div>
-        <div class="chip" data-val="dairy" onclick="pickMany(this)">🥛 Dairy</div>
-        <div class="chip" data-val="nuts" onclick="pickMany(this)">🥜 Nuts</div>
-        <div class="chip" data-val="shellfish" onclick="pickMany(this)">🦐 Shellfish</div>
-        <div class="chip" data-val="sesame" onclick="pickMany(this)">🫙 Sesame</div>
-        <div class="chip" data-val="soy" onclick="pickMany(this)">🫘 Soy</div>
-        <div class="chip" data-val="egg" onclick="pickMany(this)">🥚 Egg</div>
+        <div class="chip" data-val="gluten" onclick="pickMany(this)">Gluten</div>
+        <div class="chip" data-val="dairy" onclick="pickMany(this)">Dairy</div>
+        <div class="chip" data-val="nuts" onclick="pickMany(this)">Nuts</div>
+        <div class="chip" data-val="shellfish" onclick="pickMany(this)">Shellfish</div>
+        <div class="chip" data-val="sesame" onclick="pickMany(this)">Sesame</div>
+        <div class="chip" data-val="soy" onclick="pickMany(this)">Soy</div>
+        <div class="chip" data-val="egg" onclick="pickMany(this)">Egg</div>
       </div>
     </div>
     <div class="err" id="err1">Please select a goal.</div>
@@ -125,36 +131,36 @@ input:focus,select:focus{border-color:var(--saffron)}
     <p class="sub">We'll only show you recipes that match your eating style.</p>
     <label style="display:block;margin-bottom:10px">Dietary preference</label>
     <div class="chip-group" id="modeGroup">
-      <div class="chip" data-val="pure_veg" onclick="pickOne(this,'modeGroup')">🥦 Pure Veg</div>
-      <div class="chip" data-val="conditional_nv" onclick="pickOne(this,'modeGroup')">🥚 Conditional NV</div>
-      <div class="chip" data-val="full_nv" onclick="pickOne(this,'modeGroup')">🍗 Non-Veg</div>
-      <div class="chip" data-val="jain" onclick="pickOne(this,'modeGroup')">🕊 Jain</div>
-      <div class="chip" data-val="sattvic" onclick="pickOne(this,'modeGroup')">🌿 Sattvic</div>
+      <div class="chip" data-val="pure_veg" onclick="pickOne(this,'modeGroup')">Pure Veg</div>
+      <div class="chip" data-val="conditional_nv" onclick="pickOne(this,'modeGroup')">Conditional NV</div>
+      <div class="chip" data-val="full_nv" onclick="pickOne(this,'modeGroup')">Non-Veg</div>
+      <div class="chip" data-val="jain" onclick="pickOne(this,'modeGroup')">Jain</div>
+      <div class="chip" data-val="sattvic" onclick="pickOne(this,'modeGroup')">Sattvic</div>
     </div>
     <!-- nv_days — only shown for conditional_nv -->
     <div style="margin-top:24px;display:none" id="nvDaysSection">
       <label style="display:block;margin-bottom:10px">Which days do you eat non-veg?</label>
       <div class="chip-group" id="nvDaysGroup">
-        <div class="chip" data-val="monday"    onclick="pickMany(this)">Mon</div>
-        <div class="chip" data-val="tuesday"   onclick="pickMany(this)">Tue</div>
+        <div class="chip" data-val="monday" onclick="pickMany(this)">Mon</div>
+        <div class="chip" data-val="tuesday" onclick="pickMany(this)">Tue</div>
         <div class="chip" data-val="wednesday" onclick="pickMany(this)">Wed</div>
-        <div class="chip" data-val="thursday"  onclick="pickMany(this)">Thu</div>
-        <div class="chip" data-val="friday"    onclick="pickMany(this)">Fri</div>
-        <div class="chip" data-val="saturday"  onclick="pickMany(this)">Sat</div>
-        <div class="chip" data-val="sunday"    onclick="pickMany(this)">Sun</div>
+        <div class="chip" data-val="thursday" onclick="pickMany(this)">Thu</div>
+        <div class="chip" data-val="friday" onclick="pickMany(this)">Fri</div>
+        <div class="chip" data-val="saturday" onclick="pickMany(this)">Sat</div>
+        <div class="chip" data-val="sunday" onclick="pickMany(this)">Sun</div>
       </div>
     </div>
     <div style="margin-top:24px">
       <label style="display:block;margin-bottom:10px">Preferred cuisines (pick up to 3)</label>
       <div class="chip-group" id="cuisineGroup">
-        <div class="chip" data-val="north_indian" onclick="pickMax(this,'cuisineGroup',3)">🫓 North Indian</div>
-        <div class="chip" data-val="south_indian" onclick="pickMax(this,'cuisineGroup',3)">🍚 South Indian</div>
-        <div class="chip" data-val="bengali" onclick="pickMax(this,'cuisineGroup',3)">🐟 Bengali</div>
-        <div class="chip" data-val="gujarati" onclick="pickMax(this,'cuisineGroup',3)">🥘 Gujarati</div>
-        <div class="chip" data-val="maharashtrian" onclick="pickMax(this,'cuisineGroup',3)">🥙 Maharashtrian</div>
-        <div class="chip" data-val="punjabi" onclick="pickMax(this,'cuisineGroup',3)">🧆 Punjabi</div>
-        <div class="chip" data-val="hyderabadi" onclick="pickMax(this,'cuisineGroup',3)">🍖 Hyderabadi</div>
-        <div class="chip" data-val="kerala" onclick="pickMax(this,'cuisineGroup',3)">🥥 Kerala</div>
+        <div class="chip" data-val="north_indian" onclick="pickMax(this,'cuisineGroup',3)">North Indian</div>
+        <div class="chip" data-val="south_indian" onclick="pickMax(this,'cuisineGroup',3)">South Indian</div>
+        <div class="chip" data-val="bengali" onclick="pickMax(this,'cuisineGroup',3)">Bengali</div>
+        <div class="chip" data-val="gujarati" onclick="pickMax(this,'cuisineGroup',3)">Gujarati</div>
+        <div class="chip" data-val="maharashtrian" onclick="pickMax(this,'cuisineGroup',3)">Maharashtrian</div>
+        <div class="chip" data-val="punjabi" onclick="pickMax(this,'cuisineGroup',3)">Punjabi</div>
+        <div class="chip" data-val="hyderabadi" onclick="pickMax(this,'cuisineGroup',3)">Hyderabadi</div>
+        <div class="chip" data-val="kerala" onclick="pickMax(this,'cuisineGroup',3)">Kerala</div>
       </div>
     </div>
     <div class="err" id="err2">Please select a dietary preference and at least one cuisine.</div>
@@ -165,7 +171,7 @@ input:focus,select:focus{border-color:var(--saffron)}
   <!-- Step 3: Confirm -->
   <div class="card" id="step3" style="display:none">
     <div class="step-label">Step 4 of 4</div>
-    <h2>You're all set! 🎉</h2>
+    <h2>You're all set! </h2>
     <p class="sub">Here's a summary of your profile. Your first personalised meal plan will arrive in your inbox tomorrow at 6 AM.</p>
     <div id="summary" style="background:var(--cream-dark);border-radius:12px;padding:20px;margin:20px 0;font-size:.9rem;line-height:2"></div>
     <button class="btn" id="finishBtn" onclick="finish()">Start My Free Trial →</button>
@@ -200,18 +206,16 @@ function setDots(active) {
 function pickOne(el, groupId) {
   document.querySelectorAll('#' + groupId + ' .chip').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
+  if (groupId === 'modeGroup') {
+    const nvSection = document.getElementById('nvDaysSection');
+    if (nvSection) nvSection.style.display = el.dataset.val === 'conditional_nv' ? 'block' : 'none';
+  }
 }
 function pickMany(el) { el.classList.toggle('selected'); }
 function pickMax(el, groupId, max) {
   const selected = document.querySelectorAll('#' + groupId + ' .chip.selected');
   if (!el.classList.contains('selected') && selected.length >= max) return;
   el.classList.toggle('selected');
-  // Show nv_days section when conditional_nv is selected in modeGroup
-  if (groupId === 'modeGroup') {
-    const mode = el.dataset.val;
-    const nvSection = document.getElementById('nvDaysSection');
-    if (nvSection) nvSection.style.display = mode === 'conditional_nv' && el.classList.contains('selected') ? 'block' : 'none';
-  }
 }
 function getSelected(groupId) {
   return [...document.querySelectorAll('#' + groupId + ' .chip.selected')].map(c => c.dataset.val);
@@ -238,7 +242,7 @@ function next(step) {
 
   if (step === 0) {
     const name = document.getElementById('name').value.trim();
-    const age  = +document.getElementById('age').value;
+    const age = +document.getElementById('age').value;
     const gender = document.getElementById('gender').value;
     const w = +document.getElementById('weight').value;
     const h = +document.getElementById('height').value;
@@ -277,8 +281,8 @@ function back(step) {
 }
 
 function buildSummary() {
-  const goalLabel = {weight_loss:'Weight Loss ⬇',maintenance:'Maintenance ⚖',muscle_gain:'Muscle Gain 💪'}[profile.goal]||profile.goal;
-  const modeLabel = {pure_veg:'Pure Veg 🥦',conditional_nv:'Conditional NV 🥚',full_nv:'Non-Veg 🍗',jain:'Jain 🕊',sattvic:'Sattvic 🌿'}[profile.eating_mode]||profile.eating_mode;
+  const goalLabel = {weight_loss:'Weight Loss ',maintenance:'Maintenance ',muscle_gain:'Muscle Gain '}[profile.goal]||profile.goal;
+  const modeLabel = {pure_veg:'Pure Veg ',conditional_nv:'Conditional NV ',full_nv:'Non-Veg ',jain:'Jain ',sattvic:'Sattvic '}[profile.eating_mode]||profile.eating_mode;
   document.getElementById('summary').innerHTML = `
     <div><strong>Name</strong> — ${profile.name}</div>
     <div><strong>Age / Gender</strong> — ${profile.age} / ${profile.gender}</div>
@@ -316,7 +320,8 @@ async function finish() {
     await fetch(`${API}/users/me/onboarding-complete`, { method:'POST', headers:h });
 
     btn.textContent = 'Done! Redirecting…';
-    setTimeout(() => { window.location.href = '/app'; }, 1200);
+    // Replace history so back button can't return to onboarding
+    setTimeout(() => { window.location.replace('/app'); }, 1200);
   } catch(e) {
     btn.disabled = false; btn.textContent = 'Start My Free Trial →';
     alert('Something went wrong. Please try again.');

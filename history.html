@@ -51,6 +51,12 @@ h1{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--charcoal);m
 .empty{text-align:center;padding:48px;color:var(--muted)}
 .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--saffron);border-radius:50%;animation:spin .8s linear infinite;margin:40px auto}
 @keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:640px){.nav-links{display:none}.wrap{padding-bottom:90px}}
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);z-index:50;padding:8px 0 calc(env(safe-area-inset-bottom,0px) + 4px)}
+.mob-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--muted);font-size:.62rem;font-weight:600;padding:5px 0;transition:color .15s}
+.mn-icon{font-size:1.2rem;line-height:1.2}
+.mob-nav-item.active{color:var(--saffron)}
+@media(max-width:640px){.mobile-nav{display:flex}}
 </style>
 </head>
 <body>
@@ -85,13 +91,21 @@ h1{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--charcoal);m
   <div id="historyList"></div>
 </div>
 
+<nav class="mobile-nav">
+  <a href="/app" class="mob-nav-item"><span class="mn-icon">🍽️</span><span>Plan</span></a>
+  <a href="/household" class="mob-nav-item"><span class="mn-icon">🏠</span><span>Family</span></a>
+  <a href="/history" class="mob-nav-item active"><span class="mn-icon">📋</span><span>History</span></a>
+  <a href="/billing" class="mob-nav-item"><span class="mn-icon">💳</span><span>Billing</span></a>
+  <a href="/settings" class="mob-nav-item"><span class="mn-icon">⚙️</span><span>Settings</span></a>
+</nav>
+
 <!-- PDF Viewer -->
 <div id="pdfOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center" onclick="if(event.target===this)closePDF()">
   <div style="width:820px;max-width:96vw;height:90vh;background:#fff;border-radius:16px;display:flex;flex-direction:column;overflow:hidden">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border)">
       <strong id="pdfTitle" style="font-size:.95rem">Meal Plan</strong>
       <div style="display:flex;gap:8px">
-        <a id="pdfDl" href="#" download="rozkaana-meal-plan.pdf" style="padding:6px 14px;background:var(--saffron);color:#fff;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:700">⬇ Download</a>
+        <a id="pdfDl" href="#" download="rozkaana-meal-plan.pdf" style="padding:6px 14px;background:var(--saffron);color:#fff;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:700"> Download</a>
         <button onclick="closePDF()" style="padding:6px 12px;border:1px solid var(--border);background:none;border-radius:8px;cursor:pointer;font-size:.82rem">✕</button>
       </div>
     </div>
@@ -106,11 +120,11 @@ if (!token) window.location.href = '/';
 function h() { return { Authorization: 'Bearer ' + token }; }
 
 const SLOT_DEF = [
-  {key:'breakfast',    icon:'☀️', label:'Breakfast',      time:'8:00 AM'},
-  {key:'morning_snack',icon:'🍵', label:'Morning Snack',  time:'10:30 AM'},
-  {key:'lunch',        icon:'🍛', label:'Lunch',          time:'1:00 PM'},
-  {key:'evening_snack',icon:'🫐', label:'Evening Snack',  time:'4:30 PM'},
-  {key:'dinner',       icon:'🌙', label:'Dinner',         time:'8:00 PM'},
+  {key:'breakfast', icon:'', label:'Breakfast', time:'8:00 AM'},
+  {key:'morning_snack',icon:'', label:'Morning Snack', time:'10:30 AM'},
+  {key:'lunch', icon:'', label:'Lunch', time:'1:00 PM'},
+  {key:'evening_snack',icon:'', label:'Evening Snack', time:'4:30 PM'},
+  {key:'dinner', icon:'', label:'Dinner', time:'8:00 PM'},
 ];
 
 let currentDays = 7;
@@ -131,14 +145,25 @@ async function loadHistory() {
   document.getElementById('loading').style.display = 'none';
 
   if (!r.ok) {
-    document.getElementById('historyList').innerHTML = '<div class="empty">No meal history yet.</div>';
+    document.getElementById('historyList').innerHTML = `
+      <div class="empty">
+        <div style="font-size:2rem;margin-bottom:12px">📭</div>
+        <div style="font-weight:600;margin-bottom:6px">No meal plans yet</div>
+        <div style="font-size:.85rem">Your personalised plans are generated each night.<br>Check back tomorrow morning.</div>
+        <a href="/app" style="display:inline-block;margin-top:16px;padding:10px 22px;background:var(--saffron,#E8593C);color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:.88rem">Go to My Plan</a>
+      </div>`;
     return;
   }
   const data = await r.json();
   const menus = data.menus || [];
 
   if (!menus.length) {
-    document.getElementById('historyList').innerHTML = '<div class="empty">No meal plans found for this period.</div>';
+    document.getElementById('historyList').innerHTML = `
+      <div class="empty">
+        <div style="font-size:2rem;margin-bottom:12px">📅</div>
+        <div style="font-weight:600;margin-bottom:6px">No plans in this period</div>
+        <div style="font-size:.85rem">No meal plans were generated in the last ${currentDays} days.<br>Try a longer date range or check back after your next plan is delivered.</div>
+      </div>`;
     return;
   }
 
@@ -171,8 +196,8 @@ async function loadHistory() {
           </div>
           <span class="day-kcal">${m.total_calories||0} kcal</span>
           <div class="day-actions">
-            <div class="icon-btn" title="Grocery List" onclick="event.stopPropagation();openGroceryList('${m.menu_date}')">🛒</div>
-            ${m.pdf_url ? `<div class="icon-btn" title="View PDF" onclick="event.stopPropagation();openPDF('${m.pdf_url}','${dateStr}')">📄</div>` : ''}
+            <div class="icon-btn" title="Grocery List" onclick="event.stopPropagation();openGroceryList('${m.menu_date}')"></div>
+            ${m.pdf_url ? `<div class="icon-btn" title="View PDF" onclick="event.stopPropagation();openPDF('${m.pdf_url}','${dateStr}')"></div>` : ''}
             <div class="icon-btn" title="Expand" style="font-size:.7rem;color:var(--muted)">▾</div>
           </div>
         </div>
@@ -225,17 +250,17 @@ async function openGroceryList(menuDate) {
       h2{margin-bottom:4px}p{color:#777;font-size:.85rem;margin-bottom:16px}
       ul{list-style:none;padding:0}li{padding:8px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between}
       .qty{font-weight:700;color:#E8593C}</style></head><body>
-      <h2>🛒 Grocery List</h2>
+      <h2> Grocery List</h2>
       <p>${menuDate} · ${data.recipe_count} meals · ${data.member_count} person(s)</p>
       <ul>${(data.items||[]).map(i=>`<li><span>${i.name}</span><span class="qty">${i.qty} ${i.unit}</span></li>`).join('')}</ul>
-      <button onclick="window.print()" style="margin-top:16px;padding:8px 16px;background:#E8593C;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨 Print</button>
+      <button onclick="window.print()" style="margin-top:16px;padding:8px 16px;background:#E8593C;color:#fff;border:none;border-radius:6px;cursor:pointer"> Print</button>
       </body></html>`);
     win.document.close();
   } catch(e) { alert('Could not load grocery list'); }
 }
 
 function openPDF(url, title) {
-  document.getElementById('pdfTitle').textContent = '📄 ' + title;
+  document.getElementById('pdfTitle').textContent = ' ' + title;
   document.getElementById('pdfFrame').src = url;
   document.getElementById('pdfDl').href = url;
   document.getElementById('pdfOverlay').style.display = 'flex';

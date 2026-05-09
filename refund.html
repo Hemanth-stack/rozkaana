@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Refund Policy — Rozkaana</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--saffron:#E8593C;--saffron-dark:#C9421F;--cream:#FAF7F2;--cream-dark:#F2ECE3;--charcoal:#1A1612;--text:#3A3028;--muted:#7A6E65;--border:#E8DDD0;--green:#2E7D52}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);line-height:1.5}
+h1,h2,h3{font-family:'Playfair Display',serif}
+nav{background:rgba(250,247,242,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 5%;height:68px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--charcoal);text-decoration:none}
+.nav-logo span{color:var(--saffron)}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{text-decoration:none;color:var(--muted);font-weight:500;font-size:.92rem;transition:color .2s}
+.nav-links a:hover{color:var(--saffron)}
+.btn{display:inline-flex;align-items:center;background:var(--saffron);color:#fff;border:none;border-radius:10px;padding:.65rem 1.4rem;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.9rem;cursor:pointer;text-decoration:none;transition:background .2s}
+.btn:hover{background:var(--saffron-dark)}
+@media(max-width:768px){.nav-links{display:none}}
+
+/* Hero */
+.hero{background:var(--charcoal);padding:64px 5%;text-align:center}
+.hero h1{font-size:clamp(2rem,4vw,2.8rem);color:#fff;margin-bottom:.7rem}
+.hero p{font-size:.95rem;color:rgba(255,255,255,.6);max-width:520px;margin:0 auto}
+
+/* Summary strip */
+.summary-strip{background:var(--green);padding:32px 5%}
+.strip-inner{max-width:860px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+.strip-item{text-align:center;color:#fff}
+.strip-icon{font-size:2rem;margin-bottom:.5rem}
+.strip-title{font-size:.95rem;font-weight:700;margin-bottom:.3rem}
+.strip-desc{font-size:.8rem;color:rgba(255,255,255,.75);line-height:1.55}
+@media(max-width:640px){.strip-inner{grid-template-columns:1fr}}
+
+/* Main content */
+.wrap{max-width:860px;margin:0 auto;padding:64px 5% 80px}
+.policy-block{background:#fff;border-radius:20px;border:1px solid var(--border);overflow:hidden;margin-bottom:1.5rem}
+.policy-header{background:var(--cream-dark);padding:1.2rem 1.6rem;display:flex;align-items:center;gap:.9rem;border-bottom:1px solid var(--border)}
+.policy-header-icon{font-size:1.4rem;flex-shrink:0}
+.policy-header h2{font-size:1.2rem;color:var(--charcoal);margin:0}
+.policy-body{padding:1.6rem}
+.policy-body p{font-size:.93rem;color:var(--text);line-height:1.8;margin-bottom:.9rem;overflow-wrap:break-word;word-break:break-word}
+.policy-body p:last-child{margin-bottom:0}
+.policy-body ul{padding-left:1.3rem;margin-bottom:.9rem}
+.policy-body li{font-size:.93rem;color:var(--text);line-height:1.8;margin-bottom:.3rem;overflow-wrap:break-word;word-break:break-word}
+.policy-body a{color:var(--saffron);text-decoration:none;word-break:break-all}
+.policy-body a:hover{text-decoration:underline}
+.policy-body strong{color:var(--charcoal);font-weight:600}
+.policy-body code{font-family:'Courier New',monospace;font-size:.85em;background:var(--cream-dark);border:1px solid var(--border);padding:1px 5px;border-radius:4px;word-break:break-all}
+.policy-body h3{font-family:'DM Sans',sans-serif;font-weight:700;font-size:.97rem;color:var(--charcoal);margin:1.2rem 0 .5rem}
+.step-text{font-size:.93rem;color:var(--text);line-height:1.7;overflow-wrap:break-word;word-break:break-word}
+
+/* Highlight */
+.yes-block{background:rgba(46,125,82,.07);border:1px solid rgba(46,125,82,.22);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem}
+.yes-block .tag{display:inline-block;background:var(--green);color:#fff;border-radius:6px;padding:.2rem .7rem;font-size:.72rem;font-weight:700;margin-bottom:.6rem;letter-spacing:.04em}
+.yes-block p{font-size:.93rem;color:var(--text);line-height:1.75;margin:0}
+.no-block{background:rgba(26,22,18,.04);border:1px solid rgba(26,22,18,.1);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem}
+.no-block .tag{display:inline-block;background:var(--charcoal);color:#fff;border-radius:6px;padding:.2rem .7rem;font-size:.72rem;font-weight:700;margin-bottom:.6rem;letter-spacing:.04em}
+.no-block p{font-size:.93rem;color:var(--text);line-height:1.75;margin:0}
+
+/* Process steps */
+.process-steps{display:flex;flex-direction:column;gap:.8rem;margin-top:1rem}
+.process-step{display:flex;align-items:flex-start;gap:.9rem}
+.step-num{width:28px;height:28px;background:var(--saffron);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.step-text{font-size:.93rem;color:var(--text);line-height:1.7}
+.step-text strong{color:var(--charcoal)}
+
+/* CTA */
+.cta-block{background:linear-gradient(135deg,var(--saffron),var(--saffron-dark));border-radius:20px;padding:2.5rem;text-align:center;margin-top:2.5rem}
+.cta-block h2{font-size:1.5rem;color:#fff;margin-bottom:.6rem}
+.cta-block p{font-size:.9rem;color:rgba(255,255,255,.8);margin-bottom:1.5rem}
+.btn-white{background:#fff;color:var(--saffron)}.btn-white:hover{background:var(--cream-dark)}
+
+footer{background:var(--charcoal);color:rgba(255,255,255,.6);padding:52px 5% 28px}
+.footer-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:3rem;margin-bottom:2.5rem}
+.footer-brand h3{font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff;margin-bottom:.4rem}
+.footer-brand h3 span{color:var(--saffron)}
+.footer-brand p{font-size:.82rem;line-height:1.7;max-width:280px;margin:0}
+.footer-col h4{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.9rem}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.footer-col ul a{text-decoration:none;color:rgba(255,255,255,.55);font-size:.83rem;transition:color .2s}
+.footer-col ul a:hover{color:#fff}
+.footer-bottom{max-width:1200px;margin:0 auto;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between;align-items:center;font-size:.78rem;flex-wrap:wrap;gap:.5rem}
+@media(max-width:768px){.footer-inner{grid-template-columns:1fr;gap:2rem}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Roz<span>kaana</span></a>
+  <ul class="nav-links">
+    <li><a href="/#why">Why Us</a></li>
+    <li><a href="/#pricing">Pricing</a></li>
+    <li><a href="/help">Help</a></li>
+  </ul>
+  <a href="/#pricing" class="btn">Start Free Trial &rarr;</a>
+</nav>
+
+<div class="hero">
+  <h1>Refund Policy</h1>
+  <p>We&rsquo;re confident you&rsquo;ll love Rozkaana. But if you don&rsquo;t, we&rsquo;ve made getting your money back as simple as possible.</p>
+</div>
+
+<div class="summary-strip">
+  <div class="strip-inner">
+    <div class="strip-item">
+      <div class="strip-icon">&#127381;</div>
+      <div class="strip-title">7-Day Free Trial</div>
+      <div class="strip-desc">No credit card. No charge. Your trial ends and that&rsquo;s it — nothing happens unless you subscribe.</div>
+    </div>
+    <div class="strip-item">
+      <div class="strip-icon">&#128181;</div>
+      <div class="strip-title">7-Day Money-Back</div>
+      <div class="strip-desc">On your first paid month. If you&rsquo;re not happy, email us within 7 days and we refund in full.</div>
+    </div>
+    <div class="strip-item">
+      <div class="strip-icon">&#9203;</div>
+      <div class="strip-title">Processed in 5–7 Days</div>
+      <div class="strip-desc">Refunds are confirmed within 24 hours and credited to your original payment method in 5–7 business days.</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- Free Trial -->
+  <div class="policy-block">
+    <div class="policy-header">
+      <div class="policy-header-icon">&#127381;</div>
+      <h2>Free Trial Policy</h2>
+    </div>
+    <div class="policy-body">
+      <p>All new Rozkaana accounts receive a <strong>7-day free trial</strong> with full access to their chosen plan. No credit card is required to start the trial.</p>
+      <div class="yes-block">
+        <div class="tag">WHAT THIS MEANS</div>
+        <p>At the end of your 7-day trial, <strong>absolutely nothing happens</strong>. We do not charge you automatically. We do not ask for card details. Your trial simply ends and Meal Plan generation pauses. To continue, visit the Billing page and subscribe.</p>
+      </div>
+      <p>There is nothing to &ldquo;refund&rdquo; during a trial because no payment is collected. The 7-day trial is not a paid period and is not subject to the money-back guarantee below.</p>
+    </div>
+  </div>
+
+  <!-- 7-day money-back -->
+  <div class="policy-block">
+    <div class="policy-header">
+      <div class="policy-header-icon">&#9989;</div>
+      <h2>7-Day Money-Back Guarantee (First Paid Period)</h2>
+    </div>
+    <div class="policy-body">
+      <p>If you subscribe and are not satisfied with your Meal Plans <strong>within the first 7 days of your first paid subscription</strong>, we will issue a full refund — no questions asked.</p>
+      <div class="yes-block">
+        <div class="tag">ELIGIBLE FOR REFUND</div>
+        <p>First-time paid subscribers who request a refund within 7 calendar days of their first payment date. The refund covers the full amount charged, including GST.</p>
+      </div>
+      <div class="no-block">
+        <div class="tag">NOT ELIGIBLE</div>
+        <p>Refund requests after 7 days of the first payment; renewals and subsequent billing cycles; plan upgrades or downgrades; accounts terminated for Terms of Service violations; duplicate accounts created to claim a second trial or guarantee.</p>
+      </div>
+      <p>The 7-day money-back guarantee applies once per person (based on email address and payment method). Creating multiple accounts to claim multiple guarantees is a violation of our <a href="/terms">Terms of Service</a> and will result in account termination.</p>
+    </div>
+  </div>
+
+  <!-- Subscription renewals -->
+  <div class="policy-block">
+    <div class="policy-header">
+      <div class="policy-header-icon">&#128260;</div>
+      <h2>Subscription Renewals</h2>
+    </div>
+    <div class="policy-body">
+      <p>After the first paid period, your subscription renews monthly automatically. We send a renewal reminder email 3 days before each billing date.</p>
+      <div class="no-block">
+        <div class="tag">NOT REFUNDABLE</div>
+        <p>Renewal payments are <strong>non-refundable</strong>. If you do not want to be billed for the next cycle, you must cancel your subscription before your renewal date from the <a href="/billing">Billing page</a>.</p>
+      </div>
+      <p>When you cancel, your access continues until the end of the period you have already paid for. We do not prorate or partially refund unused days in a renewal cycle.</p>
+      <p><strong>Exception — Duplicate Billing:</strong> If you were charged twice for the same billing period due to a technical error, we will refund the duplicate charge in full immediately upon verification.</p>
+    </div>
+  </div>
+
+  <!-- Pause vs cancel -->
+  <div class="policy-block">
+    <div class="policy-header">
+      <div class="policy-header-icon">&#9208;&#65039;</div>
+      <h2>Pausing vs Cancelling</h2>
+    </div>
+    <div class="policy-body">
+      <p>If you need a break but plan to come back, <strong>pausing</strong> is better than cancelling:</p>
+      <ul>
+        <li>Pause for up to 30 days per year from the <a href="/billing">Billing page</a></li>
+        <li>No charge during the pause period &mdash; your billing cycle extends by the pause duration</li>
+        <li>Your profile, preferences, and history are preserved</li>
+        <li>Resume any time and Meal Plans restart the next morning</li>
+      </ul>
+      <p>Cancelling ends your subscription at the close of the current billing period. You will not be charged again. Your data is retained for 30 days after cancellation, after which it may be deleted in accordance with our <a href="/privacy">Privacy Policy</a>.</p>
+    </div>
+  </div>
+
+  <!-- How to request -->
+  <div class="policy-block">
+    <div class="policy-header">
+      <div class="policy-header-icon">&#128221;</div>
+      <h2>How to Request a Refund</h2>
+    </div>
+    <div class="policy-body">
+      <div class="process-steps">
+        <div class="process-step">
+          <div class="step-num">1</div>
+          <div class="step-text"><strong>Email us at <a href="mailto:support@rozkaana.in">support@rozkaana.in</a></strong> from the email address registered to your account. Subject line: &ldquo;Refund Request.&rdquo;</div>
+        </div>
+        <div class="process-step">
+          <div class="step-num">2</div>
+          <div class="step-text"><strong>Include in your email:</strong> your registered email address, the date of payment, the amount charged, and (optional but helpful) a reason for your request. No lengthy explanation required.</div>
+        </div>
+        <div class="process-step">
+          <div class="step-num">3</div>
+          <div class="step-text"><strong>We confirm within 24 hours.</strong> We will verify your eligibility and confirm the refund by email. You do not need to do anything else.</div>
+        </div>
+        <div class="process-step">
+          <div class="step-num">4</div>
+          <div class="step-text"><strong>Credit appears in 5–7 business days.</strong> Refunds are processed via Razorpay to your original payment method — UPI, card, or net banking. Timing depends on your bank&rsquo;s processing speed.</div>
+        </div>
+      </div>
+      <p style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border)">For urgent or complex refund queries, contact us via WhatsApp. Our support team operates Monday to Saturday, 9 AM – 9 PM IST.</p>
+    </div>
+  </div>
+
+  <!-- Special circumstances -->
+  <div class="policy-block">
+    <div class="policy-header">
+      <div class="policy-header-icon">&#128276;</div>
+      <h2>Special Circumstances</h2>
+    </div>
+    <div class="policy-body">
+      <h3>Service Outages</h3>
+      <p>If the Service is unavailable for more than 24 consecutive hours due to our infrastructure failure (excluding planned maintenance with prior notice), we will issue a prorated credit for the affected days. This credit is applied to your next billing cycle, not issued as a cash refund.</p>
+      <h3>Medical Circumstances</h3>
+      <p>If you are unable to use the Service due to a medical emergency (hospitalisation or similar) after your 7-day window, contact us with documentation. We review these cases individually and may issue a credit or extend your subscription by the affected period.</p>
+      <h3>Billing Errors</h3>
+      <p>If you believe you were charged an incorrect amount, contact us within 30 days of the charge. We investigate and correct all verified billing errors promptly.</p>
+    </div>
+  </div>
+
+  <!-- Consumer rights -->
+  <div class="policy-block">
+    <div class="policy-header">
+      <div class="policy-header-icon">&#127470;&#127475;</div>
+      <h2>Your Rights Under Indian Consumer Law</h2>
+    </div>
+    <div class="policy-body">
+      <p>This policy is in addition to your rights under the Consumer Protection Act 2019. If you believe Rozkaana has engaged in an unfair trade practice or deficiency of service, you have the right to approach the appropriate consumer forum or the National Consumer Dispute Redressal Commission (NCDRC) under Indian law.</p>
+      <p>Nothing in this Refund Policy limits or excludes any rights you have under mandatory Indian consumer protection legislation.</p>
+    </div>
+  </div>
+
+  <!-- Final CTA -->
+  <div class="cta-block">
+    <h2>Still unsure? Start risk-free.</h2>
+    <p>7-day free trial, no card needed. If you subscribe and don&rsquo;t love it, your first month is fully refundable within 7 days.</p>
+    <a href="/#pricing" class="btn btn-white">Start My Free Trial &rarr;</a>
+  </div>
+
+  <p style="text-align:center;margin-top:1.5rem;font-size:.8rem;color:var(--muted)">Last updated: 9 May 2026. This policy may be updated periodically — material changes will be notified by email.</p>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <h3>Roz<span>kaana</span></h3>
+      <p>India&rsquo;s most personalised diet subscription. Rooted in Indian food culture, powered by modern nutrition science.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="/#how">How It Works</a></li>
+        <li><a href="/#meals">Sample Meals</a></li>
+        <li><a href="/#pricing">Pricing</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal &amp; Support</h4>
+      <ul>
+        <li><a href="/about">About Us</a></li>
+        <li><a href="/help">Help Center</a></li>
+        <li><a href="/privacy">Privacy Policy</a></li>
+        <li><a href="/terms">Terms of Service</a></li>
+        <li><a href="/refund">Refund Policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Rozkaana. Made in India.</span>
+    <span>FSSAI Reg. &middot; ISO 27001 Certified &middot; RBI Compliant Payments</span>
+  </div>
+</footer>
+
+</body>
+</html>

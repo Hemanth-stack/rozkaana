@@ -1,5 +1,5 @@
 import uuid
-from datetime import date
+from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel
@@ -441,7 +441,7 @@ async def dashboard_stats(
     emails_sent = (
         await db.execute(
             select(func.count()).select_from(DailyMenu)
-            .where(and_(DailyMenu.menu_date == today, DailyMenu.wa_sent_at.isnot(None)))
+            .where(and_(DailyMenu.menu_date == today, DailyMenu.email_sent_at.isnot(None)))
         )
     ).scalar() or 0
 
@@ -499,7 +499,7 @@ async def pipeline_today(
     wa_sent = (
         await db.execute(
             select(func.count()).select_from(DailyMenu)
-            .where(and_(DailyMenu.menu_date == today, DailyMenu.wa_sent_at.isnot(None)))
+            .where(and_(DailyMenu.menu_date == today, DailyMenu.email_sent_at.isnot(None)))
         )
     ).scalar() or 0
 
@@ -806,3 +806,110 @@ async def celery_stats(current_user: User = Depends(get_current_admin)):
         "total_active": sum(len(t) for t in active.values()),
         "total_reserved": sum(len(t) for t in reserved.values()),
     }
+
+
+# ── ADMIN SUBSCRIPTION MANAGEMENT ────────────────────────────────────────────
+
+VALID_PLANS = {"solo_basic", "solo_pro", "family"}
+
+
+class GrantSubscriptionRequest(BaseModel):
+    plan_type: str = "solo_pro"
+    duration_days: int = 365
+
+
+@router.post("/users/{user_id}/subscription/grant", status_code=200)
+async def admin_grant_subscription(
+    user_id: str,
+    request: GrantSubscriptionRequest,
+    current_user: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Create or upgrade a user's subscription manually without payment."""
+    if request.plan_type not in VALID_PLANS:
+        raise HTTPException(status_code=400, detail=f"plan_type must be one of {VALID_PLANS}")
+
+    user = await db.get(User, uuid.UUID(user_id))
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
+    sub = result.scalar_one_or_none()
+
+    now = date.today()
+    period_end = now + timedelta(days=request.duration_days)
+
+    if sub:
+        sub.plan_type = request.plan_type
+        sub.status = "active"
+        sub.current_period_start = now
+        sub.current_period_end = period_end
+        sub.trial_end = None
+    else:
+        sub = Subscription(
+            user_id=user.id,
+            plan_type=request.plan_type,
+            status="active",
+            current_period_start=now,
+            current_period_end=period_end,
+        )
+        db.add(sub)
+
+    await db.flush()
+    return {
+        "message": f"Subscription granted: {request.plan_type} for {request.duration_days} days",
+        "user_id": user_id,
+        "plan_type": request.plan_type,
+        "status": "active",
+        "period_end": str(period_end),
+    }
+
+
+class UpgradeSubscriptionRequest(BaseModel):
+    plan_type: str
+
+
+@router.post("/users/{user_id}/subscription/upgrade", status_code=200)
+async def admin_upgrade_subscription(
+    user_id: str,
+    request: UpgradeSubscriptionRequest,
+    current_user: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Change a user's plan type without altering the period end date."""
+    if request.plan_type not in VALID_PLANS:
+        raise HTTPException(status_code=400, detail=f"plan_type must be one of {VALID_PLANS}")
+
+    result = await db.execute(select(Subscription).where(Subscription.user_id == uuid.UUID(user_id)))
+    sub = result.scalar_one_or_none()
+    if not sub:
+        raise HTTPException(status_code=404, detail="No subscription found — use Grant to create one first")
+
+    old_plan = sub.plan_type
+    sub.plan_type = request.plan_type
+    sub.status = "active"
+    await db.flush()
+    return {
+        "message": f"Plan upgraded from {old_plan} to {request.plan_type}",
+        "user_id": user_id,
+        "plan_type": request.plan_type,
+        "period_end": str(sub.current_period_end),
+    }
+
+
+@router.post("/users/{user_id}/subscription/cancel", status_code=200)
+async def admin_cancel_subscription(
+    user_id: str,
+    current_user: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Immediately cancel a user's subscription."""
+    result = await db.execute(select(Subscription).where(Subscription.user_id == uuid.UUID(user_id)))
+    sub = result.scalar_one_or_none()
+    if not sub:
+        raise HTTPException(status_code=404, detail="No subscription found for this user")
+
+    sub.status = "cancelled"
+    sub.current_period_end = date.today()
+    await db.flush()
+    return {"message": "Subscription cancelled", "user_id": user_id, "status": "cancelled"}

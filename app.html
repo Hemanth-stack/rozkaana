@@ -71,6 +71,12 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--charcoal);color:#fff;padding:12px 24px;border-radius:12px;font-size:.88rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media(max-width:600px){.info-cards{grid-template-columns:1fr}.trial-banner{flex-direction:column;gap:12px}.trial-banner a{margin:0;width:100%;text-align:center}}
+@media(max-width:640px){.wrap{padding-bottom:90px}.toast{bottom:80px}}
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);z-index:50;padding:8px 0 calc(env(safe-area-inset-bottom,0px) + 4px)}
+.mob-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--muted);font-size:.62rem;font-weight:600;padding:5px 0;transition:color .15s}
+.mn-icon{font-size:1.2rem;line-height:1.2}
+.mob-nav-item.active{color:var(--saffron)}
+@media(max-width:640px){.mobile-nav{display:flex}}
 /* ── Wellness section ────────────────────────────────────── */
 .wellness-card{background:#fff;border-radius:20px;box-shadow:0 4px 24px var(--shadow);padding:24px;margin-bottom:20px}
 .wellness-card h3{font-size:.95rem;font-weight:700;color:var(--charcoal);margin-bottom:18px;display:flex;align-items:center;gap:8px}
@@ -87,7 +93,7 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
 .hint-item:last-child{border-bottom:none}
 .hint-item .symptom{font-size:.85rem;font-weight:700;color:var(--charcoal);margin-bottom:3px}
 .hint-item .detail{font-size:.78rem;color:var(--muted);line-height:1.5}
-.hint-item.high .symptom::before{content:"⚠ ";color:#D4960A}
+.hint-item.high .symptom::before{content:" ";color:#D4960A}
 .hint-item.moderate .symptom::before{content:"ℹ ";color:#3498db}
 .sig-table{width:100%;border-collapse:collapse;font-size:.78rem}
 .sig-table th{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:6px 4px;text-align:left;border-bottom:2px solid var(--border)}
@@ -108,8 +114,8 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
     <a href="/settings" class="nav-link">Settings</a>
   </div>
   <div class="nav-right">
-    <span class="nav-name" id="navName"></span>
-    <div class="nav-avatar" id="navAv" title="Sign out" onclick="logout()">?</div>
+    <span class="nav-name" id="navName" onclick="window.location.href='/settings'" style="cursor:pointer"></span>
+    <div class="nav-avatar" id="navAv" title="Settings" onclick="window.location.href='/settings'">?</div>
   </div>
 </nav>
 
@@ -118,7 +124,7 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
   <div id="content" style="display:none">
 
     <div class="greeting">
-      <h1 id="greeting">Good morning! 🌅</h1>
+      <h1 id="greeting">Good morning! </h1>
       <p id="greetingSub">Your personalised meal plan</p>
     </div>
 
@@ -165,7 +171,7 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
         card.innerHTML = `
           <div style="margin-bottom:10px"><strong>Cuisine</strong>: ${d.cuisine_used||'—'} <span style="color:var(--muted);font-size:.75rem">(${d.cuisine_reason||''})</span></div>
           <div style="margin-bottom:10px"><strong>Calorie target</strong>: ${d.calorie_target||'—'} kcal</div>
-          <div style="margin-bottom:10px"><strong>Active signals</strong>: eating mode <em>${sig.eating_mode||'—'}</em>${sig.is_festival?' · 🎉 Festival: '+sig.festival_name:''}${sig.is_nv_day?' · 🍗 NV day':''}</div>
+          <div style="margin-bottom:10px"><strong>Active signals</strong>: eating mode <em>${sig.eating_mode||'—'}</em>${sig.is_festival?' · Festival: '+sig.festival_name:''}${sig.is_nv_day?' · NV day':''}</div>
           ${sig.health_tags?.length ? `<div style="margin-bottom:10px"><strong>Health filters</strong>: ${sig.health_tags.join(', ')}</div>` : ''}
           <div><strong>Recipe pool per slot</strong>: ${Object.entries(pool).map(([s,n])=>`${s.replace('_',' ')} (${n})`).join(' · ')}</div>
           <div style="margin-top:10px;color:var(--muted);font-size:.75rem">Exclusions: ${Object.entries(d.exclusion_window_7d||{}).map(([s,n])=>`${s.replace('_',' ')} ${n} excluded`).join(' · ')}</div>`;
@@ -182,20 +188,28 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
 
 <div class="toast" id="toast"></div>
 
+<nav class="mobile-nav">
+  <a href="/app" class="mob-nav-item active"><span class="mn-icon">🍽️</span><span>Plan</span></a>
+  <a href="/household" class="mob-nav-item"><span class="mn-icon">🏠</span><span>Family</span></a>
+  <a href="/history" class="mob-nav-item"><span class="mn-icon">📋</span><span>History</span></a>
+  <a href="/billing" class="mob-nav-item"><span class="mn-icon">💳</span><span>Billing</span></a>
+  <a href="/settings" class="mob-nav-item"><span class="mn-icon">⚙️</span><span>Settings</span></a>
+</nav>
+
 <!-- PDF actions modal -->
 <div id="pdfOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;align-items:center;justify-content:center" onclick="if(event.target===this)closePDF()">
   <div style="background:#fff;border-radius:20px;padding:32px 28px;width:340px;max-width:92vw;text-align:center">
-    <div style="font-size:2rem;margin-bottom:12px">📄</div>
+    <div style="font-size:2rem;margin-bottom:12px"></div>
     <h3 style="font-size:1.1rem;font-weight:700;color:var(--charcoal);margin-bottom:8px">Your Meal Plan PDF</h3>
     <p style="font-size:.85rem;color:var(--muted);margin-bottom:24px">Open in your browser or download to your device.</p>
     <div style="display:flex;flex-direction:column;gap:10px">
       <a id="pdfOpenBtn" href="#" target="_blank" rel="noopener"
          style="display:block;padding:12px;background:var(--saffron);color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:.9rem">
-        🔗 Open PDF
+         Open PDF
       </a>
       <a id="pdfDlBtn" href="#" download="rozkaana-meal-plan.pdf"
          style="display:block;padding:12px;border:1.5px solid var(--border);color:var(--text);border-radius:10px;text-decoration:none;font-weight:600;font-size:.9rem">
-        ⬇ Download
+         Download
       </a>
       <button onclick="closePDF()" style="padding:10px;border:none;background:none;color:var(--muted);font-size:.85rem;cursor:pointer;font-family:'DM Sans',sans-serif">
         Cancel
@@ -210,11 +224,11 @@ const token = localStorage.getItem('rzk_token');
 if (!token) window.location.href = '/';
 
 const SLOT_DEF = [
-  {key:'breakfast',    icon:'☀️', label:'Breakfast',      time:'8:00 AM'},
-  {key:'morning_snack',icon:'🍵', label:'Morning Snack',  time:'10:30 AM'},
-  {key:'lunch',        icon:'🍛', label:'Lunch',          time:'1:00 PM'},
-  {key:'evening_snack',icon:'🫐', label:'Evening Snack',  time:'4:30 PM'},
-  {key:'dinner',       icon:'🌙', label:'Dinner',         time:'8:00 PM'},
+  {key:'breakfast', icon:'', label:'Breakfast', time:'8:00 AM'},
+  {key:'morning_snack',icon:'', label:'Morning Snack', time:'10:30 AM'},
+  {key:'lunch', icon:'', label:'Lunch', time:'1:00 PM'},
+  {key:'evening_snack',icon:'', label:'Evening Snack', time:'4:30 PM'},
+  {key:'dinner', icon:'', label:'Dinner', time:'8:00 PM'},
 ];
 
 function logout() {
@@ -237,7 +251,11 @@ async function api(path, opts = {}) {
     ...opts,
     headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers || {}) },
   });
-  if (r.status === 401) { logout(); throw new Error('auth'); }
+  if (r.status === 401) {
+    showToast('Session expired — signing you out…', '#c0392b');
+    setTimeout(logout, 1800);
+    throw new Error('auth');
+  }
   return r;
 }
 
@@ -256,15 +274,15 @@ async function init() {
 
     const hr = new Date().getHours();
     const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
-    document.getElementById('greeting').textContent = `${greet}, ${(me.name||'').split(' ')[0] || 'there'}! ${hr<12?'🌅':hr<17?'☀️':'🌙'}`;
+    document.getElementById('greeting').textContent = `${greet}, ${(me.name||'').split(' ')[0] || 'there'}! ${hr<12?'':hr<17?'':''}`;
     document.getElementById('greetingSub').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
     // Status banner
     if (sub) {
       const banner = document.getElementById('trialBanner');
-      const title  = document.getElementById('trialTitle');
+      const title = document.getElementById('trialTitle');
       const subTxt = document.getElementById('trialSub');
-      const cta    = document.getElementById('trialCta');
+      const cta = document.getElementById('trialCta');
       if (sub.status === 'trial') {
         const days = Math.max(0, Math.ceil((new Date(sub.trial_end) - new Date()) / 86400000));
         title.textContent = `Free Trial — ${days} day${days!==1?'s':''} left`;
@@ -330,7 +348,7 @@ async function loadMenu() {
     const r = await api('/menu/today');
     if (r.status === 404 || r.status === 402) {
       card.innerHTML = `<div class="empty-menu">
-        <div class="icon">📭</div>
+        <div class="icon"></div>
         <h3>No plan for today yet</h3>
         <p>Your meal plan is generated each night and delivered by email at 6 AM.<br>
         If you're on the Pro plan you can generate one now.</p>
@@ -372,15 +390,22 @@ async function loadMenu() {
       </div>
       <div class="menu-footer">
         ${pdfUrl
-          ? `<button class="btn-sm btn-primary" id="pdfViewBtn" style="flex:2;padding:11px">📄 View PDF</button>`
+          ? `<button class="btn-sm btn-primary" id="pdfViewBtn" style="flex:2;padding:11px"> View PDF</button>`
           : `<span class="btn-sm btn-ghost" style="flex:2;padding:11px;text-align:center;cursor:default;color:var(--muted)">PDF generating…</span>`}
-        <button class="btn-sm btn-ghost" onclick="openGroceryList('${m.menu_date}')" style="flex:1;padding:11px">🛒 Grocery</button>
+        <button class="btn-sm btn-ghost" onclick="openGroceryList('${m.menu_date}')" style="flex:1;padding:11px"> Grocery</button>
         <button class="btn-sm btn-ghost" onclick="requestMenu(this)" style="flex:1;padding:11px">↻ Regen</button>
       </div>`;
     if (pdfUrl) {
       document.getElementById('pdfViewBtn')?.addEventListener('click', () => openPDF(pdfUrl));
     }
-  } catch(e) { card.innerHTML = `<div class="empty-menu"><p>Could not load today's plan.</p></div>`; }
+  } catch(e) {
+    if (e.message === 'auth') return;
+    card.innerHTML = `<div class="empty-menu">
+      <h3>Could not load your plan</h3>
+      <p>Check your connection and try refreshing the page.</p>
+      <button class="btn-sm btn-primary" onclick="loadMenu()" style="padding:12px 24px">Retry</button>
+    </div>`;
+  }
 }
 
 async function skipSlot(slot, btn) {
@@ -442,7 +467,8 @@ async function pollRegen(taskId) {
 async function openGroceryList(menuDate) {
   try {
     const r = await api(`/menu/${menuDate}/grocery-list`);
-    if (!r.ok) { showToast('No grocery list available'); return; }
+    if (r.status === 404) { showToast('Menu not found — generate a plan first'); return; }
+    if (!r.ok) { showToast('Grocery list not available yet — try again shortly'); return; }
     const data = await r.json();
     const win = window.open('', '_blank', 'width=480,height=640');
     win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
@@ -451,10 +477,10 @@ async function openGroceryList(menuDate) {
       h2{margin-bottom:4px}p{color:#777;font-size:.85rem;margin-bottom:16px}
       ul{list-style:none;padding:0}li{padding:8px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between}
       .qty{font-weight:700;color:#E8593C}</style></head><body>
-      <h2>🛒 Grocery List</h2>
+      <h2> Grocery List</h2>
       <p>${menuDate} · ${data.recipe_count} meals · ${data.member_count} person(s)</p>
       <ul>${(data.items||[]).map(i=>`<li><span>${i.name}</span><span class="qty">${i.qty} ${i.unit}</span></li>`).join('')}</ul>
-      <button onclick="window.print()" style="margin-top:16px;padding:8px 16px;background:#E8593C;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨 Print</button>
+      <button onclick="window.print()" style="margin-top:16px;padding:8px 16px;background:#E8593C;color:#fff;border:none;border-radius:6px;cursor:pointer"> Print</button>
       </body></html>`);
     win.document.close();
   } catch(e) { showToast('Could not load grocery list', '#c0392b'); }
@@ -480,7 +506,7 @@ async function loadWellness() {
       api('/users/me/signals/deficiency-hints'),
     ]);
     const signals = sigRes.ok ? await sigRes.json() : [];
-    const hints   = hintRes.ok ? await hintRes.json() : { hints: [], days_of_data: 0 };
+    const hints = hintRes.ok ? await hintRes.json() : { hints: [], days_of_data: 0 };
 
     const todayStr = new Date().toISOString().slice(0, 10);
     const todayLog = signals.find(s => s.signal_date === todayStr);
@@ -506,14 +532,14 @@ async function loadWellness() {
 
     const formCard = `
       <div class="wellness-card">
-        <h3>📊 Today's Wellness Check</h3>
+        <h3> Today's Wellness Check</h3>
         ${loggedBadge}
-        ${sliderRow('wEnergy',    'Energy Level',    todayLog?.energy_level)}
-        ${sliderRow('wSleep',     'Sleep Quality',   todayLog?.sleep_quality)}
-        ${sliderRow('wDigestion', 'Digestion',       todayLog?.digestion_comfort)}
+        ${sliderRow('wEnergy', 'Energy Level', todayLog?.energy_level)}
+        ${sliderRow('wSleep', 'Sleep Quality', todayLog?.sleep_quality)}
+        ${sliderRow('wDigestion', 'Digestion', todayLog?.digestion_comfort)}
         <div style="margin-top:16px;margin-bottom:4px">
-          ${checkRow('wHairLoss',   'Hair loss noticed today',      todayLog?.hair_loss_noticed)}
-          ${checkRow('wCramps',     'Muscle cramps',                todayLog?.muscle_cramps)}
+          ${checkRow('wHairLoss', 'Hair loss noticed today', todayLog?.hair_loss_noticed)}
+          ${checkRow('wCramps', 'Muscle cramps', todayLog?.muscle_cramps)}
           ${checkRow('wBloodSugar', 'Blood sugar crash / shakiness',todayLog?.blood_sugar_dip)}
         </div>
         <button class="btn-sm btn-primary" style="width:100%;margin-top:18px;padding:12px"
@@ -530,13 +556,13 @@ async function loadWellness() {
           <div class="symptom">${h.symptom?.replace(/_/g,' ')}</div>
           <div class="detail">
             ${h.likely_deficiencies ? 'Likely: ' + h.likely_deficiencies.join(', ') + '<br>' : ''}
-            ${h.foods?.length       ? 'Foods: ' + h.foods.join(', ') + '<br>' : ''}
+            ${h.foods?.length ? 'Foods: ' + h.foods.join(', ') + '<br>' : ''}
             ${h.recommendations?.length ? h.recommendations.join(' · ') : ''}
           </div>
         </div>`).join('');
       hintsCard = `
         <div class="wellness-card">
-          <h3>🔍 Nutritional Insights
+          <h3> Nutritional Insights
             <span style="font-size:.72rem;font-weight:400;color:var(--muted)">
               based on ${hints.days_of_data} days
             </span>
@@ -558,9 +584,9 @@ async function loadWellness() {
       const label = ds === todayStr ? 'Today' : new Date(ds+'T12:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
       if (!s) return `<tr class="empty-row"><td>${label}</td><td>—</td><td>—</td><td>—</td><td style="color:var(--border)">not logged</td></tr>`;
       const flags = [
-        s.hair_loss_noticed ? '💇 Hair loss' : '',
-        s.muscle_cramps     ? '⚡ Cramps'    : '',
-        s.blood_sugar_dip   ? '🍬 Sugar dip' : '',
+        s.hair_loss_noticed ? ' Hair loss' : '',
+        s.muscle_cramps ? 'Cramps' : '',
+        s.blood_sugar_dip ? ' Sugar dip' : '',
       ].filter(Boolean).join(' ');
       return `<tr>
         <td>${label}</td>
@@ -573,7 +599,7 @@ async function loadWellness() {
 
     const historyCard = `
       <div class="wellness-card">
-        <h3>📅 Last 7 Days</h3>
+        <h3> Last 7 Days</h3>
         <table class="sig-table">
           <thead><tr><th>Date</th><th>Energy</th><th>Sleep</th><th>Digestion</th><th>Flags</th></tr></thead>
           <tbody>${historyRows}</tbody>
@@ -591,12 +617,12 @@ async function logSignals(btn) {
   btn.textContent = 'Saving…';
   try {
     const body = {
-      energy_level:       parseInt(document.getElementById('wEnergy').value),
-      sleep_quality:      parseInt(document.getElementById('wSleep').value),
-      digestion_comfort:  parseInt(document.getElementById('wDigestion').value),
-      hair_loss_noticed:  document.getElementById('wHairLoss').checked,
-      muscle_cramps:      document.getElementById('wCramps').checked,
-      blood_sugar_dip:    document.getElementById('wBloodSugar').checked,
+      energy_level: parseInt(document.getElementById('wEnergy').value),
+      sleep_quality: parseInt(document.getElementById('wSleep').value),
+      digestion_comfort: parseInt(document.getElementById('wDigestion').value),
+      hair_loss_noticed: document.getElementById('wHairLoss').checked,
+      muscle_cramps: document.getElementById('wCramps').checked,
+      blood_sugar_dip: document.getElementById('wBloodSugar').checked,
     };
     const r = await api('/users/me/signals', { method: 'POST', body: JSON.stringify(body) });
     if (r.ok) {

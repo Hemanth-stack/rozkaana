@@ -435,6 +435,7 @@ def _build_menu_record(
         "total_carbs_g": round(total_carbs, 2),
         "total_fat_g": round(total_fat, 2),
         "cuisine_override": cuisine_override,
-        "is_regenerated": False,
-        "wa_status": "pending",
+        # is_regenerated and delivery-tracking fields (wa_status, email_status, etc.) are
+        # intentionally excluded here so they are NOT overwritten when a menu is regenerated.
+        # generate_single_menu sets is_regenerated explicitly after this call.
     }
