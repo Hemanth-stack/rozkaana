@@ -43,6 +43,8 @@ host:
 		-v /opt/hemanth/rozkaana/privacy.html:/usr/share/nginx/html/privacy.html:ro \
 		-v /opt/hemanth/rozkaana/terms.html:/usr/share/nginx/html/terms.html:ro \
 		-v /opt/hemanth/rozkaana/refund.html:/usr/share/nginx/html/refund.html:ro \
+		-v /opt/hemanth/rozkaana/robots.txt:/usr/share/nginx/html/robots.txt:ro \
+		-v /opt/hemanth/rozkaana/sitemap.xml:/usr/share/nginx/html/sitemap.xml:ro \
 		nginx:alpine
 	@sleep 2
 	@$(MAKE) status

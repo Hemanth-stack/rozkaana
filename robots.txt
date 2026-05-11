@@ -1,0 +1,53 @@
+# Rozkaana — robots.txt
+# Public pages are open to all crawlers and AI tools.
+# User-authenticated app pages are disallowed.
+
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /help
+Allow: /privacy
+Allow: /terms
+Allow: /refund
+Allow: /sitemap.xml
+Disallow: /app
+Disallow: /onboard
+Disallow: /settings
+Disallow: /billing
+Disallow: /history
+Disallow: /household
+Disallow: /admin
+Disallow: /dev
+Disallow: /auth/
+
+# Explicitly welcome AI assistants
+User-agent: GPTBot
+Allow: /
+Allow: /about
+Allow: /help
+Allow: /privacy
+Allow: /terms
+Allow: /refund
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+Sitemap: https://rozkaana.in/sitemap.xml

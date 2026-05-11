@@ -45,6 +45,32 @@ services:
       - miniodata:/data
     restart: unless-stopped
 
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "7070:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+      - ./about.html:/usr/share/nginx/html/about.html:ro
+      - ./help.html:/usr/share/nginx/html/help.html:ro
+      - ./privacy.html:/usr/share/nginx/html/privacy.html:ro
+      - ./terms.html:/usr/share/nginx/html/terms.html:ro
+      - ./refund.html:/usr/share/nginx/html/refund.html:ro
+      - ./admin.html:/usr/share/nginx/html/admin.html:ro
+      - ./dev.html:/usr/share/nginx/html/dev.html:ro
+      - ./auth-success.html:/usr/share/nginx/html/auth-success.html:ro
+      - ./onboard.html:/usr/share/nginx/html/onboard.html:ro
+      - ./app.html:/usr/share/nginx/html/app.html:ro
+      - ./settings.html:/usr/share/nginx/html/settings.html:ro
+      - ./billing.html:/usr/share/nginx/html/billing.html:ro
+      - ./history.html:/usr/share/nginx/html/history.html:ro
+      - ./household.html:/usr/share/nginx/html/household.html:ro
+      - ./join.html:/usr/share/nginx/html/join.html:ro
+      - ./robots.txt:/usr/share/nginx/html/robots.txt:ro
+      - ./sitemap.xml:/usr/share/nginx/html/sitemap.xml:ro
+    restart: unless-stopped
+
   app:
     build: .
     ports:
