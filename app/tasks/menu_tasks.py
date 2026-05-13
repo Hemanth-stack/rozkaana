@@ -72,17 +72,6 @@ def generate_single_menu(self, owner_id: str, owner_type: str, menu_date_str: st
 
     menu_date = date.fromisoformat(menu_date_str)
 
-    # Check idempotency before running
-    with get_sync_session() as db:
-        existing = db.query(DailyMenu).filter(
-            DailyMenu.owner_id == _uuid.UUID(owner_id),
-            DailyMenu.menu_date == menu_date,
-        ).first()
-        if existing and not cuisine_override:
-            logger.info("Menu already exists for owner=%s date=%s — marking as regenerated", owner_id, menu_date_str)
-            existing.is_regenerated = True
-            return str(existing.id)
-
     try:
         from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
         from sqlalchemy.orm import sessionmaker as async_sm
@@ -121,7 +110,10 @@ def generate_single_menu(self, owner_id: str, owner_type: str, menu_date_str: st
             for k, v in menu_data.items():
                 if hasattr(existing, k):
                     setattr(existing, k, v)
-            existing.is_regenerated = bool(cuisine_override)
+            existing.is_regenerated = True
+            existing.pdf_key = None
+            existing.email_sent_at = None
+            existing.email_status = None
             menu_id = str(existing.id)
         else:
             new_menu = DailyMenu(**menu_data)

@@ -126,9 +126,12 @@ def send_menu_email(self, menu_id: str):
                 logger.info("Menu email sent to %s for %s", user.email, menu_id)
             else:
                 menu.email_status = "failed"
-                raise self.retry(exc=RuntimeError("Email send failed"))
+                raise RuntimeError("Email send failed")
 
     except Exception as exc:
+        from celery.exceptions import Retry
+        if isinstance(exc, Retry):
+            raise
         logger.error("send_menu_email failed for %s: %s", menu_id, exc)
         raise self.retry(exc=exc)
 

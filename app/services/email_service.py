@@ -41,8 +41,15 @@ def _fmt(value, decimals: int = 1) -> str:
 
 
 def _smtp_configured() -> bool:
-    return settings.SMTP_USER not in ("noreply@rozkaana.in", "your@gmail.com", "", "placeholder") \
-        or settings.SMTP_PASSWORD not in ("your-zoho-password", "your-app-password", "")
+    return bool(settings.SMTP_USER) and bool(settings.SMTP_PASSWORD) \
+        and settings.SMTP_USER not in ("your@gmail.com", "placeholder") \
+        and settings.SMTP_PASSWORD not in ("your-zoho-password", "your-app-password")
+
+
+def _menu_sender_configured() -> bool:
+    return bool(settings.SMTP_MENU_USER) and bool(settings.SMTP_MENU_PASSWORD) \
+        and settings.SMTP_MENU_USER not in ("placeholder",) \
+        and settings.SMTP_MENU_PASSWORD not in ("your-zoho-menu-password",)
 
 
 class EmailService:
@@ -58,7 +65,7 @@ class EmailService:
             logger.warning("SMTP not configured — email to %s skipped. Subject: %s", to, subject)
             return False
 
-        if use_menu_sender and settings.SMTP_MENU_USER not in ("menu@rozkaana.in", "", "placeholder"):
+        if use_menu_sender and _menu_sender_configured():
             smtp_user  = settings.SMTP_MENU_USER
             smtp_pass  = settings.SMTP_MENU_PASSWORD
             from_email = settings.SMTP_MENU_USER

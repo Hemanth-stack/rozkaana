@@ -496,24 +496,24 @@ async def pipeline_today(
         )
     ).scalar() or 0
 
-    wa_sent = (
+    emails_sent = (
         await db.execute(
             select(func.count()).select_from(DailyMenu)
             .where(and_(DailyMenu.menu_date == today, DailyMenu.email_sent_at.isnot(None)))
         )
     ).scalar() or 0
 
-    wa_failed = (
+    email_failed = (
         await db.execute(
             select(func.count()).select_from(DailyMenu)
-            .where(and_(DailyMenu.menu_date == today, DailyMenu.wa_status == "failed"))
+            .where(and_(DailyMenu.menu_date == today, DailyMenu.email_status == "failed"))
         )
     ).scalar() or 0
 
     steps = [
         PipelineStep(name="Menu Generation", count=active_subs, completed=menus_gen, failed=active_subs - menus_gen, status="done" if menus_gen >= active_subs else "partial"),
         PipelineStep(name="PDF Build", count=menus_gen, completed=pdfs_built, failed=menus_gen - pdfs_built, status="done" if pdfs_built >= menus_gen else "partial"),
-        PipelineStep(name="Email Delivery", count=pdfs_built, completed=wa_sent, failed=wa_failed, status="done" if wa_sent >= pdfs_built else "partial"),
+        PipelineStep(name="Email Delivery", count=pdfs_built, completed=emails_sent, failed=email_failed, status="done" if emails_sent >= pdfs_built else "partial"),
     ]
     return PipelineStatus(date=today, steps=steps)
 
@@ -523,6 +523,7 @@ async def list_menus(
     menu_date: str | None = None,
     owner_id: str | None = None,
     wa_status: str | None = None,
+    email_status: str | None = None,
     page: int = 1,
     limit: int = 50,
     current_user: User = Depends(get_current_admin),
@@ -541,6 +542,8 @@ async def list_menus(
             pass
     if wa_status:
         filters.append(DailyMenu.wa_status == wa_status)
+    if email_status:
+        filters.append(DailyMenu.email_status == email_status)
 
     count_q = select(func.count()).select_from(DailyMenu)
     if filters:
@@ -561,7 +564,8 @@ async def list_menus(
         items.append(MenuAdminItem(
             id=m.id, owner_id=m.owner_id, owner_type=m.owner_type,
             menu_date=m.menu_date, pdf_key=m.pdf_key, wa_status=m.wa_status,
-            wa_sent_at=m.wa_sent_at, generated_at=m.generated_at, owner_name=owner_name,
+            wa_sent_at=m.wa_sent_at, email_status=m.email_status,
+            email_sent_at=m.email_sent_at, generated_at=m.generated_at, owner_name=owner_name,
         ))
 
     return MenuAdminListResponse(menus=items, total=total)

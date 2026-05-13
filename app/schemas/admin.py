@@ -95,6 +95,8 @@ class MenuAdminItem(BaseModel):
     pdf_key: Optional[str]
     wa_status: Optional[str]
     wa_sent_at: Optional[datetime]
+    email_status: Optional[str] = None
+    email_sent_at: Optional[datetime] = None
     generated_at: Optional[datetime]
     owner_name: Optional[str] = None
 
