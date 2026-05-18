@@ -174,7 +174,10 @@ async def _query_candidates(
     eating_mode = ctx["eating_mode"]
     is_nv_day = ctx["is_nv_day"]
 
-    base_filters = [
+    def arr_contains(col, values: list[str]):
+        return col.op("@>")(cast(values, PG_ARRAY(String)))
+
+    core_filters = [
         Recipe.meal_type == slot,
         Recipe.is_verified == True,  # noqa: E712
         Recipe.is_active == True,    # noqa: E712
@@ -188,15 +191,10 @@ async def _query_candidates(
             except ValueError:
                 pass
         if excluded_uuids:
-            base_filters.append(Recipe.id.notin_(excluded_uuids))
+            core_filters.append(Recipe.id.notin_(excluded_uuids))
 
-    def arr_contains(col, values: list[str]):
-        """PostgreSQL array @> operator: col contains all values."""
-        return col.op("@>")(cast(values, PG_ARRAY(String)))
-
-    # Eating mode filter using PostgreSQL @> array operator
     if not is_nv_day:
-        base_filters.append(
+        core_filters.append(
             or_(
                 arr_contains(Recipe.eating_mode_tags, ["pure_veg"]),
                 arr_contains(Recipe.eating_mode_tags, ["jain"]),
@@ -204,52 +202,55 @@ async def _query_candidates(
             )
         )
     else:
-        base_filters.append(arr_contains(Recipe.eating_mode_tags, [eating_mode]))
+        core_filters.append(arr_contains(Recipe.eating_mode_tags, [eating_mode]))
 
     for tag in ctx["health_tags"]:
-        base_filters.append(arr_contains(Recipe.health_safe_tags, [tag]))
+        core_filters.append(arr_contains(Recipe.health_safe_tags, [tag]))
 
-    for allergen in ctx["allergy_tags"]:
-        base_filters.append(arr_contains(Recipe.allergy_free_tags, [f"{allergen}_free"]))
-
-    # Condition-specific micronutrient filters (only applied when data exists)
     health_tags = ctx["health_tags"]
     if "hypertension" in health_tags:
-        # Keep sodium <= 600mg per meal (target <1500mg/day for DASH)
-        base_filters.append(
-            or_(Recipe.sodium_mg.is_(None), Recipe.sodium_mg <= 600)
-        )
+        core_filters.append(or_(Recipe.sodium_mg.is_(None), Recipe.sodium_mg <= 600))
     if "diabetes_t2" in health_tags or "pcos" in health_tags:
-        # Low-GI meals only (GI <= 55 = low; null = unknown, allowed)
-        base_filters.append(
-            or_(Recipe.glycemic_index.is_(None), Recipe.glycemic_index <= 55)
-        )
+        core_filters.append(or_(Recipe.glycemic_index.is_(None), Recipe.glycemic_index <= 55))
     if "kidney_disease" in health_tags:
-        # Very low potassium (<400mg/meal) for kidney patients
-        base_filters.append(
-            or_(Recipe.potassium_mg.is_(None), Recipe.potassium_mg <= 400)
+        core_filters.append(or_(Recipe.potassium_mg.is_(None), Recipe.potassium_mg <= 400))
+
+    # Allergy filters are kept separate so they can be relaxed when tag coverage is incomplete.
+    allergy_filters = [
+        arr_contains(Recipe.allergy_free_tags, [f"{allergen}_free"])
+        for allergen in ctx["allergy_tags"]
+    ]
+
+    async def _run_query(filters: list) -> list[Recipe]:
+        out: list[Recipe] = []
+        seen: set = set()
+        for cuisine in cuisine_pool[:3]:
+            q = select(Recipe).where(and_(*filters, Recipe.cuisine_region == cuisine)).limit(20)
+            rows = await db.execute(q)
+            for r in rows.scalars().all():
+                if str(r.id) not in seen:
+                    out.append(r)
+                    seen.add(str(r.id))
+            if len(out) >= 5:
+                break
+        if len(out) < 3:
+            q = select(Recipe).where(and_(*filters)).limit(20)
+            rows = await db.execute(q)
+            for r in rows.scalars().all():
+                if str(r.id) not in seen:
+                    out.append(r)
+                    seen.add(str(r.id))
+        return out
+
+    results = await _run_query(core_filters + allergy_filters)
+
+    # Fallback: allergy tag coverage is incomplete — missing tags should not starve the menu.
+    if len(results) == 0 and allergy_filters:
+        logger.warning(
+            "Allergy filters returned 0 for slot=%s allergens=%s — retrying without allergy filter",
+            slot, ctx["allergy_tags"],
         )
-
-    results: list[Recipe] = []
-    seen_ids: set = set()
-
-    for cuisine in cuisine_pool[:3]:
-        q = select(Recipe).where(and_(*base_filters, Recipe.cuisine_region == cuisine)).limit(20)
-        rows = await db.execute(q)
-        for r in rows.scalars().all():
-            if str(r.id) not in seen_ids:
-                results.append(r)
-                seen_ids.add(str(r.id))
-        if len(results) >= 5:
-            break
-
-    if len(results) < 3:
-        q = select(Recipe).where(and_(*base_filters)).limit(20)
-        rows = await db.execute(q)
-        for r in rows.scalars().all():
-            if str(r.id) not in seen_ids:
-                results.append(r)
-                seen_ids.add(str(r.id))
+        results = await _run_query(core_filters)
 
     if len(results) == 0:
         logger.error(
