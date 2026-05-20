@@ -152,16 +152,31 @@ input:focus,select:focus{border-color:var(--saffron)}
     </div>
     <div style="margin-top:24px">
       <label style="display:block;margin-bottom:10px">Preferred cuisines (pick up to 3)</label>
-      <div class="chip-group" id="cuisineGroup">
+      <div style="font-size:.75rem;color:var(--muted,#7A6E65);margin-bottom:8px">South Indian</div>
+      <div class="chip-group" id="cuisineGroup" style="flex-wrap:wrap">
+        <div class="chip" data-val="andhra" onclick="pickMax(this,'cuisineGroup',3)">Andhra</div>
+        <div class="chip" data-val="tamil" onclick="pickMax(this,'cuisineGroup',3)">Tamil</div>
+        <div class="chip" data-val="karnataka" onclick="pickMax(this,'cuisineGroup',3)">Karnataka</div>
+        <div class="chip" data-val="kerala" onclick="pickMax(this,'cuisineGroup',3)">Kerala</div>
+        <div class="chip" data-val="hyderabadi" onclick="pickMax(this,'cuisineGroup',3)">Hyderabadi</div>
+        <div style="width:100%;font-size:.75rem;color:var(--muted,#7A6E65);margin:8px 0 2px">North &amp; West Indian</div>
         <div class="chip" data-val="north_indian" onclick="pickMax(this,'cuisineGroup',3)">North Indian</div>
-        <div class="chip" data-val="south_indian" onclick="pickMax(this,'cuisineGroup',3)">South Indian</div>
-        <div class="chip" data-val="bengali" onclick="pickMax(this,'cuisineGroup',3)">Bengali</div>
+        <div class="chip" data-val="punjabi" onclick="pickMax(this,'cuisineGroup',3)">Punjabi</div>
         <div class="chip" data-val="gujarati" onclick="pickMax(this,'cuisineGroup',3)">Gujarati</div>
         <div class="chip" data-val="maharashtrian" onclick="pickMax(this,'cuisineGroup',3)">Maharashtrian</div>
-        <div class="chip" data-val="punjabi" onclick="pickMax(this,'cuisineGroup',3)">Punjabi</div>
-        <div class="chip" data-val="hyderabadi" onclick="pickMax(this,'cuisineGroup',3)">Hyderabadi</div>
-        <div class="chip" data-val="kerala" onclick="pickMax(this,'cuisineGroup',3)">Kerala</div>
+        <div class="chip" data-val="rajasthani" onclick="pickMax(this,'cuisineGroup',3)">Rajasthani</div>
+        <div class="chip" data-val="bengali" onclick="pickMax(this,'cuisineGroup',3)">Bengali</div>
       </div>
+    </div>
+    <div style="margin-top:24px">
+      <label style="display:block;margin-bottom:10px">How active are you daily?</label>
+      <div class="chip-group" id="activityGroup">
+        <div class="chip" data-val="sedentary" onclick="pickOne(this,'activityGroup')">Mostly Sitting</div>
+        <div class="chip" data-val="lightly_active" onclick="pickOne(this,'activityGroup')">Light Movement</div>
+        <div class="chip" data-val="moderately_active" onclick="pickOne(this,'activityGroup')">Regular Exercise</div>
+        <div class="chip" data-val="active" onclick="pickOne(this,'activityGroup')">Daily Training</div>
+      </div>
+      <div style="font-size:.72rem;color:var(--muted,#7A6E65);margin-top:6px">Used to calculate your exact protein and calorie needs</div>
     </div>
     <div class="err" id="err2">Please select a dietary preference and at least one cuisine.</div>
     <button class="btn" onclick="next(2)">Continue →</button>
@@ -264,6 +279,7 @@ function next(step) {
     profile.eating_mode = mode;
     profile.cuisine_prefs = cuisines;
     profile.nv_days = mode === 'conditional_nv' ? getSelected('nvDaysGroup') : [];
+    profile.activity_level = getSelected('activityGroup')[0] || 'lightly_active';
     buildSummary();
   }
 
@@ -305,7 +321,8 @@ async function finish() {
   try {
     await fetch(`${API}/users/me/basic`, { method:'PUT', headers:h,
       body: JSON.stringify({ name:profile.name, age:profile.age, gender:profile.gender,
-        weight_kg:profile.weight_kg, height_cm:profile.height_cm }) });
+        weight_kg:profile.weight_kg, height_cm:profile.height_cm,
+        activity_level: profile.activity_level || 'lightly_active' }) });
 
     await fetch(`${API}/users/me/goal`, { method:'PUT', headers:h,
       body: JSON.stringify({ goal: profile.goal }) });

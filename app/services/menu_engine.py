@@ -29,9 +29,41 @@ SLOT_RATIOS: dict[str, float] = {
 
 DAY_NAMES = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
+# Adult-equivalent calorie weights by member type — used for grocery scaling
+ADULT_EQUIV_WEIGHTS: dict[str, float] = {
+    "adult":  1.0,
+    "senior": 1.0,
+    "teen":   0.9,
+    "child":  0.75,
+    "infant": 0.4,
+}
+
+
+def _child_weight(member) -> float:
+    """Age-refined adult-equivalent weight for a HouseholdMember."""
+    mt = getattr(member, "member_type", "adult")
+    if mt == "infant":
+        return 0.4
+    if mt == "child":
+        age = getattr(member, "age", None) or 0
+        return 0.6 if age <= 7 else 0.75
+    return ADULT_EQUIV_WEIGHTS.get(mt, 1.0)
+
+
+# South Indian sub-regions map back to the legacy south_indian pool as a fallback.
+# This lets existing south_indian-tagged recipes serve andhra/tamil/karnataka users
+# until sub-regional recipe batches are fully generated.
+_SOUTH_SUBREGION_PARENT: dict[str, str] = {
+    "andhra":    "south_indian",
+    "tamil":     "south_indian",
+    "karnataka": "south_indian",
+}
+
 ALL_CUISINES = [
-    "north_indian", "south_indian", "bengali", "gujarati", "maharashtrian",
-    "punjabi", "hyderabadi", "rajasthani", "kerala", "goan", "sattvic",
+    "north_indian", "andhra", "tamil", "karnataka", "bengali", "gujarati",
+    "maharashtrian", "punjabi", "hyderabadi", "rajasthani", "kerala", "goan",
+    "sattvic",
+    "south_indian",  # legacy — kept as fallback pool, not user-selectable
 ]
 
 EATING_MODE_STRICTNESS = {
@@ -41,6 +73,31 @@ EATING_MODE_STRICTNESS = {
     "conditional_nv": 3,
     "full_nv": 4,
 }
+
+# Dinner style rotation for "mixed" preference (index = weekday, 0=Mon)
+_DINNER_STYLE_ROTATION = [
+    "rice_plate",  # Mon
+    "tiffin",      # Tue
+    "rice_plate",  # Wed
+    "tiffin",      # Thu
+    "rice_plate",  # Fri
+    "roti_based",  # Sat
+    "roti_based",  # Sun
+]
+
+# Universal South Indian base ingredients that appear across many dishes and
+# should not count as "shared" when checking adjacent-meal ingredient overlap.
+_EXEMPT_INGREDIENTS: set[str] = {
+    "sambar", "rice", "coconut", "curry leaves", "mustard seeds",
+    "urad dal", "chana dal", "tamarind", "curd", "yogurt",
+    "ghee", "oil", "salt", "water", "green chilli", "ginger",
+}
+
+
+def _expand_cuisine(cuisine: str) -> list[str]:
+    """Return cuisine + its legacy parent pool (for South Indian sub-regions)."""
+    parent = _SOUTH_SUBREGION_PARENT.get(cuisine)
+    return [cuisine, parent] if parent else [cuisine]
 
 
 async def generate_menu(
@@ -83,40 +140,70 @@ async def _load_context(db: AsyncSession, owner_id: str, owner_type: str, menu_d
         calorie_target = user.daily_calorie_target or 2000
         nv_days = user.nv_days or []
         member_count = 1
+        dinner_style_pref = user.dinner_style_pref
         macro_targets = {
             "calories": calorie_target,
-            "protein_g": float(user.daily_protein_target_g or calorie_target * 0.25 / 4),
-            "carbs_g": float(user.daily_carbs_target_g or calorie_target * 0.50 / 4),
-            "fat_g": float(user.daily_fat_target_g or calorie_target * 0.25 / 9),
+            "protein_g": float(user.daily_protein_target_g or calorie_target * 0.12 / 4),
+            "carbs_g": float(user.daily_carbs_target_g or calorie_target * 0.60 / 4),
+            "fat_g": float(user.daily_fat_target_g or calorie_target * 0.28 / 9),
         }
     else:
+        from app.models.household_member import HouseholdMember
         household = await db.get(Household, uuid.UUID(owner_id))
         if not household:
             raise ValueError(f"Household {owner_id} not found")
+
         result = await db.execute(select(User).where(User.household_id == uuid.UUID(owner_id)))
-        members = result.scalars().all()
-        if not members:
+        user_members = result.scalars().all()
+
+        hm_result = await db.execute(
+            select(HouseholdMember).where(HouseholdMember.household_id == uuid.UUID(owner_id))
+        )
+        hh_members = hm_result.scalars().all()
+
+        if not user_members and not hh_members:
             raise ValueError(f"Household {owner_id} has no members")
 
-        all_eating_modes = [m.eating_mode or "pure_veg" for m in members]
+        # Strictest eating mode across ALL members (registered users + head-managed profiles)
+        all_eating_modes = (
+            [m.eating_mode or "pure_veg" for m in user_members] +
+            [m.eating_mode or "pure_veg" for m in hh_members]
+        )
         eating_mode = min(all_eating_modes, key=lambda m: EATING_MODE_STRICTNESS.get(m, 99))
 
-        health_tags = list(set(tag for m in members for tag in (m.health_tags or [])))
-        allergy_tags = list(set(tag for m in members for tag in (m.allergy_tags or [])))
+        health_tags = list(set(
+            tag for m in (list(user_members) + list(hh_members))
+            for tag in (m.health_tags or [])
+        ))
+        allergy_tags = list(set(
+            tag for m in (list(user_members) + list(hh_members))
+            for tag in (m.allergy_tags or [])
+        ))
         cuisine_prefs = household.cuisine_prefs or ["north_indian"]
-        head = next((m for m in members if m.is_household_head), members[0])
-        calorie_target = head.daily_calorie_target or 2000
+        head = next((m for m in user_members if m.is_household_head), user_members[0] if user_members else None)
+        calorie_target = (head.daily_calorie_target if head else None) or 2000
         nv_days = []
-        member_count = len(members)
+        dinner_style_pref = head.dinner_style_pref if head else None
+
+        # Adult-equivalent count for grocery ingredient scaling
+        adult_equiv = float(len(user_members))
+        adult_equiv += sum(_child_weight(m) for m in hh_members)
+        member_count = max(1, round(adult_equiv))
+
         macro_targets = {
             "calories": calorie_target,
-            "protein_g": float(head.daily_protein_target_g or calorie_target * 0.25 / 4),
-            "carbs_g": float(head.daily_carbs_target_g or calorie_target * 0.50 / 4),
-            "fat_g": float(head.daily_fat_target_g or calorie_target * 0.25 / 9),
+            "protein_g": float((head.daily_protein_target_g if head else None) or calorie_target * 0.12 / 4),
+            "carbs_g": float((head.daily_carbs_target_g if head else None) or calorie_target * 0.60 / 4),
+            "fat_g": float((head.daily_fat_target_g if head else None) or calorie_target * 0.28 / 9),
         }
 
     today_name = DAY_NAMES[menu_date.weekday()]
-    is_nv_day = today_name in [d.lower() for d in nv_days]
+    if eating_mode == "full_nv":
+        is_nv_day = True   # full_nv = non-veg every day; nv_days field is not relevant
+    elif eating_mode == "conditional_nv":
+        is_nv_day = today_name in [d.lower() for d in nv_days]
+    else:
+        is_nv_day = False  # pure_veg / jain / sattvic — never NV
 
     festival_name = get_festival(menu_date)
 
@@ -131,6 +218,8 @@ async def _load_context(db: AsyncSession, owner_id: str, owner_type: str, menu_d
         "is_festival": festival_name is not None,
         "festival_name": festival_name,
         "member_count": member_count,
+        "dinner_style_pref": dinner_style_pref,
+        "menu_date": menu_date,
     }
 
 
@@ -150,18 +239,31 @@ async def _get_cuisine_override(redis: Redis, owner_id: str, date_str: str) -> s
 
 
 def _resolve_cuisine(ctx: dict, menu_date: date, override: str | None) -> list[str]:
+    def _build_pool(primary: str | None) -> list[str]:
+        pool: list[str] = []
+        if primary:
+            for c in _expand_cuisine(primary):
+                if c not in pool:
+                    pool.append(c)
+        for pref in ctx["cuisine_prefs"]:
+            for c in _expand_cuisine(pref):
+                if c not in pool:
+                    pool.append(c)
+        for c in ALL_CUISINES:
+            for e in _expand_cuisine(c):
+                if e not in pool:
+                    pool.append(e)
+        return pool
+
     if override:
-        remaining = [c for c in ctx["cuisine_prefs"] if c != override]
-        return [override, *remaining, *[c for c in ALL_CUISINES if c not in [override, *remaining]]]
+        return _build_pool(override)
 
     if ctx["is_festival"] and ctx["festival_name"]:
         festival_cuisine = FESTIVAL_CUISINE_MAP.get(ctx["festival_name"])
         if festival_cuisine:
-            remaining = [c for c in ctx["cuisine_prefs"] if c != festival_cuisine]
-            return [festival_cuisine, *remaining, *[c for c in ALL_CUISINES if c not in [festival_cuisine, *remaining]]]
+            return _build_pool(festival_cuisine)
 
-    base = list(ctx["cuisine_prefs"])
-    return base + [c for c in ALL_CUISINES if c not in base]
+    return _build_pool(None)
 
 
 async def _query_candidates(
@@ -173,6 +275,8 @@ async def _query_candidates(
 ) -> list[Recipe]:
     eating_mode = ctx["eating_mode"]
     is_nv_day = ctx["is_nv_day"]
+    menu_date: date = ctx["menu_date"]
+    dinner_style_pref: str | None = ctx.get("dinner_style_pref")
 
     def arr_contains(col, values: list[str]):
         return col.op("@>")(cast(values, PG_ARRAY(String)))
@@ -193,16 +297,32 @@ async def _query_candidates(
         if excluded_uuids:
             core_filters.append(Recipe.id.notin_(excluded_uuids))
 
-    if not is_nv_day:
-        core_filters.append(
-            or_(
-                arr_contains(Recipe.eating_mode_tags, ["pure_veg"]),
-                arr_contains(Recipe.eating_mode_tags, ["jain"]),
-                arr_contains(Recipe.eating_mode_tags, ["sattvic"]),
-            )
-        )
+    # Eating mode filter respects the strictness hierarchy:
+    # full_nv can eat anything; jain can only eat jain-tagged recipes.
+    if eating_mode == "full_nv":
+        # Least restrictive — can eat any recipe, no eating mode filter needed
+        pass
+    elif eating_mode == "conditional_nv" and is_nv_day:
+        core_filters.append(or_(
+            arr_contains(Recipe.eating_mode_tags, ["conditional_nv"]),
+            arr_contains(Recipe.eating_mode_tags, ["pure_veg"]),
+            arr_contains(Recipe.eating_mode_tags, ["sattvic"]),
+            arr_contains(Recipe.eating_mode_tags, ["jain"]),
+        ))
+    elif eating_mode == "pure_veg" or (eating_mode == "conditional_nv" and not is_nv_day):
+        core_filters.append(or_(
+            arr_contains(Recipe.eating_mode_tags, ["pure_veg"]),
+            arr_contains(Recipe.eating_mode_tags, ["sattvic"]),
+            arr_contains(Recipe.eating_mode_tags, ["jain"]),
+        ))
+    elif eating_mode == "sattvic":
+        core_filters.append(or_(
+            arr_contains(Recipe.eating_mode_tags, ["sattvic"]),
+            arr_contains(Recipe.eating_mode_tags, ["jain"]),
+        ))
     else:
-        core_filters.append(arr_contains(Recipe.eating_mode_tags, [eating_mode]))
+        # jain — most restrictive
+        core_filters.append(arr_contains(Recipe.eating_mode_tags, ["jain"]))
 
     for tag in ctx["health_tags"]:
         core_filters.append(arr_contains(Recipe.health_safe_tags, [tag]))
@@ -215,7 +335,20 @@ async def _query_candidates(
     if "kidney_disease" in health_tags:
         core_filters.append(or_(Recipe.potassium_mg.is_(None), Recipe.potassium_mg <= 400))
 
-    # Allergy filters are kept separate so they can be relaxed when tag coverage is incomplete.
+    # Dinner style filtering
+    if slot == "dinner" and dinner_style_pref:
+        if dinner_style_pref == "mixed":
+            day_style = _DINNER_STYLE_ROTATION[menu_date.weekday()]
+        else:
+            day_style = dinner_style_pref
+        core_filters.append(
+            or_(
+                Recipe.dish_category == day_style,
+                Recipe.dish_category.is_(None),  # untagged recipes are still valid
+            )
+        )
+
+    # Allergy filters kept separate so they can be relaxed when tag coverage is incomplete.
     allergy_filters = [
         arr_contains(Recipe.allergy_free_tags, [f"{allergen}_free"])
         for allergen in ctx["allergy_tags"]
@@ -224,16 +357,35 @@ async def _query_candidates(
     async def _run_query(filters: list) -> list[Recipe]:
         out: list[Recipe] = []
         seen: set = set()
-        for cuisine in cuisine_pool[:3]:
+        # First pass: user's top cuisines (preferred region + its fallback pool)
+        for cuisine in cuisine_pool[:4]:
             q = select(Recipe).where(and_(*filters, Recipe.cuisine_region == cuisine)).limit(20)
             rows = await db.execute(q)
             for r in rows.scalars().all():
                 if str(r.id) not in seen:
                     out.append(r)
                     seen.add(str(r.id))
-            if len(out) >= 5:
+            if len(out) >= 10:
                 break
+        # Second pass: expand to more of the cuisine pool — still cuisine-constrained
+        # (prevents Kerala/North Indian dishes appearing for an Andhra user)
         if len(out) < 3:
+            extended = cuisine_pool[4:10]
+            if extended:
+                q = select(Recipe).where(
+                    and_(*filters, Recipe.cuisine_region.in_(extended))
+                ).limit(20)
+                rows = await db.execute(q)
+                for r in rows.scalars().all():
+                    if str(r.id) not in seen:
+                        out.append(r)
+                        seen.add(str(r.id))
+        # Last resort: fully unconstrained — only when no cuisine-filtered results exist at all
+        if len(out) == 0:
+            logger.warning(
+                "Cuisine pool exhausted for slot=%s — falling back to unconstrained query",
+                slot,
+            )
             q = select(Recipe).where(and_(*filters)).limit(20)
             rows = await db.execute(q)
             for r in rows.scalars().all():
@@ -255,7 +407,7 @@ async def _query_candidates(
     if len(results) == 0:
         logger.error(
             "ZERO candidates slot=%s eating_mode=%s health_tags=%s cuisine_pool=%s — slot will be None",
-            slot, ctx["eating_mode"], ctx["health_tags"], cuisine_pool[:3],
+            slot, ctx["eating_mode"], ctx["health_tags"], cuisine_pool[:4],
         )
     elif len(results) < 3:
         logger.warning(
@@ -266,42 +418,75 @@ async def _query_candidates(
     return results
 
 
-def _score_recipe(recipe: Recipe, target_cal: float) -> float:
+def _score_recipe(
+    recipe: Recipe,
+    target_cal: float,
+    target_protein_g: float = 0,
+    preferred_cuisines: list[str] | None = None,
+) -> float:
     if target_cal <= 0:
         return 0.0
     cal_delta = abs(recipe.calories - target_cal) / target_cal
-    protein_bonus = float(recipe.protein_g or 0) * 0.05
-    return cal_delta - protein_bonus
+    if target_protein_g > 0:
+        # 80% weight on calorie fit, 20% on protein fit
+        protein_delta = abs(float(recipe.protein_g or 0) - target_protein_g) / max(target_protein_g, 1)
+        score = cal_delta * 0.8 + protein_delta * 0.2
+    else:
+        score = cal_delta
+    # Cuisine preference bonus: prefer the user's top cuisine even if calorically less perfect.
+    # A bonus of 0.15 means an Andhra recipe 15% off in calories still beats a Kerala recipe
+    # that's perfectly on-target, keeping regional authenticity for the primary cuisine.
+    if preferred_cuisines and recipe.cuisine_region == preferred_cuisines[0]:
+        score = max(0.0, score - 0.15)
+    elif preferred_cuisines and len(preferred_cuisines) > 1 and recipe.cuisine_region == preferred_cuisines[1]:
+        score = max(0.0, score - 0.07)
+    return score
 
 
 def _select_by_macro(candidates: dict[str, list[Recipe]], ctx: dict) -> dict[str, Recipe | None]:
     calorie_target = ctx["macro_targets"]["calories"]
+    protein_target = ctx["macro_targets"]["protein_g"]
+    preferred_cuisines = ctx.get("cuisine_prefs", [])
+    top_cuisine = preferred_cuisines[0] if preferred_cuisines else None
+
     selected: dict[str, Recipe | None] = {}
     for slot, recipes in candidates.items():
         if not recipes:
             logger.error("No recipes available for slot=%s — DailyMenu will have a null slot", slot)
             selected[slot] = None
             continue
-        target_cal = calorie_target * SLOT_RATIOS[slot]
-        scored = sorted(recipes, key=lambda r: _score_recipe(r, target_cal))
-        selected[slot] = scored[0]
+        slot_cal_target = calorie_target * SLOT_RATIOS[slot]
+        slot_protein_target = protein_target * SLOT_RATIOS[slot]
+
+        def score(r: Recipe) -> float:
+            return _score_recipe(r, slot_cal_target, slot_protein_target, preferred_cuisines)
+
+        # Prefer the user's exact top cuisine: if any candidates come from it, select only those.
+        # south_indian is the *fallback pool* for andhra/tamil/karnataka — not an equal preference.
+        # Only use the full mixed pool when the top cuisine has zero representation in this slot.
+        top_cuisine_recipes = [r for r in recipes if r.cuisine_region == top_cuisine] if top_cuisine else []
+        pool_to_score = top_cuisine_recipes if top_cuisine_recipes else recipes
+
+        selected[slot] = sorted(pool_to_score, key=score)[0]
     return selected
 
 
 def _get_ingredient_names(recipe: Recipe) -> set[str]:
-    """All ingredient names from the recipe's ingredient list (not just main_ingredient)."""
+    """All ingredient names from the recipe, excluding universal base ingredients."""
     names: set[str] = set()
     if recipe.main_ingredient:
-        names.add(recipe.main_ingredient.lower().strip())
+        n = recipe.main_ingredient.lower().strip()
+        if n and n not in _EXEMPT_INGREDIENTS:
+            names.add(n)
     for ing in (recipe.ingredients or []):
         n = (ing.get("name") or "").lower().strip()
-        if n:
+        if n and n not in _EXEMPT_INGREDIENTS:
             names.add(n)
     return names
 
 
 def _ingredient_overlap(r1: Recipe, r2: Recipe) -> int:
-    """Number of shared ingredients between two recipes."""
+    """Number of shared non-exempt ingredients between two recipes."""
     if not r1 or not r2:
         return 0
     return len(_get_ingredient_names(r1) & _get_ingredient_names(r2))
@@ -339,19 +524,27 @@ def _apply_variety_rules(
         if alts:
             selected["evening_snack"] = alts[0]
 
-    # 4. Avoid high ingredient overlap between any two adjacent meals
+    # 4. Avoid high ingredient overlap between adjacent meals (exempt common South Indian bases)
     pairs = [("breakfast", "morning_snack"), ("morning_snack", "lunch"),
              ("lunch", "evening_snack"), ("evening_snack", "dinner")]
     for slot_a, slot_b in pairs:
         ra, rb = selected.get(slot_a), selected.get(slot_b)
         if ra and rb and _ingredient_overlap(ra, rb) >= 4:
-            # Too many shared ingredients — try an alternative for slot_b
             alts = [
                 r for r in candidates.get(slot_b, [])
                 if r.id != rb.id and _ingredient_overlap(ra, r) < 4
             ]
             if alts:
                 selected[slot_b] = alts[0]
+
+    # 5. Breakfast and dinner must not be the exact same dish (tiffin overlap prevention)
+    bf = selected.get("breakfast")
+    dinner = selected.get("dinner")
+    if bf and dinner and bf.name == dinner.name:
+        alts = [r for r in candidates["dinner"] if r.name != bf.name]
+        if alts:
+            dinner_target = calorie_target * SLOT_RATIOS["dinner"]
+            selected["dinner"] = sorted(alts, key=lambda r: _score_recipe(r, dinner_target))[0]
 
     return selected
 
@@ -401,6 +594,7 @@ async def get_menu_insights(
             "is_festival": ctx.get("is_festival", False),
             "festival_name": ctx.get("festival_name"),
             "is_nv_day": ctx.get("is_nv_day", False),
+            "dinner_style_pref": ctx.get("dinner_style_pref"),
         },
         "candidate_pool": candidate_counts,
         "cuisine_used": cuisine_used,

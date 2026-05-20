@@ -4,6 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from app.schemas.user import UserProfile
+from app.schemas.household_member import HouseholdMemberResponse
 
 
 class HouseholdCreate(BaseModel):
@@ -16,9 +17,12 @@ class HouseholdResponse(BaseModel):
     name: str
     head_user_id: Optional[UUID]
     shared_eating_mode: Optional[str]
-    member_count: int
+    member_count: int                           # registered User members
+    adult_count: int = 0                        # HouseholdMember adults/teens/seniors
+    child_count: int = 0                        # HouseholdMember children/infants
     cuisine_prefs: Optional[list[str]] = []
-    members: list[UserProfile] = []
+    members: list[UserProfile] = []             # registered User accounts
+    household_members: list[HouseholdMemberResponse] = []  # head-managed profiles
 
     model_config = {"from_attributes": True}
 

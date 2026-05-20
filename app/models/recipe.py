@@ -38,6 +38,7 @@ class Recipe(Base):
     serving_unit = Column(String(200), nullable=True)
     prep_time_mins = Column(SmallInteger, nullable=True)
     spice_level = Column(String(20), nullable=True)
+    dish_category = Column(String(30), nullable=True, index=True)  # rice_plate/tiffin/roti_based/snack
     main_ingredient = Column(String(100), nullable=True)
     ingredients = Column(JSONB, nullable=True)
     steps = Column(ARRAY(TEXT), nullable=True)

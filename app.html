@@ -47,7 +47,8 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
 .slot-icon{font-size:1.3rem;flex-shrink:0;width:36px;text-align:center}
 .slot-info{flex:1}
 .slot-name{font-size:.9rem;font-weight:600;color:var(--charcoal)}
-.slot-time{font-size:.73rem;color:var(--muted)}
+.slot-qty{font-size:.74rem;color:var(--green);font-weight:600;margin-top:2px}
+.slot-time{font-size:.73rem;color:var(--muted);margin-top:1px}
 .slot-kcal{font-size:.85rem;font-weight:700;color:var(--saffron)}
 .menu-footer{padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px}
 .menu-footer a,.menu-footer button{flex:1;padding:11px;border-radius:10px;text-align:center;font-size:.85rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;transition:.15s}
@@ -364,20 +365,30 @@ async function loadMenu() {
         <div><h2>Today's Meal Plan</h2><p>${new Date(m.menu_date+'T12:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}</p></div>
       </div>
       <div class="macros">
-        <div class="mac"><div class="v">${m.total_calories||0}</div><div class="l">kcal</div></div>
-        <div class="mac"><div class="v">${m.total_protein_g||0}g</div><div class="l">protein</div></div>
-        <div class="mac"><div class="v">${m.total_carbs_g||0}g</div><div class="l">carbs</div></div>
-        <div class="mac"><div class="v">${m.total_fat_g||0}g</div><div class="l">fat</div></div>
+        <div class="mac"><div class="v">${m.scaled_calories||m.total_calories||0}</div><div class="l">kcal target</div></div>
+        <div class="mac"><div class="v">${m.scaled_protein_g||m.total_protein_g||0}g</div><div class="l">protein</div></div>
+        <div class="mac"><div class="v">${m.scaled_carbs_g||m.total_carbs_g||0}g</div><div class="l">carbs</div></div>
+        <div class="mac"><div class="v">${m.scaled_fiber_g||0}g</div><div class="l">fiber</div></div>
       </div>
+      ${(m.nutrition_warnings||[]).length ? `
+      <div style="margin:0 0 2px;padding:10px 16px;background:#FFF8EE;border-left:3px solid var(--saffron,#E8593C)">
+        ${(m.nutrition_warnings||[]).map(w=>`<div style="font-size:.76rem;color:#92400e;line-height:1.5;margin-bottom:3px"> ${w}</div>`).join('')}
+      </div>` : ''}
       <div class="slots">
-        ${SLOT_DEF.map(s => m[s.key] ? `
+        ${SLOT_DEF.map(s => {
+          const srv = m[s.key+'_serving'] || {};
+          const mult = srv.multiplier || 1;
+          const rec_qty = srv.recommended_qty || '';
+          return m[s.key] ? `
           <div class="slot" id="slot-${s.key}">
             <div class="slot-icon">${s.icon}</div>
             <div class="slot-info">
               <div class="slot-name">${m[s.key].name}</div>
+              ${m[s.key].serving_unit ? `<div class="slot-qty">${m[s.key].serving_unit}</div>` : ''}
+              ${rec_qty ? `<div class="slot-qty" style="color:var(--saffron,#E8593C)">Recommended: ${rec_qty}</div>` : ''}
               <div class="slot-time">${s.label} · ${s.time}</div>
             </div>
-            <div class="slot-kcal">${m[s.key].calories} kcal</div>
+            <div class="slot-kcal">${srv.scaled_calories||m[s.key].calories} kcal</div>
             <button class="skip-btn" title="Skip ${s.label}" onclick="skipSlot('${s.key}',this)">✕</button>
           </div>` : `
           <div class="slot slot-missing">
@@ -386,7 +397,8 @@ async function loadMenu() {
               <div class="slot-name">${s.label} — not available</div>
               <div class="slot-time">Couldn't be filled for your profile · contact support</div>
             </div>
-          </div>`).join('')}
+          </div>`;
+        }).join('')}
       </div>
       <div class="menu-footer">
         ${pdfUrl

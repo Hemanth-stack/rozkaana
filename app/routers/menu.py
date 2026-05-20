@@ -27,6 +27,7 @@ router = APIRouter(prefix="/menu", tags=["menu"])
 ALLOWED_CUISINES = {
     "north_indian", "south_indian", "bengali", "gujarati", "maharashtrian",
     "punjabi", "hyderabadi", "rajasthani", "kerala", "goan", "sattvic",
+    "andhra", "tamil", "karnataka",
     "chinese", "italian", "continental",
 }
 
@@ -37,7 +38,9 @@ async def _fetch_recipe(db: AsyncSession, recipe_id) -> Recipe | None:
     return await db.get(Recipe, recipe_id)
 
 
-async def _enrich_menu(menu: DailyMenu, db: AsyncSession) -> dict:
+async def _enrich_menu(menu: DailyMenu, db: AsyncSession, user: User | None = None) -> dict:
+    from app.services.nutrition_balance import compute_slot_serving, compute_daily_balance
+
     # Batch fetch all recipes in a single query (fixes N+1)
     slot_ids = {
         "breakfast":     menu.breakfast_id,
@@ -62,6 +65,24 @@ async def _enrich_menu(menu: DailyMenu, db: AsyncSession) -> dict:
         except Exception:
             pdf_url = menu.pdf_url
 
+    # Per-slot serving multipliers and scaled nutrition balance
+    calorie_target  = int(user.daily_calorie_target or 2000) if user else 2000
+    protein_target  = float(user.daily_protein_target_g or 50) if user else 50
+    carbs_target    = float(user.daily_carbs_target_g or 250) if user else 250
+    fat_target      = float(user.daily_fat_target_g or 55) if user else 55
+
+    slot_servings: dict[str, dict] = {}
+    for slot in slot_ids:
+        recipe = recipes.get(slot)
+        slot_servings[slot] = compute_slot_serving(recipe, slot, calorie_target) if recipe else {
+            "multiplier": 1.0, "recommended_qty": "", "scaled_calories": 0
+        }
+
+    balance = compute_daily_balance(
+        recipes, slot_servings,
+        calorie_target, protein_target, carbs_target, fat_target,
+    )
+
     return {
         "id": menu.id,
         "owner_id": menu.owner_id,
@@ -76,6 +97,15 @@ async def _enrich_menu(menu: DailyMenu, db: AsyncSession) -> dict:
         "total_protein_g": float(menu.total_protein_g or 0),
         "total_carbs_g": float(menu.total_carbs_g or 0),
         "total_fat_g": float(menu.total_fat_g or 0),
+        # Per-slot serving guidance
+        "breakfast_serving":     slot_servings["breakfast"],
+        "morning_snack_serving": slot_servings["morning_snack"],
+        "lunch_serving":         slot_servings["lunch"],
+        "evening_snack_serving": slot_servings["evening_snack"],
+        "dinner_serving":        slot_servings["dinner"],
+        # Scaled daily totals
+        "target_calories": calorie_target,
+        **balance,
         "cuisine_override": menu.cuisine_override,
         "is_regenerated": menu.is_regenerated or False,
         "pdf_url": pdf_url,
@@ -111,7 +141,7 @@ async def get_today_menu(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No menu for today yet. It will be generated at midnight.",
         )
-    return await _enrich_menu(menu, db)
+    return await _enrich_menu(menu, db, user=current_user)
 
 
 @router.get("/history", response_model=HistoryResponse)
@@ -293,10 +323,19 @@ async def get_grocery_list(
 
     member_count = 1
     if owner_type == "household":
-        members_result = await db.execute(
+        from app.models.household_member import HouseholdMember as HHMember
+        from app.services.menu_engine import _child_weight
+        user_result = await db.execute(
             select(User).where(User.household_id == uuid.UUID(owner_id))
         )
-        member_count = len(members_result.scalars().all()) or 1
+        hm_result = await db.execute(
+            select(HHMember).where(HHMember.household_id == uuid.UUID(owner_id))
+        )
+        user_members = user_result.scalars().all()
+        hh_members   = hm_result.scalars().all()
+        adult_equiv  = float(len(user_members))
+        adult_equiv += sum(_child_weight(m) for m in hh_members)
+        member_count = max(1, round(adult_equiv))
 
     from app.services.grocery_service import build_grocery_list
     items = build_grocery_list(recipes, member_count)

@@ -1,12 +1,13 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from app.services.macro_scorer import calculate_targets
 
 if TYPE_CHECKING:
     from app.models.user import User
+    from app.models.household_member import HouseholdMember
 
 
-def calculate_and_store_bmi(user: "User") -> "User":
+def calculate_and_store_bmi(user: "Union[User, HouseholdMember]") -> "Union[User, HouseholdMember]":
     weight = float(user.weight_kg or 0)
     height_m = float(user.height_cm or 0) / 100
 

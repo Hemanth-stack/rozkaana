@@ -16,7 +16,6 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
 .nav-link{padding:7px 14px;border-radius:8px;font-size:.82rem;font-weight:600;color:var(--muted);text-decoration:none;transition:.15s}
 .nav-link:hover{color:var(--saffron);background:rgba(232,89,60,.06)}
 .nav-link.active{color:var(--saffron);background:rgba(232,89,60,.1)}
-.nav-right{display:flex;align-items:center;gap:14px}
 .nav-avatar{width:36px;height:36px;background:var(--saffron);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.85rem;cursor:pointer}
 @media(max-width:640px){.nav-links{display:none}.wrap{padding-bottom:90px}.toast{bottom:80px}}
 .mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);z-index:50;padding:8px 0 calc(env(safe-area-inset-bottom,0px) + 4px)}
@@ -33,24 +32,69 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
 .btn-primary{background:var(--saffron);color:#fff}.btn-primary:hover{background:var(--saffron-dark)}
 .btn-ghost{background:none;border:1.5px solid var(--border);color:var(--muted)}.btn-ghost:hover{border-color:var(--saffron);color:var(--saffron)}
 .btn-danger{background:none;border:1.5px solid #ef4444;color:#ef4444}.btn-danger:hover{background:#fef2f2}
+.btn-green{background:none;border:1.5px solid var(--green);color:var(--green)}.btn-green:hover{background:rgba(46,125,82,.06)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
-.field{margin-bottom:16px}
+.field{margin-bottom:14px}
 .field label{display:block;font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:6px}
-.field input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.92rem;color:var(--text);background:var(--cream);outline:none;transition:border-color .2s}
-.field input:focus{border-color:var(--saffron)}
-.member-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--cream-dark)}
-.member-row:last-child{border-bottom:none}
-.member-av{width:40px;height:40px;border-radius:50%;background:var(--saffron);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.9rem;flex-shrink:0}
-.member-info{flex:1}
-.member-name{font-size:.9rem;font-weight:600;color:var(--charcoal)}
-.member-meta{font-size:.75rem;color:var(--muted);margin-top:2px}
-.chip-group{display:flex;flex-wrap:wrap;gap:8px}
-.chip{padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:.83rem;font-weight:500;color:var(--muted);cursor:pointer;transition:.2s;user-select:none}
-.chip:hover{border-color:var(--saffron);color:var(--saffron)}
-.chip.selected{border-color:var(--saffron);background:rgba(232,89,60,.07);color:var(--saffron);font-weight:700}
-.badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+.field input,.field select,.field textarea{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.92rem;color:var(--text);background:var(--cream);outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--saffron)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* Member cards */
+.member-card{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid var(--cream-dark)}
+.member-card:last-child{border-bottom:none}
+.member-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.9rem;flex-shrink:0}
+.member-body{flex:1;min-width:0}
+.member-name{font-size:.92rem;font-weight:700;color:var(--charcoal);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.member-meta{font-size:.74rem;color:var(--muted);margin-top:3px;line-height:1.5}
+.member-stats{display:flex;gap:10px;margin-top:5px;flex-wrap:wrap}
+.stat-pill{font-size:.72rem;background:var(--cream-dark);border-radius:8px;padding:3px 8px;color:var(--text)}
+.member-actions{display:flex;gap:6px;flex-shrink:0;margin-top:2px}
+.icon-btn{background:none;border:1.5px solid var(--border);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:.78rem;transition:.15s;color:var(--muted)}
+.icon-btn:hover{border-color:var(--saffron);color:var(--saffron)}
+.icon-btn.danger:hover{border-color:#ef4444;color:#ef4444}
+.summary-bar{background:var(--cream-dark);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:.82rem;color:var(--muted);display:flex;gap:20px;flex-wrap:wrap}
+.summary-bar strong{color:var(--charcoal)}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:700}
 .badge-head{background:rgba(232,89,60,.1);color:var(--saffron)}
 .badge-member{background:rgba(46,125,82,.1);color:var(--green)}
+.badge-adult{background:rgba(67,56,202,.1);color:#4338CA}
+.badge-child{background:rgba(180,83,9,.1);color:#B45309}
+.badge-reg{background:rgba(46,125,82,.08);color:var(--green);border:1px solid rgba(46,125,82,.2)}
+
+/* Chips */
+.chip-group{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:.82rem;font-weight:500;color:var(--muted);cursor:pointer;transition:.2s;user-select:none}
+.chip:hover{border-color:var(--saffron);color:var(--saffron)}
+.chip.selected{border-color:var(--saffron);background:rgba(232,89,60,.07);color:var(--saffron);font-weight:700}
+.chip-label{font-size:.72rem;color:var(--muted);margin-bottom:5px;font-weight:600}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 16px}
+.modal-box{background:#fff;border-radius:20px;padding:28px;width:100%;max-width:520px;margin:auto}
+.modal-title{font-size:1.1rem;font-weight:700;color:var(--charcoal);margin-bottom:20px}
+.modal-footer{display:flex;gap:10px;margin-top:20px}
+.bmi-preview{font-size:.78rem;font-weight:600;padding:6px 12px;background:var(--cream-dark);border-radius:8px;margin-top:4px;display:none}
+
+/* Signal ratings */
+.rating-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.rating-label{font-size:.8rem;color:var(--text);width:130px;flex-shrink:0}
+.rating-chips{display:flex;gap:4px}
+.r-chip{width:32px;height:28px;border-radius:6px;border:1.5px solid var(--border);background:#fff;font-size:.75rem;font-weight:600;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+.r-chip.selected{border-color:var(--saffron);background:rgba(232,89,60,.07);color:var(--saffron)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--cream-dark)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-label{font-size:.85rem;color:var(--text)}
+.toggle-wrap{position:relative;width:44px;height:24px}
+.toggle-wrap input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:var(--border);border-radius:12px;cursor:pointer;transition:.3s}
+.slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+input:checked + .slider{background:var(--saffron)}
+input:checked + .slider:before{transform:translateX(20px)}
+
+/* Misc */
 .invite-box{background:var(--cream-dark);border-radius:12px;padding:16px 18px;margin-top:14px}
 .invite-url{font-size:.8rem;color:var(--muted);word-break:break-all;margin:8px 0;font-family:monospace}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--charcoal);color:#fff;padding:12px 24px;border-radius:12px;font-size:.88rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;white-space:nowrap}
@@ -63,6 +107,8 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
 .empty-state p{font-size:.88rem;color:var(--muted);line-height:1.6;margin-bottom:24px}
 .divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:.8rem;margin:20px 0}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.signals-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px}
+.sig-day{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:600;color:#fff}
 </style>
 </head>
 <body>
@@ -84,102 +130,106 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
   <div id="loading"><div class="spinner"></div></div>
   <div id="content" style="display:none">
 
-    <!-- ── HAS HOUSEHOLD ────────────────────────────────────── -->
+    <!-- ── HAS HOUSEHOLD ───────────────────────────────────────── -->
     <div id="householdView" style="display:none">
       <h1 class="page-title" id="hhName">My Household</h1>
-      <p class="page-sub">Shared meal plan for your family</p>
+      <p class="page-sub">Manage your family's personalised meal plan</p>
 
-      <!-- Members -->
-      <div class="section-title">Members</div>
+      <!-- Summary bar -->
+      <div class="summary-bar" id="summaryBar"></div>
+
+      <!-- ── Registered user members ─────────────────────────── -->
+      <div class="section-title">Registered Members</div>
       <div class="card">
-        <div id="membersList"></div>
-        <!-- Head-only: invite button -->
+        <div id="registeredList"></div>
         <div id="inviteSection" style="display:none;margin-top:16px">
-          <button class="btn btn-ghost" onclick="generateInvite(this)">Invite Member</button>
+          <button class="btn btn-ghost" onclick="generateInvite(this)">🔗 Invite Member</button>
           <div class="invite-box" id="inviteBox" style="display:none">
-            <div style="font-size:.82rem;font-weight:600;color:var(--charcoal)">Share this invite link (valid 48h)</div>
+            <div style="font-size:.82rem;font-weight:600;color:var(--charcoal)">Share this invite link (valid 48 h)</div>
             <div class="invite-url" id="inviteUrl"></div>
             <button class="btn btn-ghost" style="padding:7px 14px;font-size:.78rem" onclick="copyInvite()">Copy Link</button>
           </div>
         </div>
       </div>
 
-      <!-- Shared cuisine prefs (head only) -->
+      <!-- ── Family member profiles (head-managed) ─────────────── -->
+      <div class="section-title" style="margin-top:4px">Family Members
+        <span style="font-size:.7rem;font-weight:500;color:var(--muted);margin-left:6px">(children, elderly, guests)</span>
+      </div>
+      <div class="card">
+        <div id="familyList"></div>
+        <div id="addMemberSection" style="display:none;margin-top:16px">
+          <button class="btn btn-primary" onclick="openAddMember()">+ Add Family Member</button>
+        </div>
+      </div>
+
+      <!-- ── Shared cuisine prefs ─────────────────────────────── -->
       <div id="prefSection" style="display:none">
-        <div class="section-title" style="margin-top:8px">Shared Cuisine Preferences</div>
+        <div class="section-title" style="margin-top:4px">Shared Cuisine Preferences</div>
         <div class="card">
-          <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px">These cuisines are used when generating your household meal plan.</p>
-          <div class="chip-group" id="hhCuisineGroup">
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px">Used when generating your household meal plan.</p>
+          <div style="font-size:.72rem;color:var(--muted);margin-bottom:6px">South Indian</div>
+          <div class="chip-group" id="hhCuisineGroup" style="flex-wrap:wrap">
+            <div class="chip" data-val="andhra" onclick="pickMax(this,'hhCuisineGroup',3)">Andhra</div>
+            <div class="chip" data-val="tamil" onclick="pickMax(this,'hhCuisineGroup',3)">Tamil</div>
+            <div class="chip" data-val="karnataka" onclick="pickMax(this,'hhCuisineGroup',3)">Karnataka</div>
+            <div class="chip" data-val="kerala" onclick="pickMax(this,'hhCuisineGroup',3)">Kerala</div>
+            <div class="chip" data-val="hyderabadi" onclick="pickMax(this,'hhCuisineGroup',3)">Hyderabadi</div>
+            <div style="width:100%;font-size:.72rem;color:var(--muted);margin:6px 0 2px">North &amp; West Indian</div>
             <div class="chip" data-val="north_indian" onclick="pickMax(this,'hhCuisineGroup',3)">North Indian</div>
-            <div class="chip" data-val="south_indian" onclick="pickMax(this,'hhCuisineGroup',3)">South Indian</div>
-            <div class="chip" data-val="bengali" onclick="pickMax(this,'hhCuisineGroup',3)">Bengali</div>
+            <div class="chip" data-val="punjabi" onclick="pickMax(this,'hhCuisineGroup',3)">Punjabi</div>
             <div class="chip" data-val="gujarati" onclick="pickMax(this,'hhCuisineGroup',3)">Gujarati</div>
             <div class="chip" data-val="maharashtrian" onclick="pickMax(this,'hhCuisineGroup',3)">Maharashtrian</div>
-            <div class="chip" data-val="punjabi" onclick="pickMax(this,'hhCuisineGroup',3)">Punjabi</div>
-            <div class="chip" data-val="hyderabadi" onclick="pickMax(this,'hhCuisineGroup',3)">Hyderabadi</div>
-            <div class="chip" data-val="kerala" onclick="pickMax(this,'hhCuisineGroup',3)">Kerala</div>
             <div class="chip" data-val="rajasthani" onclick="pickMax(this,'hhCuisineGroup',3)">Rajasthani</div>
+            <div class="chip" data-val="bengali" onclick="pickMax(this,'hhCuisineGroup',3)">Bengali</div>
           </div>
           <button class="btn btn-primary" style="margin-top:18px" onclick="saveCuisinePrefs(this)">Save Preferences</button>
         </div>
       </div>
 
       <!-- Shared mode info -->
-      <div class="section-title" style="margin-top:8px">Shared Eating Mode</div>
+      <div class="section-title" style="margin-top:4px">Household Eating Mode</div>
       <div class="card" style="padding:16px 20px">
         <p style="font-size:.88rem;color:var(--text)">
-          Your household uses <strong id="hhMode">—</strong> mode —
-          the most restrictive diet across all members. All meal plans respect this.
+          Meal plans use <strong id="hhMode">—</strong> mode — the most restrictive diet across all members.
         </p>
       </div>
 
-      <!-- Leave / danger -->
-      <div style="margin-top:12px" id="leaveSection">
+      <div style="margin-top:4px" id="leaveSection">
         <button class="btn btn-danger" onclick="confirmLeave()">Leave Household</button>
       </div>
     </div>
 
-    <!-- ── NO HOUSEHOLD ────────────────────────────────────── -->
+    <!-- ── NO HOUSEHOLD ───────────────────────────────────────── -->
     <div id="noHouseholdView" style="display:none">
       <div class="empty-state">
-        <div class="icon"></div>
+        <div class="icon">🏠</div>
         <h3>No household yet</h3>
         <p>Create a household to share a meal plan with your family, or join one using an invite link.</p>
       </div>
-
-      <!-- Create -->
       <div class="card">
         <div class="section-title">Create a Household</div>
-        <div class="field">
-          <label>Household Name</label>
-          <input id="hhNameInput" placeholder="e.g. The Sharma Family">
-        </div>
+        <div class="field"><label>Household Name</label><input id="hhNameInput" placeholder="e.g. The Sharma Family"></div>
         <div class="field">
           <label>Cuisine Preferences (up to 3)</label>
-          <div class="chip-group" id="createCuisineGroup">
-            <div class="chip" data-val="north_indian" onclick="pickMax(this,'createCuisineGroup',3)">North Indian</div>
-            <div class="chip" data-val="south_indian" onclick="pickMax(this,'createCuisineGroup',3)">South Indian</div>
-            <div class="chip" data-val="bengali" onclick="pickMax(this,'createCuisineGroup',3)">Bengali</div>
-            <div class="chip" data-val="gujarati" onclick="pickMax(this,'createCuisineGroup',3)">Gujarati</div>
-            <div class="chip" data-val="maharashtrian" onclick="pickMax(this,'createCuisineGroup',3)">Maharashtrian</div>
-            <div class="chip" data-val="punjabi" onclick="pickMax(this,'createCuisineGroup',3)">Punjabi</div>
-            <div class="chip" data-val="hyderabadi" onclick="pickMax(this,'createCuisineGroup',3)">Hyderabadi</div>
+          <div class="chip-group" id="createCuisineGroup" style="flex-wrap:wrap">
+            <div class="chip" data-val="andhra" onclick="pickMax(this,'createCuisineGroup',3)">Andhra</div>
+            <div class="chip" data-val="tamil" onclick="pickMax(this,'createCuisineGroup',3)">Tamil</div>
+            <div class="chip" data-val="karnataka" onclick="pickMax(this,'createCuisineGroup',3)">Karnataka</div>
             <div class="chip" data-val="kerala" onclick="pickMax(this,'createCuisineGroup',3)">Kerala</div>
+            <div class="chip" data-val="hyderabadi" onclick="pickMax(this,'createCuisineGroup',3)">Hyderabadi</div>
+            <div class="chip" data-val="north_indian" onclick="pickMax(this,'createCuisineGroup',3)">North Indian</div>
+            <div class="chip" data-val="punjabi" onclick="pickMax(this,'createCuisineGroup',3)">Punjabi</div>
+            <div class="chip" data-val="gujarati" onclick="pickMax(this,'createCuisineGroup',3)">Gujarati</div>
           </div>
         </div>
         <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="createHousehold(this)">Create Household</button>
       </div>
-
       <div class="divider">or join an existing one</div>
-
-      <!-- Join via token -->
       <div class="card">
         <div class="section-title">Join with Invite Link</div>
-        <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px">Paste the invite token or full invite URL you received.</p>
-        <div class="field">
-          <label>Invite Token / URL</label>
-          <input id="joinTokenInput" placeholder="Paste token or https://…/join/xxxxxxxx">
-        </div>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px">Paste the invite token or full invite URL.</p>
+        <div class="field"><label>Invite Token / URL</label><input id="joinTokenInput" placeholder="Paste token or https://…/join/xxxxxxxx"></div>
         <button class="btn btn-primary" style="width:100%" onclick="joinHousehold(this)">Join Household</button>
       </div>
     </div>
@@ -197,14 +247,184 @@ nav{background:#fff;border-bottom:1px solid var(--border);padding:0 5%;height:64
   <a href="/settings" class="mob-nav-item"><span class="mn-icon">⚙️</span><span>Settings</span></a>
 </nav>
 
-<!-- Confirm leave modal -->
-<div id="leaveModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center" onclick="if(event.target===this)document.getElementById('leaveModal').style.display='none'">
-  <div style="background:#fff;border-radius:20px;padding:32px 28px;width:340px;max-width:92vw">
-    <h3 style="font-size:1.1rem;font-weight:700;color:var(--charcoal);margin-bottom:10px">Leave Household?</h3>
-    <p style="font-size:.88rem;color:var(--muted);line-height:1.6;margin-bottom:24px">You'll be removed from the household and your meal plan will revert to individual mode.</p>
-    <div style="display:flex;gap:10px">
+<!-- ── Leave confirm modal ──────────────────────────────────── -->
+<div id="leaveModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box" style="max-width:360px">
+    <div class="modal-title">Leave Household?</div>
+    <p style="font-size:.88rem;color:var(--muted);line-height:1.6;margin-bottom:24px">Your meal plan will revert to individual mode.</p>
+    <div class="modal-footer">
       <button class="btn btn-ghost" style="flex:1" onclick="document.getElementById('leaveModal').style.display='none'">Cancel</button>
       <button class="btn btn-danger" style="flex:1" onclick="leaveHousehold(this)">Leave</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add / Edit family member modal ──────────────────────── -->
+<div id="memberModal" class="modal-overlay" onclick="if(event.target===this)closeMemberModal()">
+  <div class="modal-box">
+    <div class="modal-title" id="memberModalTitle">Add Family Member</div>
+
+    <div class="field"><label>Full Name *</label><input id="mmName" placeholder="e.g. Priya, Grandma, Baby Arjun"></div>
+
+    <div class="field">
+      <label>Member Type *</label>
+      <div class="chip-group" id="mmTypeGroup">
+        <div class="chip" data-val="adult" onclick="pickOne(this,'mmTypeGroup')">Adult</div>
+        <div class="chip" data-val="teen" onclick="pickOne(this,'mmTypeGroup')">Teen (13-17)</div>
+        <div class="chip" data-val="child" onclick="pickOne(this,'mmTypeGroup')">Child (4-12)</div>
+        <div class="chip" data-val="infant" onclick="pickOne(this,'mmTypeGroup')">Infant (0-3)</div>
+        <div class="chip" data-val="senior" onclick="pickOne(this,'mmTypeGroup')">Senior (60+)</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field"><label>Age (years)</label><input id="mmAge" type="number" min="0" max="120" placeholder="e.g. 8"></div>
+      <div class="field">
+        <label>Gender</label>
+        <div class="chip-group" id="mmGenderGroup">
+          <div class="chip" data-val="male" onclick="pickOne(this,'mmGenderGroup')">Male</div>
+          <div class="chip" data-val="female" onclick="pickOne(this,'mmGenderGroup')">Female</div>
+          <div class="chip" data-val="other" onclick="pickOne(this,'mmGenderGroup')">Other</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Weight (kg)</label>
+        <input id="mmWeight" type="number" step="0.1" min="1" max="300" placeholder="e.g. 32" oninput="updateBmiPreview()">
+      </div>
+      <div class="field">
+        <label>Height (cm)</label>
+        <input id="mmHeight" type="number" min="30" max="250" placeholder="e.g. 130" oninput="updateBmiPreview()">
+      </div>
+    </div>
+    <div class="bmi-preview" id="bmiPreview"></div>
+
+    <div class="field" style="margin-top:14px">
+      <label>Dietary Mode</label>
+      <div class="chip-group" id="mmEatingGroup">
+        <div class="chip" data-val="pure_veg" onclick="pickOne(this,'mmEatingGroup')">Pure Veg</div>
+        <div class="chip" data-val="conditional_nv" onclick="pickOne(this,'mmEatingGroup')">Conditional NV</div>
+        <div class="chip" data-val="full_nv" onclick="pickOne(this,'mmEatingGroup')">Non-Veg</div>
+        <div class="chip" data-val="jain" onclick="pickOne(this,'mmEatingGroup')">Jain</div>
+        <div class="chip" data-val="sattvic" onclick="pickOne(this,'mmEatingGroup')">Sattvic</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Activity Level</label>
+      <div class="chip-group" id="mmActivityGroup">
+        <div class="chip" data-val="sedentary" onclick="pickOne(this,'mmActivityGroup')">Mostly Sitting</div>
+        <div class="chip" data-val="lightly_active" onclick="pickOne(this,'mmActivityGroup')">Light Movement</div>
+        <div class="chip" data-val="moderately_active" onclick="pickOne(this,'mmActivityGroup')">Regular Exercise</div>
+        <div class="chip" data-val="active" onclick="pickOne(this,'mmActivityGroup')">Daily Training</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Goal</label>
+      <div class="chip-group" id="mmGoalGroup">
+        <div class="chip" data-val="maintenance" onclick="pickOne(this,'mmGoalGroup')">Maintenance</div>
+        <div class="chip" data-val="weight_loss" onclick="pickOne(this,'mmGoalGroup')">Weight Loss</div>
+        <div class="chip" data-val="muscle_gain" onclick="pickOne(this,'mmGoalGroup')">Muscle Gain</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Health Conditions (optional)</label>
+      <div class="chip-group" id="mmHealthGroup">
+        <div class="chip" data-val="diabetes_t2" onclick="pickMany(this)">Diabetes T2</div>
+        <div class="chip" data-val="hypertension" onclick="pickMany(this)">High BP</div>
+        <div class="chip" data-val="pcos" onclick="pickMany(this)">PCOS</div>
+        <div class="chip" data-val="thyroid_hypo" onclick="pickMany(this)">Thyroid (Hypo)</div>
+        <div class="chip" data-val="anemia" onclick="pickMany(this)">Anemia</div>
+        <div class="chip" data-val="high_cholesterol" onclick="pickMany(this)">High Cholesterol</div>
+        <div class="chip" data-val="kidney_disease" onclick="pickMany(this)">Kidney Disease</div>
+        <div class="chip" data-val="osteoporosis" onclick="pickMany(this)">Osteoporosis</div>
+        <div class="chip" data-val="gerd" onclick="pickMany(this)">GERD / Acidity</div>
+        <div class="chip" data-val="ibs" onclick="pickMany(this)">IBS</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Food Allergies (optional)</label>
+      <div class="chip-group" id="mmAllergyGroup">
+        <div class="chip" data-val="gluten" onclick="pickMany(this)">Gluten</div>
+        <div class="chip" data-val="dairy" onclick="pickMany(this)">Dairy</div>
+        <div class="chip" data-val="nuts" onclick="pickMany(this)">Nuts</div>
+        <div class="chip" data-val="egg" onclick="pickMany(this)">Egg</div>
+        <div class="chip" data-val="shellfish" onclick="pickMany(this)">Shellfish</div>
+        <div class="chip" data-val="soy" onclick="pickMany(this)">Soy</div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeMemberModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:2" id="memberSaveBtn" onclick="saveMember()">Add Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Wellness signal modal ────────────────────────────────── -->
+<div id="signalModal" class="modal-overlay" onclick="if(event.target===this)closeSignalModal()">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-title" id="signalModalTitle">Log Wellness Signal</div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:16px">Rate today's wellbeing for this family member (1 = very low, 10 = excellent)</p>
+
+    <div class="rating-row">
+      <span class="rating-label">⚡ Energy</span>
+      <div class="rating-chips" id="sigEnergy"></div>
+    </div>
+    <div class="rating-row">
+      <span class="rating-label">🍽️ Hunger</span>
+      <div class="rating-chips" id="sigHunger"></div>
+    </div>
+    <div class="rating-row">
+      <span class="rating-label">💚 Digestion</span>
+      <div class="rating-chips" id="sigDigestion"></div>
+    </div>
+    <div class="rating-row">
+      <span class="rating-label">😴 Sleep quality</span>
+      <div class="rating-chips" id="sigSleep"></div>
+    </div>
+
+    <div class="field" style="margin-top:12px">
+      <label>Sleep hours</label>
+      <input id="sigSleepHours" type="number" step="0.5" min="0" max="24" placeholder="e.g. 7.5">
+    </div>
+
+    <div style="margin-top:12px;margin-bottom:8px;font-size:.78rem;font-weight:600;color:var(--text)">Symptoms today</div>
+    <div class="toggle-row">
+      <span class="toggle-label">🩸 Blood sugar dip</span>
+      <label class="toggle-wrap"><input type="checkbox" id="sigBSD"><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">💪 Muscle cramps</span>
+      <label class="toggle-wrap"><input type="checkbox" id="sigMC"><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">💇 Hair loss noticed</span>
+      <label class="toggle-wrap"><input type="checkbox" id="sigHL"><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">✅ Followed today's menu</span>
+      <label class="toggle-wrap"><input type="checkbox" id="sigFollowed" checked><span class="slider"></span></label>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <div class="field"><label>Weight today (kg)</label><input id="sigWeight" type="number" step="0.1" placeholder="optional"></div>
+      <div class="field"><label>Blood glucose (mg/dL)</label><input id="sigGlucose" type="number" placeholder="optional"></div>
+    </div>
+
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="sigNotes" rows="2" style="resize:vertical" placeholder="Any observations about today…"></textarea>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeSignalModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:2" id="signalSaveBtn" onclick="saveSignal()">Save Signal</button>
     </div>
   </div>
 </div>
@@ -214,42 +434,96 @@ const API = 'https://api.rozkaana.in/api/v1';
 const token = localStorage.getItem('rzk_token');
 if (!token) window.location.href = '/';
 
-let myId = null;
-let isHead = false;
+let myId = null, isHead = false;
+let editingMemberId = null;
+let signalMemberId = null;
+let hhData = null, familyMembers = [];
 
-function logout() { localStorage.removeItem('rzk_token'); localStorage.removeItem('rzk_refresh'); window.location.href = '/'; }
-
+// ── Utilities ─────────────────────────────────────────────────────────────
 function showToast(msg, color = '#1A1612') {
   const t = document.getElementById('toast');
   t.textContent = msg; t.style.background = color;
   t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 4000);
 }
-
 function api(path, opts = {}) {
   return fetch(API + path, {
     ...opts,
-    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers || {}) },
+    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers||{}) },
   });
 }
-
 function pickMax(el, g, max) {
   const sel = document.querySelectorAll('#'+g+' .chip.selected');
   if (!el.classList.contains('selected') && sel.length >= max) return;
   el.classList.toggle('selected');
 }
+function pickOne(el, g) {
+  document.querySelectorAll('#'+g+' .chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function pickMany(el) { el.classList.toggle('selected'); }
 function getSelected(g) { return [...document.querySelectorAll('#'+g+' .chip.selected')].map(c=>c.dataset.val); }
-function setSelected(g, vals) {
-  document.querySelectorAll('#'+g+' .chip').forEach(c => c.classList.toggle('selected', vals.includes(c.dataset.val)));
+function getOne(g) { return getSelected(g)[0] || null; }
+function setSelected(g, vals=[]) {
+  document.querySelectorAll('#'+g+' .chip').forEach(c=>c.classList.toggle('selected', vals.includes(c.dataset.val)));
+}
+function setOne(g, val) { setSelected(g, val ? [val] : []); }
+
+function typeColor(t) {
+  return {adult:'#4338CA',senior:'#7c3aed',teen:'#0369a1',child:'#B45309',infant:'#92400e'}[t]||'#4338CA';
+}
+function typeBadge(t) {
+  return `<span class="badge" style="background:${typeColor(t)}18;color:${typeColor(t)}">${t}</span>`;
 }
 
+// ── Rating chips ──────────────────────────────────────────────────────────
+function buildRatingChips(containerId) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  for (let i=1;i<=10;i++) {
+    const d = document.createElement('div');
+    d.className = 'r-chip'; d.textContent = i;
+    d.onclick = () => {
+      c.querySelectorAll('.r-chip').forEach(x=>x.classList.remove('selected'));
+      d.classList.add('selected');
+    };
+    c.appendChild(d);
+  }
+}
+function getRating(containerId) {
+  const el = document.querySelector('#'+containerId+' .r-chip.selected');
+  return el ? parseInt(el.textContent) : null;
+}
+function setRating(containerId, val) {
+  if (!val) return;
+  document.querySelectorAll('#'+containerId+' .r-chip').forEach(d=>{
+    d.classList.toggle('selected', parseInt(d.textContent)===val);
+  });
+}
+
+// ── BMI preview in modal ──────────────────────────────────────────────────
+function updateBmiPreview() {
+  const w = parseFloat(document.getElementById('mmWeight').value);
+  const h = parseFloat(document.getElementById('mmHeight').value);
+  const p = document.getElementById('bmiPreview');
+  if (w > 0 && h > 30) {
+    const bmi = w / ((h/100)**2);
+    const band = bmi<18.5?'Underweight':bmi<25?'Normal':bmi<30?'Overweight':'Obese';
+    const color = bmi<18.5?'#B45309':bmi<25?'#2E7D52':bmi<30?'#B45309':'#c0392b';
+    p.style.color = color;
+    p.textContent = `BMI: ${bmi.toFixed(1)} — ${band}`;
+    p.style.display = 'block';
+  } else {
+    p.style.display = 'none';
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
 async function init() {
   const meRes = await api('/users/me');
   const me = await meRes.json();
   if (!me.onboarding_complete) { window.location.href = '/onboard'; return; }
-  myId = me.id;
-  isHead = me.is_household_head;
-  document.getElementById('navAv').textContent = (me.name || 'U')[0].toUpperCase();
-
+  myId = me.id; isHead = me.is_household_head;
+  document.getElementById('navAv').textContent = (me.name||'U')[0].toUpperCase();
   document.getElementById('loading').style.display = 'none';
   document.getElementById('content').style.display = 'block';
 
@@ -258,106 +532,197 @@ async function init() {
   } else {
     document.getElementById('noHouseholdView').style.display = 'block';
   }
+
+  // Build rating chip rows for signal modal
+  ['sigEnergy','sigHunger','sigDigestion','sigSleep'].forEach(buildRatingChips);
 }
 
 async function loadHousehold() {
-  const r = await api('/household/');
-  if (!r.ok) { document.getElementById('noHouseholdView').style.display = 'block'; return; }
-  const hh = await r.json();
+  const [hhRes, membersRes] = await Promise.all([
+    api('/household/'),
+    api('/household/members'),
+  ]);
+  if (!hhRes.ok) { document.getElementById('noHouseholdView').style.display='block'; return; }
+  hhData = await hhRes.json();
+  familyMembers = membersRes.ok ? await membersRes.json() : [];
 
-  document.getElementById('hhName').textContent = hh.name;
-  document.getElementById('hhMode').textContent = (hh.shared_eating_mode || '').replace(/_/g, ' ');
+  document.getElementById('hhName').textContent = hhData.name;
+  document.getElementById('hhMode').textContent = (hhData.shared_eating_mode||'').replace(/_/g,' ');
   document.getElementById('householdView').style.display = 'block';
 
-  // Members list
-  const list = document.getElementById('membersList');
-  list.innerHTML = (hh.members || []).map(m => `
-    <div class="member-row">
-      <div class="member-av">${(m.name || m.email || '?')[0].toUpperCase()}</div>
-      <div class="member-info">
-        <div class="member-name">${m.name || m.email || 'Unknown'}</div>
-        <div class="member-meta">${m.eating_mode?.replace(/_/g,' ') || ''} · ${(m.health_tags||[]).join(', ')||'No conditions'}</div>
-      </div>
-      <span class="badge ${m.id === hh.head_user_id ? 'badge-head' : 'badge-member'}">${m.id === hh.head_user_id ? 'Head' : 'Member'}</span>
-      ${isHead && m.id !== hh.head_user_id ? `<button class="btn btn-danger" style="padding:6px 12px;font-size:.75rem" onclick="removeMember('${m.id}','${m.name||m.email||'this member'}')">Remove</button>` : ''}
-    </div>`).join('');
+  renderSummaryBar();
+  renderRegisteredMembers();
+  renderFamilyMembers();
 
   if (isHead) {
     document.getElementById('inviteSection').style.display = 'block';
     document.getElementById('prefSection').style.display = 'block';
+    document.getElementById('addMemberSection').style.display = 'block';
     document.getElementById('leaveSection').style.display = 'none';
-    setSelected('hhCuisineGroup', hh.cuisine_prefs || []);
+    setSelected('hhCuisineGroup', hhData.cuisine_prefs||[]);
   }
 }
 
-async function createHousehold(btn) {
-  const name = document.getElementById('hhNameInput').value.trim();
-  if (!name) { showToast('Enter a household name', '#c0392b'); return; }
-  btn.disabled = true; btn.textContent = 'Creating…';
-  const r = await api('/household/', { method: 'POST', body: JSON.stringify({
-    name, cuisine_prefs: getSelected('createCuisineGroup')
-  })});
-  if (r.ok) {
-    showToast('Household created!', '#2E7D52');
-    document.getElementById('noHouseholdView').style.display = 'none';
-    await loadHousehold();
-  } else {
-    const err = await r.json().catch(() => ({}));
-    showToast(err.detail || 'Could not create household', '#c0392b');
-    btn.disabled = false; btn.textContent = 'Create Household';
+function renderSummaryBar() {
+  const regCount = (hhData.members||[]).length;
+  const adultCount = hhData.adult_count||0;
+  const childCount = hhData.child_count||0;
+  const bar = document.getElementById('summaryBar');
+  bar.innerHTML = `
+    <span><strong>${regCount}</strong> registered user${regCount!==1?'s':''}</span>
+    ${adultCount ? `<span><strong>${adultCount}</strong> adult${adultCount!==1?'s':''}</span>` : ''}
+    ${childCount ? `<span><strong>${childCount}</strong> child${childCount!==1?'ren':''}</span>` : ''}
+    <span style="margin-left:auto;color:var(--green)"><strong>${hhData.shared_eating_mode||'pure_veg'}</strong> mode</span>
+  `;
+}
+
+function renderRegisteredMembers() {
+  const list = document.getElementById('registeredList');
+  const members = hhData.members || [];
+  if (!members.length) {
+    list.innerHTML = '<p style="color:var(--muted);font-size:.85rem">No registered members yet. Use the invite link above.</p>';
+    return;
   }
+  list.innerHTML = members.map(m => `
+    <div class="member-card">
+      <div class="member-av" style="background:var(--saffron)">${(m.name||m.email||'?')[0].toUpperCase()}</div>
+      <div class="member-body">
+        <div class="member-name">
+          ${m.name||m.email||'Unknown'}
+          <span class="badge ${m.id===hhData.head_user_id?'badge-head':'badge-member'}">${m.id===hhData.head_user_id?'Head':'Member'}</span>
+        </div>
+        <div class="member-meta">${m.eating_mode?.replace(/_/g,' ')||'No dietary mode set'}</div>
+        <div class="member-stats">
+          ${m.bmi_band?`<span class="stat-pill">BMI: ${m.bmi_band}</span>`:''}
+          ${m.daily_calorie_target?`<span class="stat-pill">${m.daily_calorie_target} kcal/day</span>`:''}
+          ${(m.health_tags||[]).length?`<span class="stat-pill">${m.health_tags.slice(0,2).join(', ')}${m.health_tags.length>2?'…':''}</span>`:''}
+        </div>
+      </div>
+      ${isHead && m.id!==hhData.head_user_id ? `
+        <div class="member-actions">
+          <button class="icon-btn danger" onclick="removeMember('${m.id}','${m.name||m.email||'this member'}')">✕</button>
+        </div>` : ''}
+    </div>`).join('');
 }
 
-async function joinHousehold(btn) {
-  let raw = document.getElementById('joinTokenInput').value.trim();
-  // Extract token from URL if full URL pasted
-  const m = raw.match(/\/join\/([a-f0-9-]{36})/i);
-  const tokenStr = m ? m[1] : raw;
-  if (!tokenStr) { showToast('Paste a valid invite link or token', '#c0392b'); return; }
-  btn.disabled = true; btn.textContent = 'Joining…';
-  const r = await api(`/household/join/${tokenStr}`, { method: 'POST' });
-  if (r.ok) {
-    showToast('Joined household!', '#2E7D52');
-    document.getElementById('noHouseholdView').style.display = 'none';
-    await loadHousehold();
-  } else {
-    const err = await r.json().catch(() => ({}));
-    showToast(err.detail || 'Invite invalid or expired', '#c0392b');
-    btn.disabled = false; btn.textContent = 'Join Household';
+function renderFamilyMembers() {
+  const list = document.getElementById('familyList');
+  if (!familyMembers.length) {
+    list.innerHTML = '<p style="color:var(--muted);font-size:.85rem">No family member profiles added yet. Click "Add Family Member" to start.</p>';
+    return;
   }
+  list.innerHTML = familyMembers.map(m => {
+    const color = typeColor(m.member_type);
+    return `
+    <div class="member-card">
+      <div class="member-av" style="background:${color}">${m.name[0].toUpperCase()}</div>
+      <div class="member-body">
+        <div class="member-name">
+          ${m.name}
+          ${typeBadge(m.member_type)}
+          ${m.is_registered_user ? '<span class="badge badge-reg">Registered</span>' : ''}
+        </div>
+        <div class="member-meta">
+          ${m.age?m.age+' yrs · ':''}${m.gender||''}${m.eating_mode?' · '+(m.eating_mode.replace(/_/g,' ')):''}
+        </div>
+        <div class="member-stats">
+          ${m.bmi_band?`<span class="stat-pill">BMI: ${m.bmi_band}</span>`:''}
+          ${m.daily_calorie_target?`<span class="stat-pill">${m.daily_calorie_target} kcal</span>`:''}
+          ${m.goal?`<span class="stat-pill">${m.goal.replace(/_/g,' ')}</span>`:''}
+          ${(m.health_tags||[]).length?`<span class="stat-pill">${m.health_tags.slice(0,2).join(', ')}</span>`:''}
+        </div>
+      </div>
+      <div class="member-actions" style="flex-direction:column;gap:4px">
+        ${isHead?`
+          <button class="icon-btn" title="Edit" onclick="openEditMember('${m.id}')">✏️</button>
+          <button class="icon-btn" title="Wellness signal" onclick="openSignalModal('${m.id}','${m.name}')">📊</button>
+          <button class="icon-btn danger" title="Remove" onclick="deleteMember('${m.id}','${m.name}')">✕</button>
+        `:''}
+      </div>
+    </div>`;
+  }).join('');
 }
 
-async function generateInvite(btn) {
-  btn.disabled = true; btn.textContent = 'Generating…';
-  const r = await api('/household/invite', { method: 'POST' });
-  btn.disabled = false; btn.textContent = ' Invite Member';
-  if (r.ok) {
-    const d = await r.json();
-    document.getElementById('inviteUrl').textContent = d.invite_url;
-    document.getElementById('inviteBox').style.display = 'block';
-  } else {
-    showToast('Could not generate invite', '#c0392b');
-  }
+// ── Add / Edit member modal ────────────────────────────────────────────────
+function openAddMember() {
+  editingMemberId = null;
+  document.getElementById('memberModalTitle').textContent = 'Add Family Member';
+  document.getElementById('memberSaveBtn').textContent = 'Add Member';
+  // Clear form
+  ['mmName','mmAge','mmWeight','mmHeight'].forEach(id=>document.getElementById(id).value='');
+  ['mmTypeGroup','mmGenderGroup','mmEatingGroup','mmActivityGroup','mmGoalGroup'].forEach(g=>setOne(g,null));
+  ['mmHealthGroup','mmAllergyGroup'].forEach(g=>setSelected(g,[]));
+  document.getElementById('bmiPreview').style.display='none';
+  document.getElementById('memberModal').style.display='flex';
 }
 
-function copyInvite() {
-  const url = document.getElementById('inviteUrl').textContent;
-  navigator.clipboard.writeText(url).then(() => showToast('Link copied!', '#2E7D52'));
+function openEditMember(memberId) {
+  const m = familyMembers.find(x=>x.id===memberId);
+  if (!m) return;
+  editingMemberId = memberId;
+  document.getElementById('memberModalTitle').textContent = `Edit — ${m.name}`;
+  document.getElementById('memberSaveBtn').textContent = 'Save Changes';
+  document.getElementById('mmName').value = m.name||'';
+  document.getElementById('mmAge').value = m.age||'';
+  document.getElementById('mmWeight').value = m.weight_kg||'';
+  document.getElementById('mmHeight').value = m.height_cm||'';
+  setOne('mmTypeGroup', m.member_type);
+  setOne('mmGenderGroup', m.gender);
+  setOne('mmEatingGroup', m.eating_mode);
+  setOne('mmActivityGroup', m.activity_level);
+  setOne('mmGoalGroup', m.goal);
+  setSelected('mmHealthGroup', m.health_tags||[]);
+  setSelected('mmAllergyGroup', m.allergy_tags||[]);
+  updateBmiPreview();
+  document.getElementById('memberModal').style.display='flex';
 }
 
-async function saveCuisinePrefs(btn) {
+function closeMemberModal() {
+  document.getElementById('memberModal').style.display='none';
+}
+
+async function saveMember() {
+  const name = document.getElementById('mmName').value.trim();
+  const member_type = getOne('mmTypeGroup');
+  if (!name)        { showToast('Enter a name','#c0392b'); return; }
+  if (!member_type) { showToast('Select member type','#c0392b'); return; }
+
+  const payload = {
+    name, member_type,
+    age:          parseInt(document.getElementById('mmAge').value)||null,
+    gender:       getOne('mmGenderGroup'),
+    weight_kg:    parseFloat(document.getElementById('mmWeight').value)||null,
+    height_cm:    parseFloat(document.getElementById('mmHeight').value)||null,
+    eating_mode:  getOne('mmEatingGroup'),
+    activity_level: getOne('mmActivityGroup'),
+    goal:         getOne('mmGoalGroup'),
+    health_tags:  getSelected('mmHealthGroup'),
+    allergy_tags: getSelected('mmAllergyGroup'),
+  };
+
+  const btn = document.getElementById('memberSaveBtn');
   btn.disabled = true; btn.textContent = 'Saving…';
-  const r = await api('/household/preferences', { method: 'PUT', body: JSON.stringify({
-    cuisine_prefs: getSelected('hhCuisineGroup')
-  })});
-  btn.disabled = false; btn.textContent = 'Save Preferences';
-  showToast(r.ok ? 'Preferences saved ✓' : 'Could not save', r.ok ? '#2E7D52' : '#c0392b');
+
+  const url    = editingMemberId ? `/household/members/${editingMemberId}` : '/household/members';
+  const method = editingMemberId ? 'PUT' : 'POST';
+  const r = await api(url, { method, body: JSON.stringify(payload) });
+
+  btn.disabled = false; btn.textContent = editingMemberId ? 'Save Changes' : 'Add Member';
+
+  if (r.ok) {
+    closeMemberModal();
+    showToast(editingMemberId ? `${name} updated ✓` : `${name} added ✓`, '#2E7D52');
+    await loadHousehold();
+  } else {
+    const err = await r.json().catch(()=>({}));
+    showToast(err.detail||'Could not save member', '#c0392b');
+  }
 }
 
-async function removeMember(userId, name) {
+async function deleteMember(memberId, name) {
   if (!confirm(`Remove ${name} from your household?`)) return;
-  const r = await api(`/household/member/${userId}`, { method: 'DELETE' });
-  if (r.ok || r.status === 204) {
+  const r = await api(`/household/members/${memberId}`, { method: 'DELETE' });
+  if (r.ok||r.status===204) {
     showToast(`${name} removed`, '#2E7D52');
     await loadHousehold();
   } else {
@@ -365,20 +730,150 @@ async function removeMember(userId, name) {
   }
 }
 
-function confirmLeave() { document.getElementById('leaveModal').style.display = 'flex'; }
+// ── Wellness signal modal ──────────────────────────────────────────────────
+function openSignalModal(memberId, name) {
+  signalMemberId = memberId;
+  document.getElementById('signalModalTitle').textContent = `Wellness — ${name}`;
+  // Reset form
+  ['sigEnergy','sigHunger','sigDigestion','sigSleep'].forEach(id=>{
+    document.querySelectorAll('#'+id+' .r-chip').forEach(c=>c.classList.remove('selected'));
+  });
+  ['sigSleepHours','sigWeight','sigGlucose','sigNotes'].forEach(id=>document.getElementById(id).value='');
+  ['sigBSD','sigMC','sigHL'].forEach(id=>document.getElementById(id).checked=false);
+  document.getElementById('sigFollowed').checked=true;
+  document.getElementById('signalModal').style.display='flex';
+}
+
+function closeSignalModal() {
+  document.getElementById('signalModal').style.display='none';
+}
+
+async function saveSignal() {
+  const payload = {
+    energy_level:      getRating('sigEnergy'),
+    hunger_rating:     getRating('sigHunger'),
+    digestion_comfort: getRating('sigDigestion'),
+    sleep_quality:     getRating('sigSleep'),
+    sleep_hours:       parseFloat(document.getElementById('sigSleepHours').value)||null,
+    blood_sugar_dip:   document.getElementById('sigBSD').checked,
+    muscle_cramps:     document.getElementById('sigMC').checked,
+    hair_loss_noticed: document.getElementById('sigHL').checked,
+    followed_menu:     document.getElementById('sigFollowed').checked,
+    weight_kg:         parseFloat(document.getElementById('sigWeight').value)||null,
+    blood_glucose_mg_dl: parseInt(document.getElementById('sigGlucose').value)||null,
+    notes:             document.getElementById('sigNotes').value.trim()||null,
+  };
+
+  const btn = document.getElementById('signalSaveBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const r = await api(`/household/members/${signalMemberId}/signals`, {
+    method: 'POST', body: JSON.stringify(payload),
+  });
+
+  btn.disabled = false; btn.textContent = 'Save Signal';
+
+  if (r.ok||r.status===201) {
+    closeSignalModal();
+    showToast('Wellness signal saved ✓', '#2E7D52');
+    // If weight was updated, reload to see updated BMI on card
+    if (payload.weight_kg) await loadHousehold();
+  } else {
+    const err = await r.json().catch(()=>({}));
+    showToast(err.detail||'Could not save signal', '#c0392b');
+  }
+}
+
+// ── Household management ──────────────────────────────────────────────────
+async function createHousehold(btn) {
+  const name = document.getElementById('hhNameInput').value.trim();
+  if (!name) { showToast('Enter a household name','#c0392b'); return; }
+  btn.disabled=true; btn.textContent='Creating…';
+  const r = await api('/household/', { method:'POST', body:JSON.stringify({
+    name, cuisine_prefs: getSelected('createCuisineGroup')
+  })});
+  if (r.ok) {
+    showToast('Household created!','#2E7D52');
+    isHead = true;
+    document.getElementById('noHouseholdView').style.display='none';
+    await loadHousehold();
+  } else {
+    const err = await r.json().catch(()=>({}));
+    showToast(err.detail||'Could not create household','#c0392b');
+    btn.disabled=false; btn.textContent='Create Household';
+  }
+}
+
+async function joinHousehold(btn) {
+  let raw = document.getElementById('joinTokenInput').value.trim();
+  const m = raw.match(/\/join\/([a-f0-9-]{36})/i);
+  const tokenStr = m ? m[1] : raw;
+  if (!tokenStr) { showToast('Paste a valid invite link or token','#c0392b'); return; }
+  btn.disabled=true; btn.textContent='Joining…';
+  const r = await api(`/household/join/${tokenStr}`, { method:'POST' });
+  if (r.ok) {
+    showToast('Joined household!','#2E7D52');
+    document.getElementById('noHouseholdView').style.display='none';
+    await loadHousehold();
+  } else {
+    const err = await r.json().catch(()=>({}));
+    showToast(err.detail||'Invite invalid or expired','#c0392b');
+    btn.disabled=false; btn.textContent='Join Household';
+  }
+}
+
+async function generateInvite(btn) {
+  btn.disabled=true; btn.textContent='Generating…';
+  const r = await api('/household/invite', { method:'POST' });
+  btn.disabled=false; btn.textContent='🔗 Invite Member';
+  if (r.ok) {
+    const d = await r.json();
+    document.getElementById('inviteUrl').textContent = d.invite_url;
+    document.getElementById('inviteBox').style.display='block';
+  } else {
+    showToast('Could not generate invite','#c0392b');
+  }
+}
+
+function copyInvite() {
+  const url = document.getElementById('inviteUrl').textContent;
+  navigator.clipboard.writeText(url).then(()=>showToast('Link copied!','#2E7D52'));
+}
+
+async function saveCuisinePrefs(btn) {
+  btn.disabled=true; btn.textContent='Saving…';
+  const r = await api('/household/preferences', { method:'PUT', body:JSON.stringify({
+    cuisine_prefs: getSelected('hhCuisineGroup')
+  })});
+  btn.disabled=false; btn.textContent='Save Preferences';
+  showToast(r.ok?'Preferences saved ✓':'Could not save', r.ok?'#2E7D52':'#c0392b');
+}
+
+async function removeMember(userId, name) {
+  if (!confirm(`Remove ${name} from your household?`)) return;
+  const r = await api(`/household/member/${userId}`, { method:'DELETE' });
+  if (r.ok||r.status===204) {
+    showToast(`${name} removed`,'#2E7D52');
+    await loadHousehold();
+  } else {
+    showToast('Could not remove member','#c0392b');
+  }
+}
+
+function confirmLeave() { document.getElementById('leaveModal').style.display='flex'; }
 
 async function leaveHousehold(btn) {
-  btn.disabled = true; btn.textContent = 'Leaving…';
-  const r = await api('/household/leave', { method: 'POST' });
-  if (r.ok || r.status === 204) {
-    showToast('You have left the household', '#2E7D52');
-    document.getElementById('leaveModal').style.display = 'none';
-    document.getElementById('householdView').style.display = 'none';
-    document.getElementById('noHouseholdView').style.display = 'block';
+  btn.disabled=true; btn.textContent='Leaving…';
+  const r = await api('/household/leave', { method:'POST' });
+  if (r.ok||r.status===204) {
+    showToast('You have left the household','#2E7D52');
+    document.getElementById('leaveModal').style.display='none';
+    document.getElementById('householdView').style.display='none';
+    document.getElementById('noHouseholdView').style.display='block';
   } else {
-    const err = await r.json().catch(() => ({}));
-    showToast(err.detail || 'Could not leave', '#c0392b');
-    btn.disabled = false; btn.textContent = 'Leave';
+    const err = await r.json().catch(()=>({}));
+    showToast(err.detail||'Could not leave','#c0392b');
+    btn.disabled=false; btn.textContent='Leave';
   }
 }
 

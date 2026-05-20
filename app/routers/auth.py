@@ -46,6 +46,11 @@ async def verify_otp_endpoint(
     is_new, user = await verify_otp(request.email, request.otp, request.session_id, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="OTP verification failed")
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This account has been deactivated. Contact support to recover it.",
+        )
     data = {"sub": str(user.id)}
     return TokenResponse(
         access_token=create_access_token(data),
@@ -93,6 +98,11 @@ async def dev_login(
         await db.flush()
         await db.refresh(user)
     else:
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="This account has been deactivated. Contact support to recover it.",
+            )
         if request.name and not user.name:
             user.name = request.name
         user.email_verified = True

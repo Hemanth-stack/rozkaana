@@ -94,6 +94,16 @@ input:focus,select:focus{border-color:var(--saffron)}
         <option value="other">Other</option>
       </select>
     </div>
+    <div class="field" style="margin-top:14px">
+      <label>Daily Activity Level</label>
+      <p style="font-size:.75rem;color:var(--muted,#7A6E65);margin:4px 0 10px;line-height:1.5">Used to accurately calculate your protein and calorie targets</p>
+      <div class="chip-group" id="activityGroup">
+        <div class="chip" data-val="sedentary" onclick="pickOne(this,'activityGroup')">Mostly Sitting</div>
+        <div class="chip" data-val="lightly_active" onclick="pickOne(this,'activityGroup')">Light Movement</div>
+        <div class="chip" data-val="moderately_active" onclick="pickOne(this,'activityGroup')">Regular Exercise</div>
+        <div class="chip" data-val="active" onclick="pickOne(this,'activityGroup')">Daily Training</div>
+      </div>
+    </div>
     <div class="save-row">
       <button class="btn btn-primary" onclick="saveBasic()">Save</button>
       <span class="saved-tag" id="savedBasic">✓ Saved</span>
@@ -169,16 +179,30 @@ input:focus,select:focus{border-color:var(--saffron)}
     </div>
     <div class="field" style="margin-top:14px">
       <label>Cuisine Preferences (up to 3)</label>
-      <div class="chip-group" id="cuisineGroup">
+      <div style="font-size:.72rem;color:var(--muted,#7A6E65);margin-bottom:6px">South Indian</div>
+      <div class="chip-group" id="cuisineGroup" style="flex-wrap:wrap">
+        <div class="chip" data-val="andhra" onclick="pickMax(this,'cuisineGroup',3)">Andhra</div>
+        <div class="chip" data-val="tamil" onclick="pickMax(this,'cuisineGroup',3)">Tamil</div>
+        <div class="chip" data-val="karnataka" onclick="pickMax(this,'cuisineGroup',3)">Karnataka</div>
+        <div class="chip" data-val="kerala" onclick="pickMax(this,'cuisineGroup',3)">Kerala</div>
+        <div class="chip" data-val="hyderabadi" onclick="pickMax(this,'cuisineGroup',3)">Hyderabadi</div>
+        <div style="width:100%;font-size:.72rem;color:var(--muted,#7A6E65);margin:8px 0 2px">North &amp; West Indian</div>
         <div class="chip" data-val="north_indian" onclick="pickMax(this,'cuisineGroup',3)">North Indian</div>
-        <div class="chip" data-val="south_indian" onclick="pickMax(this,'cuisineGroup',3)">South Indian</div>
-        <div class="chip" data-val="bengali" onclick="pickMax(this,'cuisineGroup',3)">Bengali</div>
+        <div class="chip" data-val="punjabi" onclick="pickMax(this,'cuisineGroup',3)">Punjabi</div>
         <div class="chip" data-val="gujarati" onclick="pickMax(this,'cuisineGroup',3)">Gujarati</div>
         <div class="chip" data-val="maharashtrian" onclick="pickMax(this,'cuisineGroup',3)">Maharashtrian</div>
-        <div class="chip" data-val="punjabi" onclick="pickMax(this,'cuisineGroup',3)">Punjabi</div>
-        <div class="chip" data-val="hyderabadi" onclick="pickMax(this,'cuisineGroup',3)">Hyderabadi</div>
-        <div class="chip" data-val="kerala" onclick="pickMax(this,'cuisineGroup',3)">Kerala</div>
         <div class="chip" data-val="rajasthani" onclick="pickMax(this,'cuisineGroup',3)">Rajasthani</div>
+        <div class="chip" data-val="bengali" onclick="pickMax(this,'cuisineGroup',3)">Bengali</div>
+      </div>
+    </div>
+    <div class="field" style="margin-top:16px">
+      <label>Dinner Style</label>
+      <p style="font-size:.75rem;color:var(--muted,#7A6E65);margin:4px 0 10px;line-height:1.5">What do you usually prefer for dinner?</p>
+      <div class="chip-group" id="dinnerStyleGroup">
+        <div class="chip" data-val="rice_plate" onclick="pickOne(this,'dinnerStyleGroup')">Rice Plate</div>
+        <div class="chip" data-val="tiffin" onclick="pickOne(this,'dinnerStyleGroup')">Tiffin (Idly/Dosa/Upma)</div>
+        <div class="chip" data-val="roti_based" onclick="pickOne(this,'dinnerStyleGroup')">Roti / Chapathi</div>
+        <div class="chip" data-val="mixed" onclick="pickOne(this,'dinnerStyleGroup')">Mix it up</div>
       </div>
     </div>
     <div class="save-row">
@@ -297,6 +321,8 @@ async function loadProfile() {
   }
   if (d.nv_days?.length) setSelected('nvDaysGroup', d.nv_days);
   if (d.cuisine_prefs?.length) setSelected('cuisineGroup', d.cuisine_prefs);
+  if (d.activity_level) setSelected('activityGroup', [d.activity_level]);
+  if (d.dinner_style_pref) setSelected('dinnerStyleGroup', [d.dinner_style_pref]);
 
   if (d.wa_phone) document.getElementById('waPhone').value = d.wa_phone;
   if (d.wa_opted_in) {
@@ -320,6 +346,7 @@ async function saveBasic() {
     gender: document.getElementById('gender').value,
     weight_kg: +document.getElementById('weight').value,
     height_cm: +document.getElementById('height').value,
+    activity_level: getSelected('activityGroup')[0] || null,
   })});
   btn.disabled = false; showSaved('savedBasic');
 }
@@ -344,10 +371,12 @@ async function saveGoalHealth() {
 async function saveEating() {
   const btn = event.target; btn.disabled = true;
   const mode = document.getElementById('eatingMode').value;
+  const cuisines = getSelected('cuisineGroup');
   await fetch(API+'/users/me/eating', { method:'PUT', headers:h(), body: JSON.stringify({
     eating_mode: mode,
     nv_days: mode === 'conditional_nv' ? getSelected('nvDaysGroup') : [],
-    cuisine_prefs: getSelected('cuisineGroup'),
+    cuisine_prefs: cuisines,
+    dinner_style_pref: getSelected('dinnerStyleGroup')[0] || null,
   })});
   btn.disabled = false; showSaved('savedEating');
 }

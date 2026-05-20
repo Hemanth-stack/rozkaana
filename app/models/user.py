@@ -37,6 +37,8 @@ class User(Base):
     # kept for future WhatsApp re-integration
     wa_phone = Column(String(15), nullable=True)
     wa_opted_in = Column(Boolean, default=False, server_default="false")
+    activity_level = Column(String(20), nullable=True)       # sedentary/lightly_active/moderately_active/active
+    dinner_style_pref = Column(String(20), nullable=True)    # rice_plate/tiffin/roti_based/mixed
     onboarding_complete = Column(Boolean, default=False, server_default="false")
     is_admin = Column(Boolean, default=False, server_default="false")
     is_active = Column(Boolean, default=True, server_default="true")

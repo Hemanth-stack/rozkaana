@@ -58,6 +58,7 @@ def render_menu_pdf(
     menu: "DailyMenu",
     members: "list[User]",
     recipes: "dict[str, Recipe | None]",
+    calorie_target: int = 2000,
 ) -> bytes:
     buf = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -113,6 +114,31 @@ def render_menu_pdf(
     story.append(HRFlowable(width="100%", thickness=1, color=BORDER))
     story.append(Spacer(1, 0.3 * cm))
 
+    # ── Nutrition balance warnings ────────────────────────────────────────────
+    from app.services.nutrition_balance import compute_slot_serving, compute_daily_balance, SLOT_RATIOS as NB_RATIOS
+    slot_map = {key: recipes.get(f"{key}_id") for key in NB_RATIOS}
+    slot_servings = {
+        slot: compute_slot_serving(recipe, slot, calorie_target) if recipe else {"multiplier": 1.0, "recommended_qty": "", "scaled_calories": 0}
+        for slot, recipe in slot_map.items()
+    }
+    balance = compute_daily_balance(
+        slot_map, slot_servings,
+        calorie_target=calorie_target,
+        protein_target_g=calorie_target * 0.12 / 4,  # rough protein min; PDF doesn't know user
+        carbs_target_g=calorie_target * 0.55 / 4,
+        fat_target_g=calorie_target * 0.30 / 9,
+    )
+    if balance["nutrition_warnings"]:
+        warn_sty = ParagraphStyle("warn", fontSize=8, textColor=AMBER, fontName="Helvetica",
+                                  leading=12, leftIndent=4, spaceAfter=3)
+        story.append(Paragraph("Nutrition notes:", ParagraphStyle("wh", fontSize=8, textColor=AMBER,
+                                fontName="Helvetica-Bold", spaceAfter=2)))
+        for w in balance["nutrition_warnings"]:
+            story.append(Paragraph(f"• {_esc(w)}", warn_sty))
+        story.append(Spacer(1, 0.2 * cm))
+        story.append(HRFlowable(width="100%", thickness=0.5, color=BORDER))
+        story.append(Spacer(1, 0.2 * cm))
+
     # ── Meal slots ───────────────────────────────────────────────────────────
     pill_col_w = _PAGE_W / 5
     for key in ["breakfast", "morning_snack", "lunch", "evening_snack", "dinner"]:
@@ -120,19 +146,54 @@ def render_menu_pdf(
         if not recipe:
             continue
 
+        serving_info = slot_servings.get(key, {})
+        multiplier   = serving_info.get("multiplier", 1.0)
+        rec_qty      = serving_info.get("recommended_qty", "")
+        scaled_cal   = serving_info.get("scaled_calories", recipe.calories or 0)
+
         label, time_str = SLOT_TIMES[key]
         story.append(Paragraph(f"{label}  ·  {time_str}", sub))
         story.append(Paragraph(_esc(recipe.name), h2))
         if recipe.name_local:
             story.append(Paragraph(_esc(recipe.name_local), sub))
 
-        # Macro pills — format Decimal values cleanly
+        # Serving quantity — shown prominently right after the title
+        if recipe.serving_unit:
+            qty_sty = ParagraphStyle(
+                "qty", fontSize=9.5, textColor=GREEN, fontName="Helvetica-Bold",
+                spaceBefore=2, spaceAfter=2,
+            )
+            story.append(Paragraph(f"1× serving: {_esc(recipe.serving_unit)}", qty_sty))
+
+        # Recommended serving multiplier when recipe is below slot calorie target
+        if rec_qty:
+            rec_sty = ParagraphStyle(
+                "rec", fontSize=9.5, textColor=SAFFRON, fontName="Helvetica-Bold",
+                spaceBefore=1, spaceAfter=4,
+            )
+            story.append(Paragraph(f"Recommended: {_esc(rec_qty)}", rec_sty))
+
+        # Per-person ingredient quantities for main components (meat/fish/dal/veg in grams)
+        # Skip spices, oils, water, garnishes — only show items ≥ 30g/ml and per_person=True
+        ing_lines = _format_ingredient_quantities(recipe)
+        if ing_lines:
+            ing_sty = ParagraphStyle(
+                "ing", fontSize=8, textColor=MUTED, fontName="Helvetica",
+                leading=12, leftIndent=0, spaceAfter=4,
+            )
+            story.append(Paragraph("  ·  ".join(ing_lines), ing_sty))
+
+        # Macro pills — show per-recipe AND scaled if multiplier > 1
         protein = _fmt(recipe.protein_g)
         carbs   = _fmt(recipe.carbs_g)
         fat     = _fmt(recipe.fat_g)
         prep    = f"{recipe.prep_time_mins} min" if recipe.prep_time_mins else "—"
+        cal_label = (
+            f"{recipe.calories} kcal → {scaled_cal} kcal (×{multiplier})"
+            if multiplier > 1.05 else f"{recipe.calories} kcal"
+        )
         pill_data = [[
-            f"{recipe.calories} kcal",
+            cal_label,
             f"P: {protein}g",
             f"C: {carbs}g",
             f"F: {fat}g",
@@ -152,11 +213,7 @@ def render_menu_pdf(
             ("TEXTCOLOR",     (0, 0), (0, 0),   SAFFRON),
         ]))
         story.append(pill_tbl)
-        story.append(Spacer(1, 0.2 * cm))
-
-        if recipe.serving_unit:
-            story.append(Paragraph(f"Serving: {_esc(recipe.serving_unit)}", sub))
-            story.append(Spacer(1, 0.15 * cm))
+        story.append(Spacer(1, 0.25 * cm))
 
         # Cooking steps
         for i, step in enumerate(recipe.steps or [], 1):
@@ -192,6 +249,89 @@ def render_menu_pdf(
 
     doc.build(story)
     return buf.getvalue()
+
+
+# Keywords that identify a roti/flatbread — displayed as count, not grams
+_ROTI_KEYWORDS = {
+    "roti", "chapathi", "chapati", "phulka", "paratha", "parotta", "naan",
+    "puri", "luchi", "thepla", "jolada rotti", "akki roti", "bajra roti",
+    "jowar roti", "ragi roti", "makki roti",
+}
+
+# Keywords that identify a starch base — displayed in grams
+_RICE_KEYWORDS = {
+    "rice", "sadam", "annam", "chawal", "matta rice", "red rice",
+    "brown rice", "foxtail millet rice", "barnyard millet rice", "idli",
+    "dosa", "pesarattu", "upma", "pongal", "puttu", "idiyappam",
+    "appam", "uttapam", "adai", "akki roti",
+}
+
+
+def _format_ingredient_quantities(recipe: "Recipe") -> list[str]:
+    """Return concise quantity strings for main per-person ingredients.
+
+    Shows: roti/flatbread as count, rice/dal/meat/veg in grams.
+    Skips: spices, oils, salt, water, and tiny quantities (<30g/ml).
+    """
+    ingredients = recipe.ingredients
+    if not ingredients or not isinstance(ingredients, list):
+        return []
+
+    # Names that indicate a condiment/spice/oil — skip these
+    _SKIP_KEYWORDS = {
+        "oil", "salt", "water", "spice", "chilli powder", "turmeric",
+        "cumin", "mustard", "pepper", "garam masala", "coriander powder",
+        "fenugreek", "asafoetida", "hing", "ghee", "butter", "sugar",
+        "jaggery", "tamarind", "curry leaves", "bay leaf",
+    }
+
+    lines: list[str] = []
+    for ing in ingredients:
+        if not isinstance(ing, dict):
+            continue
+        name_raw = (ing.get("name") or "").strip()
+        name     = name_raw.lower()
+        qty      = ing.get("qty")
+        unit     = (ing.get("unit") or "").strip().lower()
+        per_person = ing.get("per_person", False)
+
+        if not name_raw or qty is None:
+            continue
+        if not per_person:
+            continue  # skip shared/bulk ingredients
+
+        # Skip spice/condiment/tiny items
+        if any(kw in name for kw in _SKIP_KEYWORDS):
+            continue
+
+        try:
+            qty_f = float(qty)
+        except (TypeError, ValueError):
+            continue
+
+        is_roti = any(kw in name for kw in _ROTI_KEYWORDS)
+        is_countable = any(kw in name for kw in {"idli", "idly", "vada", "vadai", "dosa",
+                                                   "pesarattu", "vadalu", "egg", "eggs"})
+
+        if is_roti:
+            count = int(round(qty_f))
+            label = name_raw.split("(")[0].split(",")[0].strip()
+            lines.append(f"{count} {label}")
+        elif is_countable and unit in ("nos", "no", "piece", "pieces", ""):
+            count = int(round(qty_f))
+            lines.append(f"{count} {name_raw.split('(')[0].split(',')[0].strip()}")
+        elif unit in ("g", "grams", "gram") and qty_f >= 30:
+            # Use ingredient name up to the first comma or parenthesis — whichever comes first
+            display = name_raw.split(",")[0].split("(")[0].strip().title()
+            lines.append(f"{display} {int(round(qty_f))}g")
+        elif unit in ("ml", "milliliters", "millilitres") and qty_f >= 30:
+            display = name_raw.split(",")[0].split("(")[0].strip().title()
+            lines.append(f"{display} {int(round(qty_f))}ml")
+
+        if len(lines) >= 5:
+            break
+
+    return lines
 
 
 def _macro_cell(label: str, value: str, colour: colors.Color) -> list:

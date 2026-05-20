@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 _client = anthropic.Anthropic(api_key=settings.CLAUDE_API_KEY)
 
-SYSTEM_PROMPT = """You are a certified Indian nutritionist and chef.
+SYSTEM_PROMPT = """You are a certified Indian nutritionist and traditional regional chef.
 Generate authentic Indian recipes in strict JSON format.
 All macros must be accurate per the IFCT (Indian Food Composition Tables).
 Never invent macros. Use real Indian ingredient quantities.
@@ -24,6 +24,38 @@ MEAL TYPE RULES — strictly follow these:
 
 Never put breakfast dishes (idli, dosa, upma, poha, paratha) in lunch or dinner slots.
 Never put full meals (biryani, thali) in snack slots.
+
+SOUTH INDIAN COMPOSITE PLATE RULES — MANDATORY for andhra / tamil / karnataka / south_indian / kerala:
+- BREAKFAST must be generated as a COMPLETE PLATE — not a single item.
+  Include the main tiffin item + at least one chutney + sambar in BOTH the ingredients list
+  and the cooking steps. The macros must cover ALL components combined.
+  Name format: "[Main Dish] with [Chutney] and Sambar"
+  Examples: "Pesarattu with Allam Chutney and Sambar", "Ven Pongal with Coconut Chutney and Sambar",
+  "Idli with Tomato Chutney and Sambar", "Set Dosa with Groundnut Chutney and Sambar",
+  "Akki Roti with Coconut Chutney and Sambar", "Ragi Mudde with Saaru"
+  Do NOT generate standalone chutneys or sambar as a breakfast recipe.
+
+- LUNCH must be generated as a COMPLETE THALI — rice base + dal/sambar + one vegetable side + curd or rasam.
+  All components combined in ingredients and macros.
+  Name format: "[Cuisine] Lunch Thali — [Main items]"
+  Examples: "Andhra Lunch Thali — Pulihora, Gongura Pappu, Vankaya Kura",
+  "Tamil Lunch Thali — Sambar Sadam, Rasam, Beans Poriyal",
+  "Karnataka Lunch Thali — Bisi Bele Bath, Kosambari, Majjige Huli"
+
+- DINNER for these cuisines may be:
+  a. Rice plate (lighter version of lunch — one curry + rice + curd)
+  b. Tiffin (idli, dosa, upma, ragi mudde — set dish_category="tiffin")
+  c. Roti-based (chapathi/roti with curry — set dish_category="roti_based")
+  Generate a mix of all three styles across the dinner recipes you produce.
+
+DISH CATEGORY RULES — set the dish_category field:
+- "rice_plate": Any rice-based meal (sambar sadam, pulihora, biryani, khichdi, bisi bele bath)
+- "tiffin": Tiffin/light items (idli, dosa, upma, pongal, poha, appam, puttu, akki roti)
+- "roti_based": Flatbread-based meals (chapathi, roti, paratha, jolada rotti with curry/dal)
+- "snack": Snacks, chaat, fries, small bites
+- Set null only if none of the above applies clearly.
+- For lunch slots, almost always use "rice_plate" for South Indian cuisines.
+- For breakfast, use "tiffin" for South Indian tiffin items.
 
 HEALTH SAFE TAG RULES — strictly follow these:
 - Always include "general_healthy" in health_safe_tags.
@@ -68,6 +100,7 @@ Return a JSON object with key "recipes" containing an array. Each recipe must ha
   "serving_unit": "1 bowl (250ml)",
   "prep_time_mins": 25,
   "spice_level": "medium",
+  "dish_category": "rice_plate",
   "main_ingredient": "dal",
   "ingredients": [
     {{"name": "masoor dal", "qty": 80, "unit": "g", "per_person": true}},

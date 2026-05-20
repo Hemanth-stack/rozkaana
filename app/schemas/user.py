@@ -11,8 +11,12 @@ VALID_EATING_MODES = {"jain", "sattvic", "pure_veg", "conditional_nv", "full_nv"
 VALID_CUISINES = {
     "north_indian", "south_indian", "bengali", "gujarati", "maharashtrian",
     "punjabi", "hyderabadi", "rajasthani", "kerala", "goan", "sattvic",
+    "andhra", "tamil", "karnataka",
     "chinese", "italian", "continental",
 }
+
+VALID_ACTIVITY_LEVELS = {"sedentary", "lightly_active", "moderately_active", "active"}
+VALID_DINNER_STYLES = {"rice_plate", "tiffin", "roti_based", "mixed"}
 
 
 class UserProfile(BaseModel):
@@ -39,6 +43,8 @@ class UserProfile(BaseModel):
     email_verified: Optional[bool] = False
     household_id: Optional[UUID]
     is_household_head: Optional[bool] = False
+    activity_level: Optional[str] = None
+    dinner_style_pref: Optional[str] = None
     wa_phone: Optional[str]
     wa_opted_in: Optional[bool] = False
     onboarding_complete: Optional[bool] = False
@@ -55,6 +61,7 @@ class UpdateBasicRequest(BaseModel):
     gender: Optional[str] = None
     weight_kg: Optional[float] = Field(None, ge=20.0, le=500.0)
     height_cm: Optional[float] = Field(None, ge=50.0, le=300.0)
+    activity_level: Optional[str] = None
 
     @field_validator("gender")
     @classmethod
@@ -62,6 +69,13 @@ class UpdateBasicRequest(BaseModel):
         if v is not None and v.lower() not in VALID_GENDERS:
             raise ValueError(f"gender must be one of: {VALID_GENDERS}")
         return v.lower() if v else v
+
+    @field_validator("activity_level")
+    @classmethod
+    def validate_activity_level(cls, v):
+        if v is not None and v not in VALID_ACTIVITY_LEVELS:
+            raise ValueError(f"activity_level must be one of: {VALID_ACTIVITY_LEVELS}")
+        return v
 
 
 class UpdateHealthRequest(BaseModel):
@@ -73,6 +87,7 @@ class UpdateEatingRequest(BaseModel):
     eating_mode: Optional[str] = None
     nv_days: Optional[list[str]] = None
     cuisine_prefs: Optional[list[str]] = None
+    dinner_style_pref: Optional[str] = None
 
     @field_validator("eating_mode")
     @classmethod
@@ -88,6 +103,13 @@ class UpdateEatingRequest(BaseModel):
             invalid = [c for c in v if c not in VALID_CUISINES]
             if invalid:
                 raise ValueError(f"Invalid cuisines: {invalid}. Valid: {sorted(VALID_CUISINES)}")
+        return v
+
+    @field_validator("dinner_style_pref")
+    @classmethod
+    def validate_dinner_style_pref(cls, v):
+        if v is not None and v not in VALID_DINNER_STYLES:
+            raise ValueError(f"dinner_style_pref must be one of: {VALID_DINNER_STYLES}")
         return v
 
 

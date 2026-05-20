@@ -28,6 +28,7 @@ class RecipeCreate(BaseModel):
     serving_unit: Optional[str] = None
     prep_time_mins: Optional[int] = None
     spice_level: Optional[str] = None
+    dish_category: Optional[str] = None
     main_ingredient: Optional[str] = None
     ingredients: Optional[list[dict[str, Any]]] = None
     steps: Optional[list[str]] = None
@@ -63,6 +64,7 @@ class RecipeUpdate(BaseModel):
     serving_unit: Optional[str] = None
     prep_time_mins: Optional[int] = None
     spice_level: Optional[str] = None
+    dish_category: Optional[str] = None
     main_ingredient: Optional[str] = None
     ingredients: Optional[list[dict[str, Any]]] = None
     steps: Optional[list[str]] = None
@@ -86,6 +88,7 @@ class RecipeOut(BaseModel):
     serving_unit: Optional[str]
     prep_time_mins: Optional[int]
     spice_level: Optional[str]
+    dish_category: Optional[str]
     main_ingredient: Optional[str]
     ingredients: Optional[list[dict[str, Any]]]
     steps: Optional[list[str]]

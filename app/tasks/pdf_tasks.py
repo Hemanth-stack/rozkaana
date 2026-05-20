@@ -98,7 +98,9 @@ def build_single_pdf(self, menu_id: str):
                 logger.error("No members found for menu %s", menu_id)
                 return
 
-            pdf_bytes = render_menu_pdf(menu, members, recipes_by_slot)
+            # Use household head's (or solo user's) calorie target for serving multipliers
+            calorie_target = int(members[0].daily_calorie_target or 2000) if members else 2000
+            pdf_bytes = render_menu_pdf(menu, members, recipes_by_slot, calorie_target=calorie_target)
 
             object_key = f"pdfs/{menu.menu_date}/{menu.owner_id}.pdf"
             upload_pdf(object_key, pdf_bytes)

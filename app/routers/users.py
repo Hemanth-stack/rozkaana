@@ -1,6 +1,9 @@
+import logging
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, status
+
+logger = logging.getLogger(__name__)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -56,8 +59,17 @@ async def update_basic(
         current_user.weight_kg = request.weight_kg
     if request.height_cm is not None:
         current_user.height_cm = request.height_cm
+    if request.activity_level is not None:
+        current_user.activity_level = request.activity_level
 
     calculate_and_store_bmi(current_user)
+    if current_user.weight_kg and current_user.height_cm and current_user.age:
+        cuisine_pref = (current_user.cuisine_prefs or [None])[0]
+        targets = calculate_targets(current_user, cuisine_pref=cuisine_pref)
+        current_user.daily_calorie_target = targets["daily_calorie_target"]
+        current_user.daily_protein_target_g = targets["daily_protein_target_g"]
+        current_user.daily_carbs_target_g = targets["daily_carbs_target_g"]
+        current_user.daily_fat_target_g = targets["daily_fat_target_g"]
     await db.flush()
     await db.refresh(current_user)
     return current_user
@@ -74,7 +86,8 @@ async def update_health(
     if request.allergy_tags is not None:
         current_user.allergy_tags = request.allergy_tags
     if current_user.weight_kg and current_user.height_cm and current_user.age:
-        targets = calculate_targets(current_user)
+        cuisine_pref = (current_user.cuisine_prefs or [None])[0]
+        targets = calculate_targets(current_user, cuisine_pref=cuisine_pref)
         current_user.daily_calorie_target = targets["daily_calorie_target"]
         current_user.daily_protein_target_g = targets["daily_protein_target_g"]
         current_user.daily_carbs_target_g = targets["daily_carbs_target_g"]
@@ -96,6 +109,16 @@ async def update_eating(
         current_user.nv_days = request.nv_days
     if request.cuisine_prefs is not None:
         current_user.cuisine_prefs = request.cuisine_prefs
+        # Recalculate macros when cuisine changes — split ratios are cuisine-aware
+        if current_user.weight_kg and current_user.height_cm and current_user.age:
+            cuisine_pref = request.cuisine_prefs[0] if request.cuisine_prefs else None
+            targets = calculate_targets(current_user, cuisine_pref=cuisine_pref)
+            current_user.daily_calorie_target = targets["daily_calorie_target"]
+            current_user.daily_protein_target_g = targets["daily_protein_target_g"]
+            current_user.daily_carbs_target_g = targets["daily_carbs_target_g"]
+            current_user.daily_fat_target_g = targets["daily_fat_target_g"]
+    if request.dinner_style_pref is not None:
+        current_user.dinner_style_pref = request.dinner_style_pref
 
     if current_user.is_household_head and current_user.household_id:
         from app.models.household import Household
@@ -125,7 +148,8 @@ async def update_goal(
         raise HTTPException(status_code=400, detail=f"goal must be one of: {valid_goals}")
     current_user.goal = request.goal
     if current_user.weight_kg and current_user.height_cm and current_user.age:
-        targets = calculate_targets(current_user)
+        cuisine_pref = (current_user.cuisine_prefs or [None])[0]
+        targets = calculate_targets(current_user, cuisine_pref=cuisine_pref)
         current_user.daily_calorie_target = targets["daily_calorie_target"]
         current_user.daily_protein_target_g = targets["daily_protein_target_g"]
         current_user.daily_carbs_target_g = targets["daily_carbs_target_g"]
@@ -179,7 +203,8 @@ async def complete_onboarding(
     current_user.onboarding_complete = True
 
     if current_user.weight_kg and current_user.height_cm and current_user.age:
-        targets = calculate_targets(current_user)
+        cuisine_pref = (current_user.cuisine_prefs or [None])[0]
+        targets = calculate_targets(current_user, cuisine_pref=cuisine_pref)
         current_user.daily_calorie_target = targets["daily_calorie_target"]
         current_user.daily_protein_target_g = targets["daily_protein_target_g"]
         current_user.daily_carbs_target_g = targets["daily_carbs_target_g"]
@@ -189,22 +214,35 @@ async def complete_onboarding(
 
     sub = await create_trial(current_user.id, "solo_basic", db)
 
-    if current_user.email and current_user.email_verified:
-        from app.services.email_service import email_service
-        await email_service.send_trial_start(
-            current_user.email,
-            current_user.name or "there",
-            str(sub.trial_end),
-        )
-
-    from datetime import timedelta
-    from app.tasks.menu_tasks import generate_single_menu
-    next_date = str(date.today() + timedelta(days=1))
-    owner_id = str(current_user.household_id or current_user.id)
-    owner_type = "household" if current_user.household_id else "user"
-    generate_single_menu.delay(owner_id, owner_type, next_date, None)
-
+    # Commit the DB changes (onboarding_complete + macro targets + subscription) BEFORE
+    # any side effects. An email or task-queue failure must never roll back the DB commit.
+    await db.commit()
     await db.refresh(current_user)
+
+    if current_user.email and current_user.email_verified:
+        try:
+            from app.services.email_service import email_service
+            await email_service.send_trial_start(
+                current_user.email,
+                current_user.name or "there",
+                str(sub.trial_end),
+            )
+        except Exception:
+            logger.exception(
+                "Failed to send trial-start email to %s — onboarding still complete",
+                current_user.email,
+            )
+
+    try:
+        from datetime import timedelta
+        from app.tasks.menu_tasks import generate_single_menu
+        next_date = str(date.today() + timedelta(days=1))
+        owner_id = str(current_user.household_id or current_user.id)
+        owner_type = "household" if current_user.household_id else "user"
+        generate_single_menu.delay(owner_id, owner_type, next_date, None)
+    except Exception:
+        logger.exception("Failed to queue first menu for user %s", current_user.id)
+
     return current_user
 
 

@@ -630,6 +630,23 @@ async def trigger_wa(
     return {"message": "WhatsApp send queued", "task_id": task.id}
 
 
+@router.post("/trigger/recalculate-macros", status_code=202)
+async def trigger_recalculate_macros(
+    current_user: User = Depends(get_current_admin),
+):
+    """
+    One-time migration task: recalculate macro targets for all active users using the
+    updated ICMR weight-based protein formula, then regenerate today's menus.
+    Run once after deploying the macro_scorer rewrite.
+    """
+    from app.tasks.admin_tasks import recalculate_all_macro_targets
+    task = recalculate_all_macro_targets.delay()
+    return {
+        "message": "Macro recalculation queued. All active users will be updated and menus regenerated.",
+        "task_id": task.id,
+    }
+
+
 @router.get("/status/task/{task_id}")
 async def task_status(
     task_id: str,

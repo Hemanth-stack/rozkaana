@@ -130,6 +130,7 @@ def run_recipe_seed(self, verify: bool = True):
                             serving_unit=_s(data.get("serving_unit"), 200),
                             prep_time_mins=data.get("prep_time_mins"),
                             spice_level=_s(data.get("spice_level", "medium"), 20),
+                            dish_category=_s(data.get("dish_category"), 30),
                             main_ingredient=_s(data.get("main_ingredient"), 100),
                             ingredients=data.get("ingredients", []),
                             steps=data.get("steps", []),

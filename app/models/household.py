@@ -12,6 +12,8 @@ class Household(Base):
     name = Column(String(100), nullable=False)
     head_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     shared_eating_mode = Column(String(20), nullable=True)
-    member_count = Column(SmallInteger, default=1, server_default="1")
+    member_count = Column(SmallInteger, default=1, server_default="1")  # registered User count
+    adult_count = Column(SmallInteger, default=0, server_default="0")   # HouseholdMember adults/seniors/teens
+    child_count = Column(SmallInteger, default=0, server_default="0")   # HouseholdMember children/infants
     cuisine_prefs = Column(ARRAY(String), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=text("now()"))
