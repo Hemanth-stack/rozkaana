@@ -5,5 +5,9 @@ from app.models.daily_menu import DailyMenu
 from app.models.subscription import Subscription
 from app.models.otp_session import OTPSession
 from app.models.ifct_ingredient import IFCTIngredient
+from app.models.coupon import Coupon, CouponRedemption
 
-__all__ = ["User", "Household", "Recipe", "DailyMenu", "Subscription", "OTPSession", "IFCTIngredient"]
+__all__ = [
+    "User", "Household", "Recipe", "DailyMenu", "Subscription",
+    "OTPSession", "IFCTIngredient", "Coupon", "CouponRedemption",
+]

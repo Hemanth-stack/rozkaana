@@ -1696,8 +1696,11 @@
 
   // Redirect logged-in users away from landing page
   if (localStorage.getItem('rzk_token')) {
-    window.location.replace('/app');
+    const afterLogin = sessionStorage.getItem('rzk_after_login');
+    if (afterLogin) { sessionStorage.removeItem('rzk_after_login'); window.location.replace(afterLogin); }
+    else { window.location.replace('/app'); }
   }
+
 
   function openSignup(plan) {
     selectedPlan = plan || 'solo_pro';
@@ -1785,11 +1788,15 @@
       if (!r.ok) { err.textContent = d.detail || 'Invalid OTP'; btn.disabled = false; btn.textContent = 'Verify & Start Trial'; return; }
       localStorage.setItem('rzk_token', d.access_token);
       localStorage.setItem('rzk_refresh', d.refresh_token);
-      // Check onboarding status — existing users go straight to /app
+      // Check onboarding status — existing users go straight to /app (or stored destination)
       try {
         const meRes = await fetch(`${API}/users/me`, {headers: {'Authorization': 'Bearer ' + d.access_token}});
         const me = await meRes.json();
-        if (me.onboarding_complete) { window.location.href = '/app'; return; }
+        if (me.onboarding_complete) {
+          const afterLogin = sessionStorage.getItem('rzk_after_login');
+          if (afterLogin) { sessionStorage.removeItem('rzk_after_login'); window.location.href = afterLogin; return; }
+          window.location.href = '/app'; return;
+        }
       } catch(e) {}
       showStep('stepSuccess');
     } catch(e) {
@@ -1938,5 +1945,8 @@
   </div>
 </div>
 
+<script>
+if (new URLSearchParams(window.location.search).get('login') === '1') openSignIn();
+</script>
 </body>
 </html>

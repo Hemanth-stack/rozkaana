@@ -146,6 +146,35 @@ h1{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--charcoal);m
       </div>
     </div>
 
+    <!-- Coupon code -->
+    <div class="section" id="couponSection">
+      <div class="section-title">Have a Coupon Code?</div>
+      <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
+        <input id="couponInput" type="text" placeholder="e.g. LAUNCH50" maxlength="30"
+          style="flex:1;min-width:160px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;
+                 font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--text);background:var(--cream);
+                 outline:none;text-transform:uppercase;transition:border-color .2s"
+          oninput="this.value=this.value.toUpperCase();resetCoupon()"
+          onfocus="this.style.borderColor='var(--saffron)'" onblur="this.style.borderColor='var(--border)'">
+        <select id="couponPlanSelect"
+          style="padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;
+                 font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--text);background:var(--cream);
+                 outline:none;transition:border-color .2s;cursor:pointer">
+          <option value="solo_basic">Starter — ₹199/mo</option>
+          <option value="solo_pro" selected>Pro — ₹399/mo</option>
+          <option value="family">Family — ₹699/mo</option>
+        </select>
+        <button onclick="applyCoupon()" id="couponBtn"
+          style="padding:10px 20px;background:var(--saffron);color:#fff;border:none;border-radius:10px;
+                 font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;
+                 transition:background .2s;white-space:nowrap"
+          onmouseover="this.style.background='var(--saffron-dark)'" onmouseout="this.style.background='var(--saffron)'">
+          Apply
+        </button>
+      </div>
+      <div id="couponResult" style="margin-top:12px;display:none"></div>
+    </div>
+
     <!-- Subscription details -->
     <div class="section">
       <div class="section-title">Subscription Details</div>
@@ -168,7 +197,10 @@ h1{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--charcoal);m
 <script>
 const API = 'https://api.rozkaana.in/api/v1';
 const token = localStorage.getItem('rzk_token');
-if (!token) window.location.href = '/';
+if (!token) {
+  sessionStorage.setItem('rzk_after_login', '/billing');
+  window.location.href = '/?login=1';
+}
 function h() { return { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }; }
 
 const PLAN_LABELS = { solo_basic: 'Starter', solo_pro: 'Pro', family: 'Family' };
@@ -185,6 +217,13 @@ function showToast(msg, type = 'success') {
 async function load() {
   const r = await fetch(API + '/subscription/', { headers: h() });
   if (!r.ok) {
+    if (r.status === 401 || r.status === 403) {
+      localStorage.removeItem('rzk_token');
+      localStorage.removeItem('rzk_refresh');
+      sessionStorage.setItem('rzk_after_login', '/billing');
+      window.location.href = '/?login=1';
+      return;
+    }
     document.getElementById('loading').innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px">No active subscription. Complete onboarding first.</p>';
     return;
   }
@@ -266,17 +305,95 @@ function render() {
   `;
 }
 
+// ── Coupon state ──────────────────────────────────────────────────────────────
+let appliedCoupon = null; // { code, discount_type, discount_value, free_days, plan_type }
+
+function resetCoupon() {
+  appliedCoupon = null;
+  document.getElementById('couponResult').style.display = 'none';
+}
+
+async function applyCoupon() {
+  const code = document.getElementById('couponInput').value.trim().toUpperCase();
+  const plan = document.getElementById('couponPlanSelect').value;
+  const resultEl = document.getElementById('couponResult');
+  const btn = document.getElementById('couponBtn');
+  if (!code) { showToast('Enter a coupon code first', 'error'); return; }
+
+  btn.disabled = true; btn.textContent = 'Checking…';
+  resetCoupon();
+
+  try {
+    const r = await fetch(API + '/subscription/validate-coupon', {
+      method: 'POST', headers: h(),
+      body: JSON.stringify({ code, plan_type: plan }),
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      resultEl.style.display = 'block';
+      resultEl.innerHTML = `<div style="color:#c0392b;font-size:.85rem;padding:10px 14px;background:#fef2f2;border-radius:8px;border:1px solid #fca5a5">
+        ${d.detail || 'Invalid coupon code'}</div>`;
+    } else {
+      appliedCoupon = { code, plan_type: plan, ...d };
+      const PLAN_LABELS = { solo_basic: 'Starter', solo_pro: 'Pro', family: 'Family' };
+      resultEl.style.display = 'block';
+      if (d.discount_type === 'percent_off') {
+        const saved = d.original_amount - d.discounted_amount;
+        resultEl.innerHTML = `<div style="color:var(--green);font-size:.85rem;padding:10px 14px;background:rgba(46,125,82,.08);border-radius:8px;border:1px solid rgba(46,125,82,.25)">
+          ✓ <strong>${d.discount_value}% off</strong> applied on ${PLAN_LABELS[plan]} —
+          <span style="text-decoration:line-through;color:var(--muted)">₹${d.original_amount/100}</span>
+          <strong style="color:var(--green)"> ₹${d.discounted_amount/100}/mo</strong>
+          &nbsp;(saving ₹${saved/100})</div>`;
+      } else {
+        resultEl.innerHTML = `<div style="color:var(--green);font-size:.85rem;padding:10px 14px;background:rgba(46,125,82,.08);border-radius:8px;border:1px solid rgba(46,125,82,.25)">
+          ✓ <strong>${d.free_days} free days</strong> added — no payment needed for ${PLAN_LABELS[plan]}.
+          <br><small style="color:var(--muted)">Click "Get Started" / "Upgrade" for the ${PLAN_LABELS[plan]} plan to apply.</small></div>`;
+      }
+    }
+  } catch(e) {
+    showToast('Network error. Please try again.', 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Apply';
+}
+
 async function selectPlan(plan) {
   const btn = document.getElementById('btn-' + plan);
   const originalText = btn.textContent;
   btn.textContent = 'Opening checkout…';
   btn.disabled = true;
 
+  // If a free_days coupon is applied for this plan, skip Razorpay entirely
+  if (appliedCoupon && appliedCoupon.discount_type === 'free_days' && appliedCoupon.plan_type === plan) {
+    try {
+      const r = await fetch(API + '/subscription/apply-coupon', {
+        method: 'POST', headers: h(),
+        body: JSON.stringify({ code: appliedCoupon.code, plan_type: plan }),
+      });
+      if (r.ok) {
+        const d = await r.json();
+        appliedCoupon = null;
+        resetCoupon();
+        showToast(d.message || 'Coupon applied! Enjoy your free access.', 'success');
+        await load();
+      } else {
+        const err = await r.json();
+        showToast(err.detail || 'Failed to apply coupon', 'error');
+      }
+    } catch(e) {
+      showToast('Something went wrong. Please try again.', 'error');
+    }
+    btn.textContent = originalText; btn.disabled = false;
+    return;
+  }
+
   try {
-    // Create Razorpay order
+    // Create Razorpay order (with percent_off coupon if applicable)
+    const couponCode = (appliedCoupon && appliedCoupon.plan_type === plan && appliedCoupon.discount_type === 'percent_off')
+      ? appliedCoupon.code : null;
+
     const r = await fetch(API + '/subscription/create-checkout', {
       method: 'POST', headers: h(),
-      body: JSON.stringify({ plan_type: plan }),
+      body: JSON.stringify({ plan_type: plan, coupon_code: couponCode }),
     });
     if (!r.ok) {
       const err = await r.json();
@@ -286,6 +403,11 @@ async function selectPlan(plan) {
     }
     const checkout = await r.json();
 
+    const PLAN_LABELS = { solo_basic: 'Starter', solo_pro: 'Pro', family: 'Family' };
+    const desc = couponCode
+      ? `${checkout.plan_label} Plan – 1 Month (coupon: ${couponCode})`
+      : `${checkout.plan_label} Plan – 1 Month`;
+
     // Open Razorpay checkout modal
     const rzp = new Razorpay({
       key: checkout.key_id,
@@ -293,21 +415,18 @@ async function selectPlan(plan) {
       amount: checkout.amount,
       currency: checkout.currency,
       name: 'Rozkaana',
-      description: `${checkout.plan_label} Plan – 1 Month`,
-      prefill: {
-        name: checkout.user_name,
-        email: checkout.user_email,
-      },
+      description: desc,
+      prefill: { name: checkout.user_name, email: checkout.user_email },
       theme: { color: '#E8593C' },
       handler: async function(response) {
         btn.textContent = 'Verifying…';
         await verifyPayment(response);
+        appliedCoupon = null;
+        resetCoupon();
         btn.textContent = originalText; btn.disabled = false;
       },
       modal: {
-        ondismiss: function() {
-          btn.textContent = originalText; btn.disabled = false;
-        },
+        ondismiss: function() { btn.textContent = originalText; btn.disabled = false; },
       },
     });
     rzp.open();

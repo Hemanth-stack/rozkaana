@@ -147,10 +147,9 @@ async def google_callback(
         await db.refresh(user)
         logger.info("Existing user via Google OAuth: %s", email)
 
-    # Ensure trial subscription for new users
+    # Ensure trial subscription for new users (onboarding_complete stays False
+    # until the user finishes the onboarding form)
     if is_new:
-        user.onboarding_complete = True
-        await db.flush()
         sub = (await db.execute(
             select(Subscription).where(Subscription.user_id == user.id)
         )).scalar_one_or_none()

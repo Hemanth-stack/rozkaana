@@ -15,6 +15,7 @@ from app.schemas.subscription import (
     PauseResponse, ResumeResponse, SubscriptionResponse,
     VerifyPaymentRequest,
 )
+from app.schemas.coupon import ValidateCouponRequest, ValidateCouponResponse
 from app.services import subscription_service
 
 router = APIRouter(prefix="/subscription", tags=["subscription"])
@@ -43,7 +44,7 @@ async def upgrade_subscription(
     """Backward-compat alias for /create-checkout — handles cached browser clients."""
     if request.plan_type not in VALID_PLANS:
         raise HTTPException(status_code=400, detail=f"plan_type must be one of: {VALID_PLANS}")
-    return await subscription_service.create_checkout_order(current_user.id, request.plan_type, db)
+    return await subscription_service.create_checkout_order(current_user.id, request.plan_type, db, request.coupon_code)
 
 
 @router.post("/create-checkout", response_model=CheckoutResponse)
@@ -54,8 +55,42 @@ async def create_checkout(
 ):
     if request.plan_type not in VALID_PLANS:
         raise HTTPException(status_code=400, detail=f"plan_type must be one of: {VALID_PLANS}")
-    result = await subscription_service.create_checkout_order(current_user.id, request.plan_type, db)
+    result = await subscription_service.create_checkout_order(current_user.id, request.plan_type, db, request.coupon_code)
     return result
+
+
+@router.post("/validate-coupon", response_model=ValidateCouponResponse)
+async def validate_coupon_endpoint(
+    request: ValidateCouponRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if request.plan_type not in VALID_PLANS:
+        raise HTTPException(status_code=400, detail=f"plan_type must be one of: {VALID_PLANS}")
+    from app.services.coupon_service import validate_coupon
+    info = await validate_coupon(request.code, request.plan_type, current_user.id, db)
+    return ValidateCouponResponse(
+        valid=True,
+        discount_type=info["discount_type"],
+        discount_value=info["discount_value"],
+        original_amount=info["original_amount"],
+        discounted_amount=info["discounted_amount"],
+        free_days=info["free_days"],
+        message=info["message"],
+    )
+
+
+@router.post("/apply-coupon")
+async def apply_free_coupon(
+    request: ValidateCouponRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Apply a free_days coupon — no payment required."""
+    if request.plan_type not in VALID_PLANS:
+        raise HTTPException(status_code=400, detail=f"plan_type must be one of: {VALID_PLANS}")
+    from app.services.coupon_service import apply_free_days_coupon
+    return await apply_free_days_coupon(request.code, request.plan_type, current_user.id, db)
 
 
 @router.post("/verify-payment", response_model=SubscriptionResponse)

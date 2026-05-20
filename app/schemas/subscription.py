@@ -23,6 +23,7 @@ class SubscriptionResponse(BaseModel):
 
 class CheckoutRequest(BaseModel):
     plan_type: str
+    coupon_code: Optional[str] = None
 
 
 class CheckoutResponse(BaseModel):
@@ -34,6 +35,8 @@ class CheckoutResponse(BaseModel):
     user_email: str
     plan_type: str
     plan_label: str
+    coupon_code: Optional[str] = None
+    original_amount: Optional[int] = None
 
 
 class VerifyPaymentRequest(BaseModel):

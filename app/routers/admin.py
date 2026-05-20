@@ -917,3 +917,102 @@ async def admin_cancel_subscription(
     sub.current_period_end = date.today()
     await db.flush()
     return {"message": "Subscription cancelled", "user_id": user_id, "status": "cancelled"}
+
+
+# ── COUPON MANAGEMENT ─────────────────────────────────────────────────────────
+
+from app.models.coupon import Coupon, CouponRedemption  # noqa: E402
+from app.schemas.coupon import CouponCreate, CouponListResponse, CouponOut, CouponToggle  # noqa: E402
+
+
+@router.post("/coupons", response_model=CouponOut, status_code=201)
+async def create_coupon(
+    request: CouponCreate,
+    current_user: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    existing = (await db.execute(select(Coupon).where(Coupon.code == request.code))).scalar_one_or_none()
+    if existing:
+        raise HTTPException(status_code=409, detail="Coupon code already exists")
+
+    coupon = Coupon(
+        **request.model_dump(),
+        created_by=current_user.id,
+    )
+    db.add(coupon)
+    await db.flush()
+    await db.refresh(coupon)
+    return coupon
+
+
+@router.get("/coupons", response_model=CouponListResponse)
+async def list_coupons(
+    active_only: bool = False,
+    current_user: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    q = select(Coupon).order_by(Coupon.created_at.desc())
+    if active_only:
+        q = q.where(Coupon.is_active == True)  # noqa: E712
+    coupons = (await db.execute(q)).scalars().all()
+    return CouponListResponse(coupons=list(coupons), total=len(coupons))
+
+
+@router.get("/coupons/{coupon_id}", response_model=CouponOut)
+async def get_coupon(
+    coupon_id: str,
+    current_user: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    coupon = await db.get(Coupon, uuid.UUID(coupon_id))
+    if not coupon:
+        raise HTTPException(status_code=404, detail="Coupon not found")
+    return coupon
+
+
+@router.patch("/coupons/{coupon_id}", response_model=CouponOut)
+async def toggle_coupon(
+    coupon_id: str,
+    request: CouponToggle,
+    current_user: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    coupon = await db.get(Coupon, uuid.UUID(coupon_id))
+    if not coupon:
+        raise HTTPException(status_code=404, detail="Coupon not found")
+    coupon.is_active = request.is_active
+    await db.flush()
+    await db.refresh(coupon)
+    return coupon
+
+
+@router.delete("/coupons/{coupon_id}", status_code=204)
+async def delete_coupon(
+    coupon_id: str,
+    current_user: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    coupon = await db.get(Coupon, uuid.UUID(coupon_id))
+    if not coupon:
+        raise HTTPException(status_code=404, detail="Coupon not found")
+    await db.delete(coupon)
+    await db.flush()
+
+
+@router.get("/coupons/{coupon_id}/redemptions")
+async def coupon_redemptions(
+    coupon_id: str,
+    current_user: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    coupon = await db.get(Coupon, uuid.UUID(coupon_id))
+    if not coupon:
+        raise HTTPException(status_code=404, detail="Coupon not found")
+    rows = (await db.execute(
+        select(CouponRedemption).where(CouponRedemption.coupon_id == coupon.id)
+        .order_by(CouponRedemption.redeemed_at.desc())
+    )).scalars().all()
+    return {"coupon_code": coupon.code, "total": len(rows), "redemptions": [
+        {"user_id": str(r.user_id), "plan_type": r.plan_type, "redeemed_at": str(r.redeemed_at)}
+        for r in rows
+    ]}

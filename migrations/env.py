@@ -10,7 +10,7 @@ from app.config import settings
 from app.database import Base
 
 # Import all models so Alembic detects them
-from app.models import User, Household, Recipe, DailyMenu, Subscription, OTPSession, IFCTIngredient  # noqa: F401
+from app.models import User, Household, Recipe, DailyMenu, Subscription, OTPSession, IFCTIngredient, Coupon, CouponRedemption  # noqa: F401
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL_SYNC)

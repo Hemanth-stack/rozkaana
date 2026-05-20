@@ -51,16 +51,32 @@ async def create_trial(user_id: UUID, plan_type: str, db: AsyncSession) -> Subsc
     return sub
 
 
-async def create_checkout_order(user_id: UUID, plan_type: str, db: AsyncSession) -> dict:
-    """Create a Razorpay Order for one month of the given plan."""
-    amount = PLAN_AMOUNTS.get(plan_type)
-    if not amount:
+async def create_checkout_order(
+    user_id: UUID,
+    plan_type: str,
+    db: AsyncSession,
+    coupon_code: str | None = None,
+) -> dict:
+    """Create a Razorpay Order for one month of the given plan, optionally with a coupon."""
+    original_amount = PLAN_AMOUNTS.get(plan_type)
+    if not original_amount:
         raise HTTPException(status_code=400, detail="Invalid plan type")
 
     user_result = await db.execute(select(User).where(User.id == user_id))
     user = user_result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    amount = original_amount
+    applied_coupon = None
+
+    if coupon_code:
+        from app.services.coupon_service import validate_coupon
+        info = await validate_coupon(coupon_code, plan_type, user_id, db)
+        if info["discount_type"] == "percent_off":
+            amount = info["discounted_amount"]
+            applied_coupon = info["coupon"]
+        # free_days coupons should use the apply-free-coupon endpoint, not checkout
 
     try:
         order = _rzp_client.order.create({
@@ -69,6 +85,7 @@ async def create_checkout_order(user_id: UUID, plan_type: str, db: AsyncSession)
             "notes": {
                 "plan_type": plan_type,
                 "user_id": str(user_id),
+                "coupon_code": coupon_code or "",
             },
         })
     except Exception as exc:
@@ -84,6 +101,9 @@ async def create_checkout_order(user_id: UUID, plan_type: str, db: AsyncSession)
         "user_email": user.email or "",
         "plan_type": plan_type,
         "plan_label": PLAN_LABELS.get(plan_type, plan_type),
+        "coupon_code": coupon_code,
+        "original_amount": original_amount,
+        "_applied_coupon": applied_coupon,   # internal — not in response schema
     }
 
 
@@ -138,6 +158,28 @@ async def verify_and_activate(
         db.add(sub)
 
     await db.flush()
+
+    # Record coupon redemption if a percent_off coupon was applied
+    coupon_code = order["notes"].get("coupon_code", "") if "order" in dir() else ""
+    if coupon_code:
+        try:
+            from app.models.coupon import Coupon, CouponRedemption
+            coupon_result = await db.execute(select(Coupon).where(Coupon.code == coupon_code))
+            coupon = coupon_result.scalar_one_or_none()
+            if coupon:
+                already = await db.execute(
+                    select(CouponRedemption).where(
+                        CouponRedemption.coupon_id == coupon.id,
+                        CouponRedemption.user_id == user_id,
+                    )
+                )
+                if not already.scalar_one_or_none():
+                    db.add(CouponRedemption(coupon_id=coupon.id, user_id=user_id, plan_type=plan_type))
+                    coupon.redeemed_count = (coupon.redeemed_count or 0) + 1
+                    await db.flush()
+        except Exception as exc:
+            logger.warning("Coupon redemption recording failed after payment: %s", exc)
+
     await db.refresh(sub)
     return sub
 

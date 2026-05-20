@@ -278,6 +278,7 @@
     <div class="nav-section-label">Users</div>
     <button class="nav-item" onclick="showPage('users',this)"><span class="icon"></span> All Users</button>
     <button class="nav-item" onclick="showPage('subscriptions',this)"><span class="icon"></span> Subscriptions</button>
+    <button class="nav-item" onclick="showPage('coupons',this)"><span class="icon">🏷️</span> Coupons <span class="badge teal" id="couponBadge">—</span></button>
   </div>
   <div class="sidebar-footer">
     <div class="admin-chip">
@@ -576,6 +577,72 @@
       </div>
     </div>
 
+    <!-- ══ COUPONS ══ -->
+    <div class="page" id="page-coupons">
+      <div class="grid-2" style="align-items:start;gap:20px">
+
+        <!-- Create form -->
+        <div class="card">
+          <div class="section-title">Create Coupon</div>
+          <div class="form-group">
+            <label class="form-label">Code (auto-uppercased)</label>
+            <input class="form-input" id="cpCode" placeholder="e.g. LAUNCH50" maxlength="30"
+              oninput="this.value=this.value.toUpperCase()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description (optional)</label>
+            <input class="form-input" id="cpDesc" placeholder="Internal note">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Discount Type</label>
+            <select class="form-select" id="cpType" onchange="toggleCouponTypeHint()">
+              <option value="percent_off">Percent Off (%)</option>
+              <option value="free_days">Free Days</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="cpValueLabel">Discount Value (%)</label>
+            <input class="form-input" id="cpValue" type="number" placeholder="e.g. 50" min="1">
+            <div style="font-size:.7rem;color:var(--text-dim);margin-top:4px" id="cpValueHint">Enter a percentage between 1–100</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Applicable Plans (leave blank = all plans)</label>
+            <div class="tag-check-row" id="cpPlans">
+              <label class="tag-check"><input type="checkbox" value="solo_basic"><span class="tag-pill">Starter</span></label>
+              <label class="tag-check"><input type="checkbox" value="solo_pro"><span class="tag-pill">Pro</span></label>
+              <label class="tag-check"><input type="checkbox" value="family"><span class="tag-pill">Family</span></label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Max Redemptions (blank = unlimited)</label>
+            <input class="form-input" id="cpMaxRedeem" type="number" placeholder="e.g. 100" min="1">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="form-group">
+              <label class="form-label">Valid From (optional)</label>
+              <input class="form-input" id="cpFrom" type="date">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Valid Until (optional)</label>
+              <input class="form-input" id="cpUntil" type="date">
+            </div>
+          </div>
+          <button class="btn-primary" onclick="createCoupon()">Create Coupon</button>
+          <div id="cpError" style="display:none;margin-top:10px;font-size:.78rem;color:var(--red);padding:8px 10px;background:var(--red-dim);border-radius:6px"></div>
+        </div>
+
+        <!-- Coupon list -->
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="section-title" style="margin:0">All Coupons</div>
+            <button class="btn-sm" onclick="loadCoupons()">↻ Refresh</button>
+          </div>
+          <div id="couponTable"><div class="loading"> </div></div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- ══ SYSTEM LOGS ══ -->
     <div class="page" id="page-logs">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
@@ -684,6 +751,7 @@ const META = {
   aigenerate: ['AI Generate', 'Generate new recipes with Claude AI'],
   users: ['All Users', 'User management and profiles'],
   subscriptions: ['Subscriptions', 'Revenue, churn, and subscription status'],
+  coupons: ['Coupon Codes', 'Create and manage discount coupons and free-day grants'],
   logs: ['System Logs', 'Real-time log stream'],
   health: ['System Health', 'Component status and Celery worker health'],
   recipedb: ['Recipe Database', 'Full raw recipe bank — all slots, cuisines, macros'],
@@ -701,7 +769,7 @@ function showPage(id, el) {
     dashboard: loadDashboard, pipeline: loadPipeline,
     recipes: () => { loadRecipes(); loadRecipeStats(); }, users: loadUsers,
     subscriptions: loadSubscriptions, logs: loadLogs, health: loadHealth,
-    recipedb: loadRecipeDb,
+    recipedb: loadRecipeDb, coupons: loadCoupons,
   };
   if (loaders[id]) loaders[id]();
 }
@@ -714,7 +782,7 @@ function refreshPage() {
     dashboard: loadDashboard, pipeline: loadPipeline,
     recipes: () => { loadRecipes(); loadRecipeStats(); }, users: loadUsers,
     subscriptions: loadSubscriptions, logs: loadLogs, health: loadHealth,
-    recipedb: loadRecipeDb,
+    recipedb: loadRecipeDb, coupons: loadCoupons,
   };
   if (loaders[id]) loaders[id]();
 }
@@ -1275,6 +1343,139 @@ async function loadSubscriptions() {
   } catch(e) {
     document.getElementById('subMetrics').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
   }
+}
+
+// ── COUPONS ───────────────────────────────────────────────────────────────────
+function toggleCouponTypeHint() {
+  const t = document.getElementById('cpType').value;
+  document.getElementById('cpValueLabel').textContent = t === 'percent_off' ? 'Discount Value (%)' : 'Free Days';
+  document.getElementById('cpValueHint').textContent = t === 'percent_off' ? 'Enter 1–100' : 'Number of days of free access';
+}
+
+async function loadCoupons() {
+  document.getElementById('couponTable').innerHTML = '<div class="loading"> </div>';
+  try {
+    const r = await apiFetch('/admin/coupons');
+    const data = await r.json();
+    const list = data.coupons || [];
+    document.getElementById('couponBadge').textContent = list.filter(c => c.is_active).length;
+
+    if (!list.length) {
+      document.getElementById('couponTable').innerHTML = '<div class="loading">No coupons yet</div>';
+      return;
+    }
+
+    const rows = list.map(c => {
+      const typeLabel = c.discount_type === 'percent_off'
+        ? `<span class="badge b-saffron">${c.discount_value}% OFF</span>`
+        : `<span class="badge b-teal">${c.discount_value} FREE DAYS</span>`;
+      const limit = c.max_redemptions != null
+        ? `${c.redeemed_count} / ${c.max_redemptions}`
+        : `${c.redeemed_count} / ∞`;
+      const pct = c.max_redemptions ? Math.round(c.redeemed_count / c.max_redemptions * 100) : 0;
+      const bar = c.max_redemptions
+        ? `<div style="background:var(--border);border-radius:3px;height:4px;margin-top:3px"><div style="background:var(--teal);width:${pct}%;height:4px;border-radius:3px"></div></div>`
+        : '';
+      const plans = c.applicable_plans?.length
+        ? c.applicable_plans.map(p => ({solo_basic:'Starter',solo_pro:'Pro',family:'Family'}[p]||p)).join(', ')
+        : 'All plans';
+      const activeToggle = c.is_active
+        ? `<button class="btn-sm reject" onclick="toggleCoupon('${c.id}',false)">Deactivate</button>`
+        : `<button class="btn-sm verify" onclick="toggleCoupon('${c.id}',true)">Activate</button>`;
+      const statusBadge = c.is_active
+        ? `<span class="badge b-teal">ACTIVE</span>`
+        : `<span class="badge b-gray">INACTIVE</span>`;
+      const expiry = c.valid_until ? `Expires ${fmtDate(c.valid_until)}` : 'No expiry';
+
+      return `<tr>
+        <td><strong style="color:var(--text);font-family:var(--mono)">${c.code}</strong><br>
+            <span style="font-size:.7rem;color:var(--text-dim)">${c.description || ''}</span></td>
+        <td>${typeLabel}</td>
+        <td>${statusBadge}</td>
+        <td><div style="font-size:.78rem;font-family:var(--mono)">${limit}</div>${bar}</td>
+        <td style="font-size:.72rem;color:var(--text-muted)">${plans}<br>${expiry}</td>
+        <td>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${activeToggle}
+            <button class="btn-sm" onclick="viewRedemptions('${c.id}','${c.code}')">Redemptions</button>
+            <button class="btn-sm reject" onclick="deleteCoupon('${c.id}','${c.code}')">Delete</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('couponTable').innerHTML = `
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Code</th><th>Discount</th><th>Status</th><th>Used</th><th>Scope</th><th>Actions</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  } catch(e) {
+    document.getElementById('couponTable').innerHTML = `<div class="loading">Error: ${e.message}</div>`;
+  }
+}
+
+async function createCoupon() {
+  const errEl = document.getElementById('cpError');
+  errEl.style.display = 'none';
+
+  const code = document.getElementById('cpCode').value.trim().toUpperCase();
+  const desc = document.getElementById('cpDesc').value.trim();
+  const type = document.getElementById('cpType').value;
+  const value = parseInt(document.getElementById('cpValue').value, 10);
+  const maxR = document.getElementById('cpMaxRedeem').value.trim();
+  const from = document.getElementById('cpFrom').value || null;
+  const until = document.getElementById('cpUntil').value || null;
+  const plans = [...document.querySelectorAll('#cpPlans input:checked')].map(i => i.value);
+
+  if (!code) { errEl.textContent = 'Code is required'; errEl.style.display = 'block'; return; }
+  if (!value || value < 1) { errEl.textContent = 'Discount value must be at least 1'; errEl.style.display = 'block'; return; }
+  if (type === 'percent_off' && value > 100) { errEl.textContent = 'Percentage cannot exceed 100'; errEl.style.display = 'block'; return; }
+
+  const body = {
+    code, description: desc || null, discount_type: type, discount_value: value,
+    applicable_plans: plans.length ? plans : null,
+    max_redemptions: maxR ? parseInt(maxR, 10) : null,
+    valid_from: from, valid_until: until,
+  };
+
+  try {
+    const r = await apiFetch('/admin/coupons', { method: 'POST', body: JSON.stringify(body) });
+    const d = await r.json();
+    if (!r.ok) { errEl.textContent = d.detail || 'Failed to create coupon'; errEl.style.display = 'block'; return; }
+    // Reset form
+    ['cpCode','cpDesc','cpValue','cpMaxRedeem','cpFrom','cpUntil'].forEach(id => document.getElementById(id).value = '');
+    document.querySelectorAll('#cpPlans input').forEach(i => i.checked = false);
+    loadCoupons();
+  } catch(e) {
+    errEl.textContent = 'Network error: ' + e.message; errEl.style.display = 'block';
+  }
+}
+
+async function toggleCoupon(id, isActive) {
+  try {
+    await apiFetch(`/admin/coupons/${id}`, { method: 'PATCH', body: JSON.stringify({ is_active: isActive }) });
+    loadCoupons();
+  } catch(e) { alert('Failed to update coupon: ' + e.message); }
+}
+
+async function deleteCoupon(id, code) {
+  if (!confirm(`Delete coupon "${code}"? This cannot be undone.`)) return;
+  try {
+    await apiFetch(`/admin/coupons/${id}`, { method: 'DELETE' });
+    loadCoupons();
+  } catch(e) { alert('Failed to delete: ' + e.message); }
+}
+
+async function viewRedemptions(id, code) {
+  try {
+    const r = await apiFetch(`/admin/coupons/${id}/redemptions`);
+    const data = await r.json();
+    if (!data.total) { alert(`Coupon "${code}" has not been redeemed yet.`); return; }
+    console.table(data.redemptions);
+    alert(`Coupon: ${code}\nTotal redemptions: ${data.total}\n\nFull list printed to browser console (F12 → Console).`);
+  } catch(e) { alert('Failed to load redemptions: ' + e.message); }
 }
 
 // ── LOGS ──────────────────────────────────────────────────────────────────────

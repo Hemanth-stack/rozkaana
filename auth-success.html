@@ -97,7 +97,10 @@
 
   // Redirect after brief pause
   setTimeout(() => {
-    window.location.href = isNew ? '/onboard' : '/app';
+    if (isNew) { window.location.href = '/onboard'; return; }
+    const afterLogin = sessionStorage.getItem('rzk_after_login');
+    if (afterLogin) { sessionStorage.removeItem('rzk_after_login'); window.location.href = afterLogin; return; }
+    window.location.href = '/app';
   }, 1500);
 })();
 </script>
